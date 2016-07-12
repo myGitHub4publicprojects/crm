@@ -1,0 +1,61 @@
+body {
+    background-color: #eaeaea;
+}
+
+#header {
+	background-color: #a2a2f7;
+	border: 1px solid #9a9e9a;
+	padding-bottom: 1%;
+}
+h1 {
+	color: #222;
+	font-family: Georgia,"Times New Roman",Times,serif;
+	text-align: center;
+}
+
+.container {
+	padding: 0 5%;
+}
+
+a.home_link {
+	font-size: 70%;
+	background-color: #eee;
+	border: 1px;
+	padding: 1%;
+	text-decoration: none;
+}
+
+#add_patient {
+	font-size: 90%;
+	display: block;
+	width: 10%;
+	min-width: 85px;
+	float: right;
+	color: white;
+	background-color: blue;
+	border: black 1px;
+	padding: 1%;
+	text-decoration: none;
+	margin: 5px;
+}
+
+
+.hearing_aid {
+	background-color: #cecbcb;
+	width: 40%;
+	margin: 0 auto;
+	display: inline-block;
+}
+
+.left, .right {
+	width: 40%;
+	overflow: hidden;
+	display: inline-block;
+	margin-left: 5%;
+}
+
+.patient_info {
+	width: 50%;
+	background-color: #b4bdb4;
+	display: inline-block;
+}

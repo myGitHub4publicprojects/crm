@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'crm/style.css' %}" />
+	<title></title>
+</head>
+<body>
+
+{% include "crm/messages_display.html" %}
+
+<div class='container'>
+	<div id='header'>
+	<a class='home_link' href="{% url 'crm:index' %}">LISTA PACJENTÓW</a> <a id='add_patient' href="{% url 'crm:create' %}">Dodaj pacjenta</a>
+	<h1>Sonovox CRM</h1>
+	</div>
+{% block content %}
+
+{% endblock content %}
+</div>
+
+</body>
+</html>

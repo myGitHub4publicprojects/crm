@@ -1,0 +1,40 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+
+Edycja pacjenta: <strong>{{ patient.last_name }} {{ patient.first_name}}</strong>, data ur: {{ patient.date_of_birth }}, nr tel: {{ patient.phone_no }}
+
+
+
+<form action="{% url 'crm:updating' patient.id %}" method="post">
+{% csrf_token %}
+
+First name: <input type="text" name="fname" value="{{ patient.last_name }}" required><br>
+Last name: <input type="text" name="lname" value="{{ patient.first_name }}" required><br>
+Date of birth: {{ patient.date_of_birth }} zmień datę urodzenia: <input type="date" name="bday" value="{{ patient.date_of_birth }}"><br>
+Telephone: <input type="tel" name="usrtel" value="{{ patient.phone_no }}" required><br>
+
+New note: <input type="text" name="new_note"><br> 
+Audiometrist: 
+
+{% for a in patient.audiometrist_list %}
+	<input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a }}"/>
+	<label for="a{{ forloop.counter }}">{{ a }}</label><br/>
+{% endfor %}
+
+
+<input type="submit" value="Aktualiuj" />
+</form>
+
+<br>
+aparat:
+
+<br>
+last notes: <br> 
+<ul>
+{% for note in patient.newinfo_set.all %}
+	<li>{{ note.timestamp }} {{ note.note }} {{ note.audiometrist }}</li>
+{% endfor %}
+</ul>
+
+{% endblock content %}

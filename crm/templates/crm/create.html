@@ -1,0 +1,38 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<h1>Dodaj nowego pacjenta</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'crm:store' %}" method="post">
+{% csrf_token %}
+
+<div id='details'>
+<div class="patient_info">
+	<h3>Dane pacjenta:</h3>
+	First name: <input type="text" name="fname" required><br>
+	Last name: <input type="text" name="lname" required><br>
+	Date of birth: <input type="date" name="bday" required><br>
+	Telephone: <input type="tel" name="usrtel" required> (jak nie ma to zero)<br>
+</div>
+
+<div class="hearing_aid">
+	<h3>Obecne aparaty:</h3>
+		<div class="left">
+		<h4>LEWY:</h4>
+		Make, family and model (eg. Bernafon WIN 102): <input type="text" name="ha_name_left"><br>
+		Date of purchase: <input type="date" name="purchase_date"><br>
+		</div>
+		<div class="right">
+		<h4>PRAWY:</h4>
+		Make, family and model (eg. Bernafon WIN 102): <input type="text" name="ha_name_right"><br>
+		Date of purchase: <input type="date" name="purchase_date"><br>
+		</div>
+</div>
+</div>
+
+<input type="submit" value="Dodaj" />
+</form>
+
+{% endblock content %}

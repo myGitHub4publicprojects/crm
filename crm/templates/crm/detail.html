@@ -1,0 +1,21 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+
+<h1>{{ patient.last_name }} {{ patient.first_name }}</h1> <strong><a href="{% url 'crm:edit' patient.id %}">EDYTUJ</a></strong>
+<ul>
+	<li>Data ur: {{ patient.date_of_birth }}</li>
+	<li>Data wystawienia faktury i wzięcia wycisku: {{ patient.invoice_date.date }}</li>
+	<li>Nr tel: {{ patient.phone_no }}</li>
+
+</ul>
+aparaciki: 
+<ul>
+{%  for ha in patient.hearing_aid_set.all %}
+<li>{{ ha.ha_name }} {{ ha.ear }} {{ purchase_date }}</li>
+
+
+{% endfor %}
+</ul>
+
+{% endblock content %}
