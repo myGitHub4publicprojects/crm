@@ -10,7 +10,8 @@ class Patient(models.Model):
 	first_name = models.CharField(max_length=120)
 	last_name = models.CharField(max_length=120)
 	date_of_birth = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True)
-	# location = models.TextField()
+	locations = ["Poznan", "Rakoniewice", "Wolsztyn", "Puszczykowo", "Mosina", "Chodziez", "Trzcianka"]
+	location = models.CharField(max_length=120)
 	phone_no = models.IntegerField(null=True, blank=True)
 	# nfz_confirmed = models.DateTimeField(null=True, blank=True)
 	# # data przyniesienia potwierdzonych wnioskow NFZ i wystawienia kosztorysu
@@ -27,8 +28,10 @@ class Patient(models.Model):
 	# 	width_field="width_field")
 
 	create_date = models.DateTimeField(auto_now=False, auto_now_add=True)
-	# notes = models.TextField()
+	notes = models.TextField(null=True, blank=True)
 	audiometrist_list = ['Barbara', 'Jakub', 'Sylwia']
+	audiometrist = models.CharField(max_length=120)
+	 # person who added a patient or a new note about patient
 
 	def __str__(self):
 		return self.first_name + ' ' + self.last_name

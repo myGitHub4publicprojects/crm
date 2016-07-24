@@ -4,7 +4,6 @@ body {
 
 #header {
 	background-color: #a2a2f7;
-	border: 1px solid #9a9e9a;
 	padding-bottom: 1%;
 }
 h1 {
@@ -14,7 +13,8 @@ h1 {
 }
 
 .container {
-	padding: 0 5%;
+	margin: 0 5%;
+	border: 1px solid #9a9e9a;
 }
 
 a.home_link {
@@ -42,9 +42,11 @@ a.home_link {
 
 .hearing_aid {
 	background-color: #cecbcb;
-	width: 40%;
-	margin: 0 auto;
-	display: inline-block;
+/*	width: 40%;*/
+/*	margin: 0 auto;
+	display: inline-block;*/
+	padding: 2%;
+	border: solid black 1px;
 }
 
 .left, .right {
@@ -54,10 +56,20 @@ a.home_link {
 	margin-left: 5%;
 }
 
+.left {
+	background-color: blue;
+}
+
+.right {
+	background-color: red;
+}
+
 .patient_info {
-	width: 50%;
+/*	width: 50%;*/
 	background-color: #b4bdb4;
-	display: inline-block;
+/*	display: inline-block;*/
+	padding: 2%;
+	border: solid black 1px;
 }
 
 #notes li {
@@ -73,7 +85,15 @@ a.home_link {
 	margin-left: 2%;
 }
 
-#details {
-	padding: 2%;
-	border: solid black 1px;
+.families {
+	display: none;
+}
+
+#patient_note {
+	border: 1px dotted #999;
+	background-color: #f9f5f5;
+	width: 90%;
+	height: 100px;
+	display: block;
+	margin: 0 auto;
 }

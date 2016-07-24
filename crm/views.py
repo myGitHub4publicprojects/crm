@@ -21,7 +21,10 @@ def create(request):
 	# upadates database with details collected in edit view form
 	ha_list = Hearing_Aid.ha_list
 	ears =  Hearing_Aid.ears
-	return render(request, 'crm/create.html', {'ha_list': ha_list, 'ears': ears})
+	locations = Patient.locations
+	audiometrist_list = Patient.audiometrist_list
+	context = {'ha_list': ha_list, 'ears': ears, 'locations': locations, 'audiometrist_list': audiometrist_list}
+	return render(request, 'crm/create.html', context)
 
 
 def detail(request, patient_id):
@@ -48,7 +51,10 @@ def store(request):
 	patient = Patient(first_name=request.POST['fname'],
 		last_name=request.POST['lname'],
 		date_of_birth=request.POST['bday'],
-		phone_no=request.POST['usrtel'])
+		phone_no=request.POST['usrtel'],
+		audiometrist = request.POST['audiometrist'],
+		location = request.POST['location']
+		)
 	patient.save()
 	patient_id = patient.id
 
@@ -65,6 +71,11 @@ def store(request):
 				hearing_aid.save()
 		except:
 			pass
+
+	if request.POST['note']:
+		patient.notes = request.POST['note']
+		patient.save()
+
 	messages.success(request, "Successfully Created")
 	return HttpResponseRedirect(reverse('crm:detail', args=(patient_id,)))
 
