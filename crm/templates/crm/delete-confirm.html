@@ -1,0 +1,10 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+
+<h1>{{ patient.last_name }} {{ patient.first_name }}</h1>
+
+<h1>Potwierdzam usunięcie pacjenta z bazy danych</h1>
+<a href="{% url 'crm:delete' patient.id %}">USUWAM</a>
+
+{% endblock content %}

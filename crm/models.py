@@ -45,18 +45,30 @@ class NewInfo(models.Model):
 
 class Hearing_Aid(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-	ha_name = models.CharField(max_length=100)
+	ha_make = models.CharField(max_length=20)
+	 # eg. Bernafon
+	ha_family = models.CharField(max_length=20)
+	 # eg. WIN
+	ha_model = models.CharField(max_length=20)
+	 # eg. 102
 	purchase_date = models.DateField(null=True, blank=True)
-	ears = ['left', 'right', 'not_specified']
+	ears = ['left', 'right']
 	ear = models.CharField(max_length=14)
+	ha_list = {
+		'Bernafon':{
+			'WIN':['102', '105', '322'],
+			'NEO':['105', '106'],
+			'Nevara':['ITCD', 'ITCP']
+					},
+		'Audioservice':{
+			'IDA':['4', '6']
+						},
+		'Phonak':{
+			'Rodzina1':['model1', 'model2']
+				},
+		'Interton':{
+			'Rodzina1':['model1', 'model2']
+					}}
 
 	def __str__(self):
-		return self.ha_name + ' ' + self.ear
-
-	# use these when js is working in edit.html and nested collection of make, family and model works with radio buttons	
-	# ha_make = models.CharField(max_length=20)
-	#  # eg. Bernafon
-	# ha_family = models.CharField(max_length=20)
-	#  # eg. WIN
-	# ha_model = models.CharField(max_length=20)
-	#  # eg. 322
+		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model + ' ' + self.ear

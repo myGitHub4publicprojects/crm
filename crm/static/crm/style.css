@@ -59,3 +59,21 @@ a.home_link {
 	background-color: #b4bdb4;
 	display: inline-block;
 }
+
+#notes li {
+	list-style: none;
+}
+
+#notes small {
+	margin-left: 2%;
+	color: #5d5dc7;
+}
+
+.ha_select {
+	margin-left: 2%;
+}
+
+#details {
+	padding: 2%;
+	border: solid black 1px;
+}

@@ -2,7 +2,7 @@
 
 {% block content %}
 
-Edycja pacjenta: <strong>{{ patient.last_name }} {{ patient.first_name}}</strong>, data ur: {{ patient.date_of_birth }}, nr tel: {{ patient.phone_no }}
+<h3>{{ patient.last_name }} {{ patient.first_name}}, data ur: {{ patient.date_of_birth }}, nr tel: {{ patient.phone_no }}</h3>
 
 
 
@@ -12,29 +12,64 @@ Edycja pacjenta: <strong>{{ patient.last_name }} {{ patient.first_name}}</strong
 First name: <input type="text" name="fname" value="{{ patient.last_name }}" required><br>
 Last name: <input type="text" name="lname" value="{{ patient.first_name }}" required><br>
 Date of birth: {{ patient.date_of_birth }} zmień datę urodzenia: <input type="date" name="bday" value="{{ patient.date_of_birth }}"><br>
-Telephone: <input type="tel" name="usrtel" value="{{ patient.phone_no }}" required><br>
+Telephone: (jak nie ma to 0 - zero)<input type="tel" name="usrtel" value="{{ patient.phone_no }}" required><br>
 
 New note: <input type="text" name="new_note"><br> 
-Audiometrist: 
+<h4>Protetyk:</h4>
 
 {% for a in patient.audiometrist_list %}
 	<input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a }}"/>
 	<label for="a{{ forloop.counter }}">{{ a }}</label><br/>
 {% endfor %}
 
+{% for ear in ears %}
+<div class="ear_side">
+<h3>Aparat: {{ ear }}</h3>
+	<input type="radio" name="ear" id="ear{{ forloop.counter }}" value="{{ ear }}"/>
+	<label for="ear{{ forloop.counter }}">{{ ear }}</label><br/>
+<ul>
+	{% for make, families in ha_list.items %}
+	<li>{{ make }}</li>
 
-<input type="submit" value="Aktualiuj" />
+	<ul>
+		{% for family, models in families.items %}
+		<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+			<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
+				{% for model in models %}
+				<li><input  name="{{ ear }}_ha" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+				{% endfor %}
+			</ul>
+		</li>
+		{% endfor %}
+	</ul>
+	{% endfor %}
+
+</ul>
+Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
+</div>
+{% endfor %}
+
+
+
+<input type="submit" value="Aktualizuj dane pacjenta" />
 </form>
 
 <br>
 aparat:
 
 <br>
-last notes: <br> 
-<ul>
+<h2>last notes:</h2>
+<ul id="notes">
 {% for note in patient.newinfo_set.all %}
-	<li>{{ note.timestamp }} {{ note.note }} {{ note.audiometrist }}</li>
+	<li>
+	<small>{{ note.timestamp }}, {{ note.audiometrist }}</small><br>
+	{{ note.note }}
+	<hr>
+	</li>
 {% endfor %}
 </ul>
+
+<h3>usuń pacjenta z bazy:</h3>
+<a href="{% url 'crm:deleteconfirm' patient.id %}">USUWAM</a>
 
 {% endblock content %}

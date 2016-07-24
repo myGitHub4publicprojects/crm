@@ -3,7 +3,7 @@
 	add success message after editing patient
 	when editing date of birth is not prepopulated - display it as string, make it not required, if change needed display hidden widget
 
-add delete view, delete confirmation message
+	add delete view, delete confirmation message
 
 	hearing aid should be a separate class with atributes such as: make, model, family, date of sale, last fitting...
 
@@ -12,14 +12,15 @@ add delete view, delete confirmation message
 	product.save(update_fields=['name'])
 
 	add text field to model - for new notes, each note to be saved with its date and time - customer interactions history, and who made the note - new field - audiologist - done as a seperate class with a foreign field
+edit.html - if ear not selected but other ha fields compleated error
 
 in detail view display clearly notes about patient and in second column history of notes in reverse chronological order
 
 just before "create patient" in create.html add radio input - select audiometrist who created this patient
 
-in update template add radio input just next to "update" button to select who made changes, or maby only if a new note is added add date and audiometrist
+	in update template add radio input just next to "update" button to select who made changes, or maby only if a new note is added add date and audiometrist
 
-make template inheritance
+	make template inheritance
 
 next visit date, remider, calendar intergration
 
@@ -31,4 +32,9 @@ add search field
 
 new field on update - date and subject of incoming schaduled appiointment
 
-in create.html change input fields - put desription text inside form fields
+in create.html change input fields - put desription text inside form fields, move "create" button down
+
+
+in edit.html in hearing aid selection make them choose make family and model - now they can send only make
+
+Zdjecia pacjentowpacjento

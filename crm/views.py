@@ -3,7 +3,7 @@ import datetime
 
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 
 from django.http import HttpResponse, HttpResponseRedirect
 from .forms import PatientForm
@@ -19,32 +19,28 @@ def index(request):
 
 def create(request):
 	# upadates database with details collected in edit view form
-	return render(request, 'crm/create.html', {})
+	ha_list = Hearing_Aid.ha_list
+	ears =  Hearing_Aid.ears
+	return render(request, 'crm/create.html', {'ha_list': ha_list, 'ears': ears})
 
 
 def detail(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
-	return render(request, 'crm/detail.html', {'patient': patient})
+	context = {'patient': patient}
+	if patient.hearing_aid_set.filter(ear="left"):
+		left_hearing_aid = patient.hearing_aid_set.filter(ear="left")[0]
+		context['left_hearing_aid'] = left_hearing_aid
+	if patient.hearing_aid_set.filter(ear="right"):
+		right_hearing_aid = patient.hearing_aid_set.filter(ear="right")[0]
+		context['right_hearing_aid'] = right_hearing_aid
+	return render(request, 'crm/detail.html', context)
 
 def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
-	ha_list = {
-		'Bernafon':{
-			'WIN':['102', '105', '322'],
-			'NEO':['105', '106'],
-			'Nevara':['ITCD', 'ITCP']
-					},
-		'Audioservice':{
-			'IDA':['4', '6']
-						},
-		'Phonak':{
-			'Rodzina1':['model1', 'model2']
-				},
-		'Interton':{
-			'Rodzina1':['model1', 'model2']
-					}}
-	return render(request, 'crm/edit.html', {'patient': patient, 'ha_list': ha_list})
+	ha_list = Hearing_Aid.ha_list
+	ears =  Hearing_Aid.ears
+	return render(request, 'crm/edit.html', {'patient': patient, 'ha_list': ha_list, 'ears': ears})
 
 
 def store(request):
@@ -56,25 +52,19 @@ def store(request):
 	patient.save()
 	patient_id = patient.id
 
-	if request.POST['ha_name_left']:
-		ha = Hearing_Aid(patient=patient,
-			ha_name=request.POST['ha_name_left'],
-			ear='left'
-			)
-		ha.save()
-		if request.POST['purchase_date']:
-			ha.purchase_date=request.POST['purchase_date']
-			ha.save()
-
-	if request.POST['ha_name_right']:
-		ha = Hearing_Aid(patient=patient,
-			ha_name=request.POST['ha_name_right'],
-			ear='right'
-			)
-		ha.save()
-		if request.POST['purchase_date']:
-			ha.purchase_date=request.POST['purchase_date']
-			ha.save()
+	for ear in Hearing_Aid.ears:
+		try:
+			request.POST[ear + '_ha']
+			print request.POST[ear + '_ha']
+			ha = request.POST[ear + '_ha']
+			ha_make, ha_family, ha_model = ha.split('_')
+			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=request.POST['ear'])
+			hearing_aid.save()
+			if request.POST[ear + '_purchase_date']:
+				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
+				hearing_aid.save()
+		except:
+			pass
 	messages.success(request, "Successfully Created")
 	return HttpResponseRedirect(reverse('crm:detail', args=(patient_id,)))
 
@@ -110,5 +100,30 @@ def updating(request, patient_id):
 	# print request.POST['level1']
 	# print request.POST['level0']
 
+	for ear in Hearing_Aid.ears:
+		try:
+			request.POST[ear + '_ha']
+			print request.POST[ear + '_ha']
+			ha = request.POST[ear + '_ha']
+			ha_make, ha_family, ha_model = ha.split('_')
+			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=request.POST['ear'])
+			hearing_aid.save()
+			if request.POST[ear + '_purchase_date']:
+				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
+				hearing_aid.save()
+		except:
+			pass
+
 	messages.success(request, "Successfully Updated")
+
 	return HttpResponseRedirect(reverse('crm:detail', args=(patient_id,)))
+
+def deleteconfirm(request, patient_id):
+	patient = get_object_or_404(Patient, pk=patient_id)
+	return render(request, 'crm/delete-confirm.html', {'patient': patient})
+
+def delete_patient(request, patient_id):
+	patient = get_object_or_404(Patient, pk = patient_id)
+	patient.delete()
+	messages.success(request, "Patient %s deleted" % patient.last_name)
+	return redirect('crm:index')

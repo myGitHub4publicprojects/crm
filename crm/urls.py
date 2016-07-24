@@ -8,5 +8,7 @@ urlpatterns = [
 	url(r'^store/$', views.store, name='store'),
 	url(r'^(?P<patient_id>[0-9]+)/$', views.detail, name='detail'),
 	url(r'^(?P<patient_id>[0-9]+)/edit/$', views.edit, name='edit'),
-	url(r'^(?P<patient_id>[0-9]+)/updating/$', views.updating, name='updating')
+	url(r'^(?P<patient_id>[0-9]+)/updating/$', views.updating, name='updating'),
+	url(r'^(?P<patient_id>[0-9]+)/deleteconfirm/$', views.deleteconfirm, name='deleteconfirm'),
+	url(r'^(?P<patient_id>[0-9]+)/delete/$', views.delete_patient, name='delete')
 ]

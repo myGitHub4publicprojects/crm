@@ -19,17 +19,32 @@
 
 <div class="hearing_aid">
 	<h3>Obecne aparaty:</h3>
-		<div class="left">
-		<h4>LEWY:</h4>
-		Make, family and model (eg. Bernafon WIN 102): <input type="text" name="ha_name_left"><br>
-		Date of purchase: <input type="date" name="purchase_date"><br>
+		{% for ear in ears %}
+		<div class={{ ear }}>
+		<h4>{{ ear }}:</h4>
+		<ul>
+			{% for make, families in ha_list.items %}
+			<li>{{ make }}</li>
+
+			<ul>
+				{% for family, models in families.items %}
+				<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+					<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
+						{% for model in models %}
+						<li><input  name="{{ ear }}_ha" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+						{% endfor %}
+					</ul>
+				</li>
+				{% endfor %}
+			</ul>
+			{% endfor %}
+
+		</ul>
+		Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
 		</div>
-		<div class="right">
-		<h4>PRAWY:</h4>
-		Make, family and model (eg. Bernafon WIN 102): <input type="text" name="ha_name_right"><br>
-		Date of purchase: <input type="date" name="purchase_date"><br>
-		</div>
+		{% endfor %}
 </div>
+
 </div>
 
 <input type="submit" value="Dodaj" />

@@ -10,12 +10,7 @@
 
 </ul>
 aparaciki: 
-<ul>
-{%  for ha in patient.hearing_aid_set.all %}
-<li>{{ ha.ha_name }} {{ ha.ear }} {{ purchase_date }}</li>
-
-
-{% endfor %}
-</ul>
+lewy: {{ left_hearing_aid }}<br>
+prawy: {{ right_hearing_aid }}<br>
 
 {% endblock content %}
