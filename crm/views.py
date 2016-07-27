@@ -43,7 +43,15 @@ def edit(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
 	ears =  Hearing_Aid.ears
-	return render(request, 'crm/edit.html', {'patient': patient, 'ha_list': ha_list, 'ears': ears})
+	patient_notes = patient.newinfo_set.order_by('-timestamp')
+	context = {'patient': patient, 'ha_list': ha_list, 'ears': ears, 'patient_notes': patient_notes}
+	if patient.hearing_aid_set.filter(ear="left"):
+		left_hearing_aid = patient.hearing_aid_set.filter(ear="left")[0]
+		context['left_hearing_aid'] = left_hearing_aid
+	if patient.hearing_aid_set.filter(ear="right"):
+		right_hearing_aid = patient.hearing_aid_set.filter(ear="right")[0]
+		context['right_hearing_aid'] = right_hearing_aid
+	return render(request, 'crm/edit.html', context)
 
 
 def store(request):
@@ -86,11 +94,11 @@ def updating(request, patient_id):
 	patient.first_name=request.POST['fname']
 	patient.last_name=request.POST['lname']
 	patient.phone_no=request.POST['usrtel']
-	update_list = ['first_name', 'last_name', 'phone_no']
+	patient.location = request.POST['location']
+	update_list = ['first_name', 'last_name', 'phone_no', 'location']
 	if request.POST['bday']:
 		patient.date_of_birth=request.POST['bday']
 		update_list.append('date_of_birth')
-	
 	patient.save(update_fields=update_list)
 
 	if request.POST['new_note']:

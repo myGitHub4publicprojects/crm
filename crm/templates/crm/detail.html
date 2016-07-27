@@ -5,12 +5,9 @@
 <h1>{{ patient.last_name }} {{ patient.first_name }}</h1> <strong><a href="{% url 'crm:edit' patient.id %}">EDYTUJ</a></strong>
 <ul>
 	<li>Data ur: {{ patient.date_of_birth }}</li>
-	<li>Data wystawienia faktury i wzięcia wycisku: {{ patient.invoice_date.date }}</li>
 	<li>Nr tel: {{ patient.phone_no }}</li>
 
 </ul>
-aparaciki: 
-lewy: {{ left_hearing_aid }}<br>
-prawy: {{ right_hearing_aid }}<br>
+
 
 {% endblock content %}

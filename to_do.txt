@@ -12,19 +12,21 @@
 	product.save(update_fields=['name'])
 
 	add text field to model - for new notes, each note to be saved with its date and time - customer interactions history, and who made the note - new field - audiologist - done as a seperate class with a foreign field
-edit.html - if ear not selected but other ha fields compleated error
+	edit.html - if ear not selected but other ha fields compleated error
 
-in detail view display clearly notes about patient and in second column history of notes in reverse chronological order
+	in detail view display clearly notes about patient and in second column history of notes in reverse chronological order
 
-just before "create patient" in create.html add radio input - select audiometrist who created this patient
+	just before "create patient" in create.html add radio input - select audiometrist who created this patient
 
 	in update template add radio input just next to "update" button to select who made changes, or maby only if a new note is added add date and audiometrist
 
 	make template inheritance
 
 next visit date, remider, calendar intergration
+info czy u nas kupił poprzednie czy nie
+is he waering our aid or is he applying for one
 
-make dynamic ha selection in html, dict with ha already in edit view, use js, for now a temporary solution: ha_name as a Charfield and user types the name
+	make dynamic ha selection in html, dict with ha already in edit view, use js, for now a temporary solution: ha_name as a Charfield and user types the name
 
 index.html - display list of patient ordered by last name...
 index - list of patient as a table, add buttons to order by: name, date etc.

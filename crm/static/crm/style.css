@@ -25,6 +25,10 @@ a.home_link {
 	text-decoration: none;
 }
 
+#details {
+	background-color: #b4bdb4;
+}
+
 #add_patient {
 	font-size: 90%;
 	display: block;
@@ -41,12 +45,20 @@ a.home_link {
 
 
 .hearing_aid {
-	background-color: #cecbcb;
+/*	background-color: #cecbcb;*/
 /*	width: 40%;*/
 /*	margin: 0 auto;
 	display: inline-block;*/
 	padding: 2%;
-	border: solid black 1px;
+/*	border: solid black 1px;*/
+}
+
+.hearing_aid h4 {
+	-webkit-margin-before: 0.03em;
+	text-align: center;
+    padding: 1%;
+    background-color: #ccc2c2;
+
 }
 
 .left, .right {
@@ -54,22 +66,23 @@ a.home_link {
 	overflow: hidden;
 	display: inline-block;
 	margin-left: 5%;
+	padding: 0 2%;
 }
 
 .left {
-	background-color: blue;
+	background-color: #7272ef;
 }
 
 .right {
-	background-color: red;
+	background-color: #ec6d6d;
 }
 
 .patient_info {
 /*	width: 50%;*/
-	background-color: #b4bdb4;
+/*	background-color: #b4bdb4;*/
 /*	display: inline-block;*/
 	padding: 2%;
-	border: solid black 1px;
+/*	border: solid black 1px;*/
 }
 
 #notes li {
@@ -95,5 +108,41 @@ a.home_link {
 	width: 90%;
 	height: 100px;
 	display: block;
-	margin: 0 auto;
+	margin: 2% auto;
+}
+
+.btn {
+	margin: 5%;
+	font-size: 2EM;
+	padding: 2%;
+	background-color: #a79a9a;
+}
+
+.inline_block {
+	display: inline-block;
+}
+
+
+.audiometrist li {
+	display: inline;
+}
+
+.col70 {
+	width: 70%;
+}
+
+.col30 {
+	width: 29%;
+}
+
+.eae {
+	background-color: #eaeaea;
+	vertical-align: top;
+	padding: 0 10px 0 10px;
+	box-sizing: border-box;
+	font-size: 80%;
+}
+
+#zmien {
+	background-color: #ccc2c2;
 }

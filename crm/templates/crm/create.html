@@ -19,7 +19,7 @@
 <div class="hearing_aid">
 		{% for ear in ears %}
 		<div class={{ ear }}>
-		<h4>Obecny aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</h4>
+		<b>Obecny aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</b>
 		<ul>
 			{% for make, families in ha_list.items %}
 			<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
@@ -46,21 +46,24 @@
 
 <textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
 
+<div class="patient_info">
 Lokalizacja:<br>
 {% for location in locations %}
 	<input type="radio" name="location" id="location{{ forloop.counter }}" value="{{ location }}" required/>
 	<label for="location{{ forloop.counter }}">{{ location }}</label><br/>
 {% endfor %}
+</div>
 
+<div class="patient_info">
 Pacjent dodany przez: <br>
 {% for audiometrist in audiometrist_list %}
 	<input type="radio" name="audiometrist" id="audiometrist{{ forloop.counter }}" value="{{ audiometrist }}" required/>
 	<label for="audiometrist{{ forloop.counter }}">{{ audiometrist }}</label><br/>
 {% endfor %}
-
+</div>
 </div>
 
-<input type="submit" value="Dodaj" />
+<input class="btn" type="submit" value="UTWÓRZ PACJENTA" />
 </form>
 
 {% endblock content %}
