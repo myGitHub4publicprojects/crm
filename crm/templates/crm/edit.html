@@ -2,22 +2,26 @@
 
 {% block content %}
 
-<p><b>{{ patient.last_name }} {{ patient.first_name}}</b>
+<p id="top_details"><b>{{ patient.last_name }} {{ patient.first_name}}</b>
 <small>
-, data ur: {{ patient.date_of_birth|date:'d-m-Y' }}, nr tel: {{ patient.phone_no }},
-pacjent utworzony przez {{ patient.audiometrist }} w dniu {{ patient.create_date|date:'d-m-Y H:i' }}
+{{ patient.date_of_birth|date:'d-m-Y' }}, tel: {{ patient.phone_no }},
+pacjent utworzony przez {{ patient.audiometrist }} w dniu {{ patient.create_date|date:'d-m-Y' }}
 </small>
 </p>
+
+<div class="status">{% include "crm/status.html" %}</div>
 
 <div id="details">
 <div class="patient_info">
 <div class="col70 inline_block">
 <form action="{% url 'crm:updating' patient.id %}" method="post" id="edit_patient">
 {% csrf_token %}
+{% include "crm/actions.html" %}
+
 
 Imię: <input type="text" name="fname" value="{{ patient.last_name }}" required><br>
 Nazwisko: <input type="text" name="lname" value="{{ patient.first_name }}" required><br>
-Data ur: {{ patient.date_of_birth|date:'d-m-Y' }} zmień datę urodzenia: <input type="date" name="bday" value="{{ patient.date_of_birth|date:'Y-m-d' }}"><br>
+Data ur: <input type="date" name="bday" value="{{ patient.date_of_birth|date:'Y-m-d' }}"><br>
 Nr tel.: (jak nie ma to 0 - zero)<input type="tel" name="usrtel" value="{{ patient.phone_no }}" required><br>
 Lokalizacja: {{ patient.location }} <small onclick="document.getElementById('location').style.display='block'" id="zmien">ZMIEN</small><br>
 	<ul id="location" style="display:none">
@@ -51,14 +55,16 @@ Lokalizacja: {{ patient.location }} <small onclick="document.getElementById('loc
 				prawy:</b><br>
 				{% if right_hearing_aid %}
 				<small>
-				{{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>kupiony: {{ right_hearing_aid.purchase_date }}
+				{{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>Data zakupu: {{ right_hearing_aid.purchase_date }}<br>
+				{% if not right_hearing_aid.our %}<div class="our"><small>APARAT KUPIONY U KONKURENCJI</small></div>{% endif %}
 				</small>
 				{% endif %}
 			{% else %}
 				lewy:</b><br>
 				{% if left_hearing_aid %}
 				<small>
-				{{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>kupiony: {{ left_hearing_aid.purchase_date }}
+				{{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>Data zakupu: {{ left_hearing_aid.purchase_date }}<br>
+				{% if not left_hearing_aid.our %}<div class="our"><small>APARAT KUPIONY U KONKURENCJI</small></div>{% endif %}
 				</small>
 				{% endif %}
 			{% endif %}
@@ -71,12 +77,12 @@ Lokalizacja: {{ patient.location }} <small onclick="document.getElementById('loc
 			{% for make, families in ha_list.items %}
 			<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
 
-			<ul id={{ ear }}_{{ make }} style="display:none">
+			<ul id='{{ ear }}_{{ make }}' style="display:none">
 				{% for family, models in families.items %}
 				<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-					<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
+					<ul id='{{ ear }}_{{ make }}_{{ family }}' style="display:none">
 						{% for model in models %}
-						<li><input  name="{{ ear }}_ha" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+						<li><input  name="{{ ear }}_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
 						{% endfor %}
 					</ul>
 				</li>
@@ -86,6 +92,7 @@ Lokalizacja: {{ patient.location }} <small onclick="document.getElementById('loc
 
 		</ul>
 		Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
+		Kupiony w innej firmie:<input type="checkbox" name="{{ ear }}_ha_other" value="{{ ear }}_ha_other"><br>
 		</div>
 
 		</div>

@@ -67,6 +67,7 @@ a.home_link {
 	display: inline-block;
 	margin-left: 5%;
 	padding: 0 2%;
+	vertical-align: top;
 }
 
 .left {
@@ -113,7 +114,6 @@ a.home_link {
 
 .btn {
 	margin: 5%;
-	font-size: 2EM;
 	padding: 2%;
 	background-color: #a79a9a;
 }
@@ -145,4 +145,51 @@ a.home_link {
 
 #zmien {
 	background-color: #ccc2c2;
+}
+
+.actions ul li {
+	display: inline-block;
+	background-color: #ccc3c3;
+	padding: 1%;
+}
+
+.actions ul {
+	-webkit-margin-before: 0;
+	-webkit-margin-after: 0.2em;
+}
+
+.show_on_hover {
+	display: none;
+}
+
+
+
+.actions ul li:hover .child{ display:block; }
+
+.our {
+	background-color: red;
+}
+
+#top_details {
+	-webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+    padding-left: 1%;
+}
+
+#NFZ_confirmed {
+	background-color: #cadc5d;
+	padding-left: 1%;
+	font-size: small;
+}
+
+#PCPR_estimate {
+	background-color: green;
+	padding-left: 1%;
+	font-size: small;
+}
+
+#invoice {
+	background-color: blue;
+	padding-left: 1%;
+	font-size: small;
 }

@@ -7,13 +7,17 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from django.http import HttpResponse, HttpResponseRedirect
 from .forms import PatientForm
-from .models import Patient, NewInfo, Hearing_Aid
+from .models import Patient, NewInfo, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
 from django.core.urlresolvers import reverse
+from django.db.models.functions import Lower
 
 
 def index(request):
-	patient_list = Patient.objects.all()
-	# order them by last name?
+	patient_list = Patient.objects.all().order_by(Lower('last_name'))
+	# Lower - makes ordering case insensitive
+	query = request.GET.get('q')
+	if query:
+		patient_list = patient_list.filter(last_name__icontains=query)
 	context = {'patient_list': patient_list}
 	return render(request, 'crm/patient_list.html', context)
 
@@ -29,13 +33,36 @@ def create(request):
 
 def detail(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
-	context = {'patient': patient}
-	if patient.hearing_aid_set.filter(ear="left"):
-		left_hearing_aid = patient.hearing_aid_set.filter(ear="left")[0]
-		context['left_hearing_aid'] = left_hearing_aid
-	if patient.hearing_aid_set.filter(ear="right"):
-		right_hearing_aid = patient.hearing_aid_set.filter(ear="right")[0]
-		context['right_hearing_aid'] = right_hearing_aid
+	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
+	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
+	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
+	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
+		left_NFZ_confirmed = None 
+	right_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='right').last()
+	if right_NFZ_confirmed and right_NFZ_confirmed.in_progress == False:
+		right_NFZ_confirmed = None	
+	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
+	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
+		left_PCPR_estimate = None		
+	right_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='right').last()
+	if right_PCPR_estimate and right_PCPR_estimate.in_progress == False:
+		right_PCPR_estimate = None
+	left_invoice = HA_Invoice.objects.filter(patient=patient, ear='left').last()
+	if left_invoice and left_invoice.in_progress == False:
+		left_invoice = None
+	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
+	if right_invoice and right_invoice.in_progress == False:
+		right_invoice = None
+	context = {'patient': patient,
+				'left_NFZ_confirmed': left_NFZ_confirmed,
+				'right_NFZ_confirmed': right_NFZ_confirmed,
+				'left_hearing_aid': left_hearing_aid,
+				'right_hearing_aid': right_hearing_aid,
+				'left_PCPR_estimate': left_PCPR_estimate,
+				'right_PCPR_estimate': right_PCPR_estimate,
+				'left_invoice': left_invoice,
+				'right_invoice': right_invoice}	
+	
 	return render(request, 'crm/detail.html', context)
 
 def edit(request, patient_id):
@@ -44,13 +71,40 @@ def edit(request, patient_id):
 	ha_list = Hearing_Aid.ha_list
 	ears =  Hearing_Aid.ears
 	patient_notes = patient.newinfo_set.order_by('-timestamp')
-	context = {'patient': patient, 'ha_list': ha_list, 'ears': ears, 'patient_notes': patient_notes}
-	if patient.hearing_aid_set.filter(ear="left"):
-		left_hearing_aid = patient.hearing_aid_set.filter(ear="left")[0]
-		context['left_hearing_aid'] = left_hearing_aid
-	if patient.hearing_aid_set.filter(ear="right"):
-		right_hearing_aid = patient.hearing_aid_set.filter(ear="right")[0]
-		context['right_hearing_aid'] = right_hearing_aid
+	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
+	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
+	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
+	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
+		left_NFZ_confirmed = None 
+	right_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='right').last()
+	if right_NFZ_confirmed and right_NFZ_confirmed.in_progress == False:
+		right_NFZ_confirmed = None	
+	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
+	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
+		left_PCPR_estimate = None		
+	right_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='right').last()
+	if right_PCPR_estimate and right_PCPR_estimate.in_progress == False:
+		right_PCPR_estimate = None
+	left_invoice = HA_Invoice.objects.filter(patient=patient, ear='left').last()
+	if left_invoice and left_invoice.in_progress == False:
+		left_invoice = None
+	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
+	if right_invoice and right_invoice.in_progress == False:
+		right_invoice = None
+	context = 	{'patient': patient,
+				'ha_list': ha_list,
+				'ears': ears,
+				'patient_notes': patient_notes,
+				'right_hearing_aid': right_hearing_aid,
+				'left_hearing_aid': left_hearing_aid,
+				'left_NFZ_confirmed': left_NFZ_confirmed,
+				'right_NFZ_confirmed': right_NFZ_confirmed,
+				'left_PCPR_estimate': left_PCPR_estimate,
+				'right_PCPR_estimate': right_PCPR_estimate,
+				'time_now': datetime.datetime.now(),
+				'left_invoice': left_invoice,
+				'right_invoice': right_invoice}
+
 	return render(request, 'crm/edit.html', context)
 
 
@@ -72,7 +126,7 @@ def store(request):
 			print request.POST[ear + '_ha']
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
-			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=request.POST['ear'])
+			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
 			hearing_aid.save()
 			if request.POST[ear + '_purchase_date']:
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
@@ -80,15 +134,43 @@ def store(request):
 		except:
 			pass
 
+
+	for ear in Hearing_Aid.ears:
+		try:
+			request.POST[ear + '_NFZ_confirmed_date']
+			nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST[ear + '_NFZ_confirmed_date'], side=ear)
+			nfz_confirmed.save()
+		except:
+			pass
+
+	for ear in Hearing_Aid.ears:
+		try:
+			request.POST[ear + '_ha_estimate']
+			ha = request.POST[ear + '_ha_estimate']
+			ha_make, ha_family, ha_model = ha.split('_')
+			pcpr_estimate = PCPR_Estimate(
+				patient=patient,
+				ha_make=ha_make,
+				ha_family=ha_family,
+				ha_model=ha_model,
+				ear=ear,
+				date=request.POST[ear + '_pcpr_etimate_date'])
+			pcpr_estimate.save()
+		except:
+			pass
+
+
+
 	if request.POST['note']:
 		patient.notes = request.POST['note']
 		patient.save()
+
 
 	messages.success(request, "Successfully Created")
 	return HttpResponseRedirect(reverse('crm:detail', args=(patient_id,)))
 
 def updating(request, patient_id):
-	# for updating patients already in database
+	# for updating egzisting patients in database
 
 	patient = Patient.objects.get(pk=patient_id)
 	patient.first_name=request.POST['fname']
@@ -118,20 +200,102 @@ def updating(request, patient_id):
 	# print request.POST['level2']
 	# print request.POST['level1']
 	# print request.POST['level0']
+	
+	print 'data:'
+	if request.POST.get('left_ha', None):
+		print request.POST['left_ha']
+
+	
 
 	for ear in Hearing_Aid.ears:
 		try:
 			request.POST[ear + '_ha']
-			print request.POST[ear + '_ha']
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
-			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=request.POST['ear'])
+			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
 			hearing_aid.save()
-			if request.POST[ear + '_purchase_date']:
+			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
+			# notofies that patient has ha bought in other shop
+			if request.POST.get(ear + '_ha_other'):
+				hearing_aid.our = False
+				hearing_aid.save()
+		except:
+			print 'cos nie poszlo'
+			pass
+
+
+	for ear in Hearing_Aid.ears:
+		try:
+			request.POST['NFZ_' + ear]
+			if not NFZ_Confirmed.objects.filter(patient=patient, side=ear, in_progress=True):
+				nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST['NFZ_' + ear], side=ear)
+			else:
+				current = NFZ_Confirmed.objects.get(patient=patient, side=ear, in_progress=True)
+				current.date = request.POST['NFZ_' + ear]
+				nfz_confirmed = current
+			nfz_confirmed.save()
 		except:
 			pass
+
+	for ear in Hearing_Aid.ears:
+			try:
+				request.POST[ear + '_pcpr_ha']
+				ha = request.POST[ear + '_pcpr_ha']
+				ha_make, ha_family, ha_model = ha.split('_')
+				pcpr_estimate = PCPR_Estimate(
+					patient=patient,
+					ha_make=ha_make,
+					ha_family=ha_family,
+					ha_model=ha_model,
+					ear=ear,
+					date=request.POST[ear + '_PCPR_date'])
+				pcpr_estimate.save()
+				print pcpr_estimate.ear
+			except:
+				pass
+
+	for ear in Hearing_Aid.ears:
+
+		# invoice procedure
+		if request.POST.get(ear + '_invoice_ha'):
+			ha = request.POST[ear + '_invoice_ha']
+			ha_make, ha_family, ha_model = ha.split('_')
+			invoice = HA_Invoice(
+				patient=patient,
+				ha_make=ha_make,
+				ha_family=ha_family,
+				ha_model=ha_model,
+				ear=ear,
+				date=request.POST[ear + '_invoice_date'])
+			invoice.save()
+
+		# collection procedure
+		if request.POST.get(ear + '_collection_confirm'):
+			print ear + '_collection_confirm'
+			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
+			ha = Hearing_Aid(
+				patient=patient,
+				ha_make = invoiced_ha.ha_make,
+				ha_family = invoiced_ha.ha_family,
+				ha_model = invoiced_ha.ha_model,
+				purchase_date = request.POST[ear + '_collection_date'],
+				ear=ear)
+			ha.save()
+
+			invoice = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
+			invoice.in_progress = False
+			invoice.save()
+			pcpr_estimate = PCPR_Estimate.objects.filter(patient=patient, ear=ear).last()
+			pcpr_estimate.in_progress = False
+			pcpr_estimate.save()
+			nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, side=ear).last()
+			nfz_confirmed.in_progress = False
+			nfz_confirmed.save()
+
+			
+
 
 	messages.success(request, "Successfully Updated")
 

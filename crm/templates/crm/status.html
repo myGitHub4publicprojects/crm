@@ -1,0 +1,43 @@
+{% if left_NFZ_confirmed or right_NFZ_confirmed %}
+	<div id="NFZ_confirmed">
+	Potwierdzone wnioski NFZ:
+		{% if left_NFZ_confirmed %}Lewy: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}, {% endif %}
+		{% if right_NFZ_confirmed %}Prawy: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}{% endif %}
+	</div>
+{% endif %}
+
+{% if left_PCPR_estimate or right_PCPR_estimate %}
+	<div id="PCPR_estimate">
+	Kosztorys:
+		{% if left_PCPR_estimate %}Lewy: 
+			{{ left_PCPR_estimate.ha_make }}, 
+			{{ left_PCPR_estimate.ha_family }}, 
+			{{ left_PCPR_estimate.ha_model }}, 
+			wystawiony: {{ left_PCPR_estimate.date }}, 
+		{% endif %}
+		{% if right_PCPR_estimate %}Prawy: 
+			{{ right_PCPR_estimate.ha_make }}, 
+			{{ right_PCPR_estimate.ha_family }}, 
+			{{ right_PCPR_estimate.ha_model }}, 
+			wystawiony: {{ right_PCPR_estimate.date }}
+		{% endif %}
+	</div>
+{% endif %}
+
+{% if left_invoice or right_invoice %}
+	<div id="invoice">
+	Faktura:
+		{% if left_invoice %}Lewy: 
+			{{ left_invoice.ha_make }}, 
+			{{ left_invoice.ha_family }}, 
+			{{ left_invoice.ha_model }}, 
+			wystawiony: {{ left_invoice.date }}, 
+		{% endif %}
+		{% if right_invoice %}Prawy: 
+			{{ right_invoice.ha_make }}, 
+			{{ right_invoice.ha_family }}, 
+			{{ right_invoice.ha_model }}, 
+			wystawiony: {{ right_invoice.date }}
+		{% endif %}
+	</div>
+{% endif %}

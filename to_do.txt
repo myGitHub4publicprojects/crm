@@ -22,21 +22,43 @@
 
 	make template inheritance
 
-next visit date, remider, calendar intergration
-info czy u nas kupił poprzednie czy nie
-is he waering our aid or is he applying for one
+	edit.html odboir, checkbox to select that ha is collected and choose date
+	updating view - when ha collected set HA_Invoice as Hearing_Aid, 
+		right_collction_date as purchase_date
+		set last NFZ_Confirmed, PCPR_Estimate, HA_Invoice in_progres as False
+		when updating nfz, estimate or invoice make sure to set the prevoius in_progres as false, or:
+			remove from filtering in_progres = true, eg.: right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right', in_progress=True).last() and do it like this:
+				right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
+				if right_invoice.in_progres == False:
+					right_invoice = None
+
+	is he waering our aid or is he applying for one
 
 	make dynamic ha selection in html, dict with ha already in edit view, use js, for now a temporary solution: ha_name as a Charfield and user types the name
+ustaw parametr our danego ha - jesli u kogos innego to false, pokaz kolorem na edit.html czy u nas kupiony czy nie
+ha_list - make an inclusive list of ha
+dodawanie dwoch faktor - blad
 
 index.html - display list of patient ordered by last name...
 index - list of patient as a table, add buttons to order by: name, date etc.
 add search field
+make it possible to add ha other than from the list
 
 new field on update - date and subject of incoming schaduled appiointment
+chronos 9 models not showing up
+phonak models not showing up
+add functionality of importing data from Noach
+display audiograms
 
-in create.html change input fields - put desription text inside form fields, move "create" button down
+	when selecting current ha - make it possible to add "other" and type the ha in
+
+	in create.html change input fields - put desription text inside form fields, move "create" button down
 
 
-in edit.html in hearing aid selection make them choose make family and model - now they can send only make
+	in edit.html in hearing aid selection make them choose make family and model - now they can send only make
 
 Zdjecia pacjentowpacjento
+next visit date, remider, calendar intergration
+
+documentation:
+	when collecting ha and ha invoice is not set first add the invoice

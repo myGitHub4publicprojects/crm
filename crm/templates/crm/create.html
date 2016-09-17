@@ -10,11 +10,69 @@
 
 <div id='details'>
 <div class="patient_info">
+
+
+
+
+
+
+
+<div class="actions">
+<ul>
+	<li onclick="document.getElementById('wnioski').style.display='block'">wnioski</li>
+	<div id='wnioski' style="display:none">
+		{% for ear in ears %}
+		<div class={{ ear }}>
+			{{ ear }} aparat:<br>
+			data przyniesienia wniosków: <input type="date" name="{{ ear }}_NFZ_confirmed_date"><br>
+		</div>
+		{% endfor %}
+	</div>
+
+	<li onclick="document.getElementById('kosztorys').style.display='block'">kosztorys</li>
+	<div id='kosztorys' style="display:none">
+		<div class="hearing_aid">
+				{% for ear in ears %}
+				<div class={{ ear }}>
+				<b>Aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</b>
+				<ul>
+					{% for make, families in ha_list.items %}
+					<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
+
+					<ul id={{ ear }}_{{ make }} style="display:none">
+						{% for family, models in families.items %}
+						<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+							<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
+								{% for model in models %}
+								<li><input  name="{{ ear }}_ha_estimate" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+								{% endfor %}
+							</ul>
+						</li>
+						{% endfor %}
+					</ul>
+					{% endfor %}
+
+				</ul>
+				Data wystawienia kosztorysu:<input type="date" name="{{ ear }}_pcpr_etimate_date"><br>
+				</div>
+				{% endfor %}
+		</div>
+	</div>
+</ul>
+</div>
+
+
+
+
+
+
+
 	<input type="text" name="fname" placeholder="Imię" required>
 	<input type="text" name="lname" placeholder="Nazwisko" required><br>
 	Data ur:<input type="date" name="bday" required><br>
 	nr telefonu:<input type="tel" name="usrtel" placeholder="jak nie ma to zero" required><br>
 </div>
+
 
 <div class="hearing_aid">
 		{% for ear in ears %}
@@ -42,7 +100,6 @@
 		</div>
 		{% endfor %}
 </div>
-<!-- <input class="note" type="text" name="note" placeholder="notatka o paciencie"><br> -->
 
 <textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
 

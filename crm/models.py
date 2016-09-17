@@ -3,6 +3,7 @@ import datetime
 
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
+from .ha_list import ha_list
 
 from django.db import models
 
@@ -13,10 +14,10 @@ class Patient(models.Model):
 	locations = ["Poznan", "Rakoniewice", "Wolsztyn", "Puszczykowo", "Mosina", "Chodziez", "Trzcianka"]
 	location = models.CharField(max_length=120)
 	phone_no = models.IntegerField(null=True, blank=True)
-	# nfz_confirmed = models.DateTimeField(null=True, blank=True)
-	# # data przyniesienia potwierdzonych wnioskow NFZ i wystawienia kosztorysu
+
 	invoice_date = models.DateTimeField(null=True, blank=True)
-	# # data wystawienia faktury i wziecia wyciskow
+	# data wystawienia faktury i wziecia wyciskow
+
 	# collection_date = models.DateTimeField(null=True, blank=True)
 	# # data odbioru
 	# final_cost = models.IntegerField()
@@ -57,21 +58,37 @@ class Hearing_Aid(models.Model):
 	purchase_date = models.DateField(null=True, blank=True)
 	ears = ['left', 'right']
 	ear = models.CharField(max_length=14)
-	ha_list = {
-		'Bernafon':{
-			'WIN':['102', '105', '322'],
-			'NEO':['105', '106'],
-			'Nevara':['ITCD', 'ITCP']
-					},
-		'Audioservice':{
-			'IDA':['4', '6']
-						},
-		'Phonak':{
-			'Rodzina1':['model1', 'model2']
-				},
-		'Interton':{
-			'Rodzina1':['model1', 'model2']
-					}}
+	our = models.BooleanField(default=True)
+	# kupiony u nas
+	ha_list = ha_list
 
 	def __str__(self):
 		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model + ' ' + self.ear
+
+
+# class Estimated_Hearing_Aid(Hearing_Aid):
+# 	nfz_confirmed = models.DateTimeField(null=True, blank=True)
+# 	# data przyniesienia potwierdzonych wnioskow NFZ i wystawienia kosztorysu
+# 	estimated_ha = 
+# 	# aparat podany kosztorysie
+
+class NFZ_Confirmed(models.Model):
+	# potwierdzone przez NFZ wnioski o aparaty
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	date = models.DateField()
+	sides = ['left', 'right']
+	side = models.CharField(max_length=5)
+	in_progress = models.BooleanField(default=True)
+	# zmien na FALSE przy odbiorze aparatu
+
+class PCPR_Estimate(Hearing_Aid):
+	# kosztorys do PCPR
+	date = models.DateField()
+	in_progress = models.BooleanField(default=True)
+	# zmien na FALSE przy odbiorze aparatu
+
+class HA_Invoice(Hearing_Aid):
+	# faktura na aparat
+	date = models.DateField()
+	in_progress = models.BooleanField(default=True)
+	# zmien na FALSE przy odbiorze aparatu
