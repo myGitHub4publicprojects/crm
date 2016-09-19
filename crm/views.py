@@ -21,6 +21,30 @@ def index(request):
 	context = {'patient_list': patient_list}
 	return render(request, 'crm/patient_list.html', context)
 
+def advancedsearch(request):
+	patient_list = Patient.objects.all().order_by(Lower('last_name'))
+	lname = request.GET.get('lname')
+	if lname:
+		patient_list = patient_list.filter(last_name__icontains=lname)
+	fname = request.GET.get('fname')
+	if fname:
+		patient_list = patient_list.filter(first_name__icontains=fname)
+	loc = request.GET.get('loc')
+	if loc:
+		patient_list = patient_list.filter(location=loc)
+
+	hearing_aids = Hearing_Aid.objects.all()
+	ha_make = request.GET.get('ha_make')
+	if ha_make:
+		hearing_aids = hearing_aids.filter(ha_make=ha_make)	
+		patients_with_ha = [i.patient for i in hearing_aids]
+		patient_list = list(set(patient_list).intersection(patients_with_ha))
+		# patient_list = [i for i in patient_list if i in patients_with_ha]
+	locations = Patient.locations
+	ha_list = Hearing_Aid.ha_list
+	context = {'patient_list': patient_list, 'locations': locations, 'ha_list': ha_list}
+	return render(request, 'crm/advanced_search.html', context)
+
 def create(request):
 	# upadates database with details collected in edit view form
 	ha_list = Hearing_Aid.ha_list

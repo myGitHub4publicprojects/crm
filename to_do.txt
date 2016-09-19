@@ -38,17 +38,20 @@
 ustaw parametr our danego ha - jesli u kogos innego to false, pokaz kolorem na edit.html czy u nas kupiony czy nie
 ha_list - make an inclusive list of ha
 dodawanie dwoch faktor - blad
+advanced_search - ha serach searches also in prevous hearing aids
 
-index.html - display list of patient ordered by last name...
+	index.html - display list of patient ordered by last name...
+index - pagination - 50 per page
 index - list of patient as a table, add buttons to order by: name, date etc.
-add search field
-make it possible to add ha other than from the list
+	add search field
+	make it possible to add ha other than from the list
 
 new field on update - date and subject of incoming schaduled appiointment
 chronos 9 models not showing up
 phonak models not showing up
 add functionality of importing data from Noach
 display audiograms
+
 
 	when selecting current ha - make it possible to add "other" and type the ha in
 

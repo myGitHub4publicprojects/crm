@@ -5,6 +5,7 @@
 	<input type="search" name="q" placeholder="nazwisko">
 	<input type="submit" value="Szukaj">
 </form>
+<a href="{% url 'crm:advanced_search' %}">wyszukiwanie zaawansowane</a>
 <h2>Lista pacjentów:</h2>
 {% if patient_list %}
 	<ul>

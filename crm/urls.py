@@ -4,6 +4,7 @@ from . import views
 app_name = 'crm'
 urlpatterns = [
 	url(r'^$', views.index, name='index'),
+	url(r'^advanced_search/$', views.advancedsearch, name='advanced_search'),
 	url(r'^create/$', views.create, name='create'),
 	url(r'^store/$', views.store, name='store'),
 	url(r'^(?P<patient_id>[0-9]+)/$', views.detail, name='detail'),
