@@ -33,10 +33,22 @@ def advancedsearch(request):
 	if loc:
 		patient_list = patient_list.filter(location=loc)
 
+	
 	hearing_aids = Hearing_Aid.objects.all()
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
-		hearing_aids = hearing_aids.filter(ha_make=ha_make)	
+		hearing_aids = hearing_aids.filter(ha_make=ha_make)
+	ha_make_family_model = request.GET.get('ha_make_family_model')
+	if ha_make_family_model:
+		ha_make, ha_family, ha_model = ha_make_family_model.split('_')
+		hearing_aids = hearing_aids.filter(ha_make=ha_make, ha_family=ha_family, ha_model=ha_model)
+
+
+	ha_purchase_start = request.GET.get('ha_purchase_start')
+	ha_purchase_end = request.GET.get('ha_purchase_end')
+
+	#the following code has to be at the end of the block of this view as it changes patient_list into a list thus filtering is not supported
+	if ha_make or ha_make_family_model:
 		patients_with_ha = [i.patient for i in hearing_aids]
 		patient_list = list(set(patient_list).intersection(patients_with_ha))
 		# patient_list = [i for i in patient_list if i in patients_with_ha]

@@ -5,12 +5,32 @@ Wyszukiwanie zaawansowane:
 <form method="GET" action="">
 	<input type="search" name="lname" placeholder="nazwisko"><br>
 	<input type="search" name="fname" placeholder="imie"><br>
+	Lokalizacja:<br>
 	{% for i in locations %}
 	<input  name="loc" type="radio" value='{{ i }}' /><label for={{ i }}>{{ i }}</label><br>
 	{% endfor %}
+	Wybierz markę aktualnie noszonego aparatu:<br>
 	{% for make, families in ha_list.items %}
-	<input  name="ha_make" type="radio" value='{{ make }}' /><label for={{ make }}>{{ make }}</label>
+	<input  name="ha_make" type="radio" value='{{ make }}' /><label for={{ make }}>{{ make }}</label><br>
 	{% endfor %}
+	<div onclick="document.getElementById('makes').style.display='block'"><span style="background-color:pink;">Kliknij aby wybrać markę, rodzinę i model aktualnie noszonego aparatu<span></div>
+	<ul id="makes" style="display:none">
+		{% for make, families in ha_list.items %}
+				<li onclick="document.getElementById('left_pcpr_{{ make }}').style.display='block'">{{ make }}</li>
+
+				<ul id=left_pcpr_{{ make }} style="display:none">
+					{% for family, models in families.items %}
+					<li onclick="document.getElementById('left_pcpr_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+						<ul id='left_pcpr_{{ make }}_{{ family }}' style="display:none">
+							{% for model in models %}
+							<li><input  name="ha_make_family_model" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+							{% endfor %}
+						</ul>
+					</li>
+					{% endfor %}
+				</ul>
+		{% endfor %}
+	</ul>
 
 	<!-- <input type="search" name="ha" placeholder="aparat słuchowy"><br>
 	<input type="search" name="bdate" placeholder="data urodzenia"><br>
