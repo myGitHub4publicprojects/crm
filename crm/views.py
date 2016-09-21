@@ -10,6 +10,7 @@ from .forms import PatientForm
 from .models import Patient, NewInfo, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
+from django.db.models import Q
 
 
 def index(request):
@@ -37,11 +38,35 @@ def advancedsearch(request):
 	hearing_aids = Hearing_Aid.objects.all()
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
-		hearing_aids = hearing_aids.filter(ha_make=ha_make)
+		hearing_aids_list = []
+		for patient in patient_list:
+			current_left = hearing_aids.filter(patient=patient, ear="left").last()
+			if current_left and current_left.ha_make == ha_make:
+				hearing_aids_list.append(current_left)
+				print patient, current_left
+			current_right = hearing_aids.filter(patient=patient, ear="right").last()
+			if current_right and current_right.ha_make == ha_make:
+				hearing_aids_list.append(current_right)
+			# if current_right: hearing_aids_list.append(current_right)
+				print patient, current_right
+	
+
+		
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
 		ha_make, ha_family, ha_model = ha_make_family_model.split('_')
-		hearing_aids = hearing_aids.filter(ha_make=ha_make, ha_family=ha_family, ha_model=ha_model)
+		hearing_aids_list = []
+		for patient in patient_list:
+			current_left = hearing_aids.filter(patient=patient, ear="left").last()
+			if current_left and current_left.ha_make == ha_make and current_left.ha_family == ha_family and current_left.ha_model == ha_model:
+				hearing_aids_list.append(current_left)
+				print patient, current_left
+			current_right = hearing_aids.filter(patient=patient, ear="right").last()
+			if current_right and current_right.ha_make == ha_make and current_right.ha_family == ha_family and current_right.ha_model == ha_model:
+				hearing_aids_list.append(current_right)
+
+
+		# hearing_aids = hearing_aids.filter(ha_make=ha_make, ha_family=ha_family, ha_model=ha_model)
 
 
 	ha_purchase_start = request.GET.get('ha_purchase_start')
@@ -49,7 +74,7 @@ def advancedsearch(request):
 
 	#the following code has to be at the end of the block of this view as it changes patient_list into a list thus filtering is not supported
 	if ha_make or ha_make_family_model:
-		patients_with_ha = [i.patient for i in hearing_aids]
+		patients_with_ha = [i.patient for i in hearing_aids_list]
 		patient_list = list(set(patient_list).intersection(patients_with_ha))
 		# patient_list = [i for i in patient_list if i in patients_with_ha]
 	locations = Patient.locations
@@ -108,6 +133,7 @@ def edit(request, patient_id):
 	ears =  Hearing_Aid.ears
 	patient_notes = patient.newinfo_set.order_by('-timestamp')
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
+	print 'right: ', patient.hearing_aid_set.filter(ear="right")
 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
 	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
 	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
