@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 import datetime
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
@@ -14,12 +14,30 @@ from django.db.models import Q
 
 
 def index(request):
-	patient_list = Patient.objects.all().order_by(Lower('last_name'))
+	#x = Lower('last_name')
+	order_by = request.GET.get('order_by','last_name')
+	if order_by == 'last_name' or order_by == 'first_name':
+		patient_list = Patient.objects.all().order_by(Lower(order_by))
+	else:
+		patient_list = Patient.objects.all().order_by(order_by)
 	# Lower - makes ordering case insensitive
 	query = request.GET.get('q')
 	if query:
 		patient_list = patient_list.filter(last_name__icontains=query)
-	context = {'patient_list': patient_list}
+
+	paginator = Paginator(patient_list, 10) # Show X patients per page
+
+	page = request.GET.get('page')
+	try:
+		patients = paginator.page(page)
+	except PageNotAnInteger:
+		# If page is not an integer, deliver first page.
+		patients = paginator.page(1)
+	except EmptyPage:
+		# If page is out of range (e.g. 9999), deliver last page of results.
+		patients = paginator.page(paginator.num_pages)
+
+	context = {'patients': patients}
 	return render(request, 'crm/patient_list.html', context)
 
 def advancedsearch(request):
@@ -36,47 +54,40 @@ def advancedsearch(request):
 
 	
 	hearing_aids = Hearing_Aid.objects.all()
+	hearing_aids_list = Hearing_Aid.objects.all()
+	current_HAs = []
+	#only current left and right ha for each patient
+	for patient in patient_list:
+		l = patient.hearing_aid_set.filter(ear='left').last()
+		if l: current_HAs.append(l)
+		r = patient.hearing_aid_set.filter(ear='right').last()
+		if r: current_HAs.append(r)
+
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
-		hearing_aids_list = []
-		for patient in patient_list:
-			current_left = hearing_aids.filter(patient=patient, ear="left").last()
-			if current_left and current_left.ha_make == ha_make:
-				hearing_aids_list.append(current_left)
-				print patient, current_left
-			current_right = hearing_aids.filter(patient=patient, ear="right").last()
-			if current_right and current_right.ha_make == ha_make:
-				hearing_aids_list.append(current_right)
-			# if current_right: hearing_aids_list.append(current_right)
-				print patient, current_right
-	
-
+		for ha in current_HAs[:]:
+			if ha.ha_make != ha_make:
+				current_HAs.remove(ha)
 		
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
 		ha_make, ha_family, ha_model = ha_make_family_model.split('_')
-		hearing_aids_list = []
-		for patient in patient_list:
-			current_left = hearing_aids.filter(patient=patient, ear="left").last()
-			if current_left and current_left.ha_make == ha_make and current_left.ha_family == ha_family and current_left.ha_model == ha_model:
-				hearing_aids_list.append(current_left)
-				print patient, current_left
-			current_right = hearing_aids.filter(patient=patient, ear="right").last()
-			if current_right and current_right.ha_make == ha_make and current_right.ha_family == ha_family and current_right.ha_model == ha_model:
-				hearing_aids_list.append(current_right)
+		for ha in current_HAs[:]:
+			if ha.ha_make != ha_make or ha.ha_family != ha_family or ha.ha_model != ha_model:
+				current_HAs.remove(ha)
+	
+	if request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
+		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
+		ha_purchase_end = request.GET.get('e_purch_date') or str(datetime.datetime.today().date())
+		for ha in current_HAs[:]:
+			if str(ha.purchase_date) < ha_purchase_start or str(ha.purchase_date) > ha_purchase_end:
+				current_HAs.remove(ha)
 
-
-		# hearing_aids = hearing_aids.filter(ha_make=ha_make, ha_family=ha_family, ha_model=ha_model)
-
-
-	ha_purchase_start = request.GET.get('ha_purchase_start')
-	ha_purchase_end = request.GET.get('ha_purchase_end')
-
-	#the following code has to be at the end of the block of this view as it changes patient_list into a list thus filtering is not supported
-	if ha_make or ha_make_family_model:
-		patients_with_ha = [i.patient for i in hearing_aids_list]
-		patient_list = list(set(patient_list).intersection(patients_with_ha))
-		# patient_list = [i for i in patient_list if i in patients_with_ha]
+	if ha_make or ha_make_family_model or request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
+		patient_list = [i.patient for i in current_HAs]
+	else: patient_list
+	# patients_with_ha = [i.patient for i in current_HAs]
+	# patient_list = list(set(patient_list).intersection(patients_with_ha))
 	locations = Patient.locations
 	ha_list = Hearing_Aid.ha_list
 	context = {'patient_list': patient_list, 'locations': locations, 'ha_list': ha_list}

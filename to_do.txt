@@ -35,14 +35,14 @@
 	is he waering our aid or is he applying for one
 
 	make dynamic ha selection in html, dict with ha already in edit view, use js, for now a temporary solution: ha_name as a Charfield and user types the name
-ustaw parametr our danego ha - jesli u kogos innego to false, pokaz kolorem na edit.html czy u nas kupiony czy nie
-ha_list - make an inclusive list of ha
+	ustaw parametr our danego ha - jesli u kogos innego to false, pokaz kolorem na edit.html czy u nas kupiony czy nie
+	ha_list - make an inclusive list of ha
 dodawanie dwoch faktor - blad
 advanced_search - ha serach searches also in prevous hearing aids
 
 	index.html - display list of patient ordered by last name...
-index - pagination - 50 per page
-index - list of patient as a table, add buttons to order by: name, date etc.
+	home page - pagination
+	home page - sortable table headers
 	add search field
 	make it possible to add ha other than from the list
 
@@ -60,7 +60,7 @@ display audiograms
 
 	in edit.html in hearing aid selection make them choose make family and model - now they can send only make
 
-Zdjecia pacjentowpacjento
+photos of patients
 next visit date, remider, calendar intergration
 
 documentation:

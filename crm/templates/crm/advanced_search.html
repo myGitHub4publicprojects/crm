@@ -4,15 +4,19 @@
 Wyszukiwanie zaawansowane:
 <form method="GET" action="">
 	<input type="search" name="lname" placeholder="nazwisko"><br>
+	<hr>
 	<input type="search" name="fname" placeholder="imie"><br>
+	<hr>
 	Lokalizacja:<br>
 	{% for i in locations %}
 	<input  name="loc" type="radio" value='{{ i }}' /><label for={{ i }}>{{ i }}</label><br>
 	{% endfor %}
+	<hr>
 	Wybierz markę aktualnie noszonego aparatu:<br>
 	{% for make, families in ha_list.items %}
 	<input  name="ha_make" type="radio" value='{{ make }}' /><label for={{ make }}>{{ make }}</label><br>
 	{% endfor %}
+	<hr>
 	<div onclick="document.getElementById('makes').style.display='block'"><span style="background-color:pink;">Kliknij aby wybrać markę, rodzinę i model aktualnie noszonego aparatu<span></div>
 	<ul id="makes" style="display:none">
 		{% for make, families in ha_list.items %}
@@ -31,7 +35,12 @@ Wyszukiwanie zaawansowane:
 				</ul>
 		{% endfor %}
 	</ul>
+	<hr>
 
+	Data zakupu aktualnego aparatu po: <input type="date" name="s_purch_date"><br>
+	<hr>
+	Data zakupu aktualnego aparatu przed: <input type="date" name="e_purch_date"><br>
+	<hr>
 	<!-- <input type="search" name="ha" placeholder="aparat słuchowy"><br>
 	<input type="search" name="bdate" placeholder="data urodzenia"><br>
 	<input type="search" name="adddate" placeholder="data dodania pacjenta"><br> -->

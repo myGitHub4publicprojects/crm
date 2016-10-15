@@ -7,14 +7,42 @@
 </form>
 <a href="{% url 'crm:advanced_search' %}">wyszukiwanie zaawansowane</a>
 <h2>Lista pacjentów:</h2>
-{% if patient_list %}
-	<ul>
-	{% for patient in patient_list %}
-		<li><a href="{% url 'crm:edit' patient.id %}">{{ patient.last_name }} {{ patient.first_name }} {{ patient.date_of_birth }}</a>
-		</li>
-	{% endfor %}
-	</ul>
 
+{% if patients %}
+<table>
+	<tr>
+		<th><a href="?order_by=last_name">Nazwisko</a></th>
+		<th><a href="?order_by=first_name">Imie</a></th>
+		<th><a href="?order_by=date_of_birth">Data urodzenia</a></th>
+		<th><a href="?order_by=create_date">Data dodania</a></th>
+	</tr>
+	{% for patient in patients %}
+	<tr><a href="{% url 'crm:edit' patient.id %}">
+		<td>{{ patient.last_name }}</td>
+		<td>{{ patient.first_name }}</td>
+		<td>{{ patient.date_of_birth|date:'Y-m-d' }}</td>
+		<td>{{ patient.create_date|date:'Y-m-d' }}</td>
+		</a>
+	</tr>
+
+	{% endfor %}
+</table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if patients.has_previous %}
+            <a href="?page={{ patients.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ patients.number }} of {{ patients.paginator.num_pages }}.
+        </span>
+
+        {% if patients.has_next %}
+            <a href="?page={{ patients.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
 {% else %}
 	<p>No patients in database.</p>
 {% endif %}

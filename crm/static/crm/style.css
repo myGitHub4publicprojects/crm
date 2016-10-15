@@ -193,3 +193,19 @@ a.home_link {
 	padding-left: 1%;
 	font-size: small;
 }
+
+table {
+	margin: 5%;
+	border-collapse: collapse;
+}
+
+td, th {
+	padding: 2%;
+}
+
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+tr:nth-child(even) {background-color: #f2f2f2}
