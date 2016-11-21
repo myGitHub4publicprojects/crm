@@ -1,8 +1,19 @@
+	for patient imported from noach:
+		- phone number will be None, updating in edit.html will throw error - change this in models or template
+		- location is missing, if not added by hand will throw error - change in models or template
+		- no audiogram import for existing patients
+	test if import of new audiogram works
+	audiogram charts work only with internet - if no internet make text version
+
+	add favicon
+	noach import - first patient from the file is ok but next is duplicated
+	home page - make each row in a table a link to patient detail page	
 	add success message after adding a patient to database
 	move messages to separate file and use {% inclue messages_display.html %}
 	add success message after editing patient
 	when editing date of birth is not prepopulated - display it as string, make it not required, if change needed display hidden widget
 
+	when importing patient from noach file, if patient in crm but with no audiograms (deleted by user), new audiograms are not imported	
 	add delete view, delete confirmation message
 
 	hearing aid should be a separate class with atributes such as: make, model, family, date of sale, last fitting...
@@ -24,21 +35,18 @@
 
 	edit.html odboir, checkbox to select that ha is collected and choose date
 	updating view - when ha collected set HA_Invoice as Hearing_Aid, 
-		right_collction_date as purchase_date
-		set last NFZ_Confirmed, PCPR_Estimate, HA_Invoice in_progres as False
-		when updating nfz, estimate or invoice make sure to set the prevoius in_progres as false, or:
-			remove from filtering in_progres = true, eg.: right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right', in_progress=True).last() and do it like this:
-				right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
-				if right_invoice.in_progres == False:
-					right_invoice = None
+		
+	add option to remove audiogram - when audiogram from noach is incomplete you can remove it from noach, remove it from crm and import older but complete audiogram
 
 	is he waering our aid or is he applying for one
 
 	make dynamic ha selection in html, dict with ha already in edit view, use js, for now a temporary solution: ha_name as a Charfield and user types the name
 	ustaw parametr our danego ha - jesli u kogos innego to false, pokaz kolorem na edit.html czy u nas kupiony czy nie
 	ha_list - make an inclusive list of ha
-dodawanie dwoch faktor - blad
-advanced_search - ha serach searches also in prevous hearing aids
+	dodawanie dwoch faktor - blad
+	sucessully updated message change to 'zmieniono'
+	when adding new 'faktura' patient's ha are changed - this should happen after 'odbior', the same happens with 'kosztorys'
+	advanced_search - ha serach searches also in prevous hearing aids
 
 	index.html - display list of patient ordered by last name...
 	home page - pagination
@@ -46,11 +54,16 @@ advanced_search - ha serach searches also in prevous hearing aids
 	add search field
 	make it possible to add ha other than from the list
 
-new field on update - date and subject of incoming schaduled appiointment
-chronos 9 models not showing up
-phonak models not showing up
-add functionality of importing data from Noach
-display audiograms
+	check if after importing data from noach to existing patients without noach ID (patients initially created within crm) additional notes are added not replacing older notes
+	chronos 9 models not showing up
+	phonak models not showing up
+	add functionality of importing data from Noach, 
+
+	what if patient was added to crm and now is being imported - such patient has no noachID - import audiograms on the basis of first and last name and date of birth and import noachID, noachcreatedate, leave data from crm and append data from noach as notes, update audiograms if needed
+	
+	display audiograms
+test - only one audiogram, audiogram with only air conductivity, audiogram with missing points, import new audiogram - updating
+	add class audiogram with foreignfiled patient
 
 
 	when selecting current ha - make it possible to add "other" and type the ha in
@@ -60,8 +73,25 @@ display audiograms
 
 	in edit.html in hearing aid selection make them choose make family and model - now they can send only make
 
+
+further development:
+new field on update - date and subject of incoming schaduled appiointment, remider, calendar intergration
+add bone conductivity results to audiogram charts
 photos of patients
-next visit date, remider, calendar intergration
+
 
 documentation:
 	when collecting ha and ha invoice is not set first add the invoice
+	when patient was created in crm (not via noach file import) and date of birth, first and last name are in crm - when importing the same patient from noach, audiograms from noach will be imported as well as phone number and noach ID and noach create date
+	audiograms are displayed when online
+
+Notes:
+restriction - use only one Noach database - when importing from noach file (xml), noach patient ID is used and it is assumed it's unique
+mistake - code was written before any tests
+one app with many founctions
+django stores datetime using timezones - datetime stored may be different that one provided from string, removed USE_TZ = True from settings.py
+to display audiogram you need internet access - uses google charts
+noach import - first patient from the file is ok but next was duplicated - removal from to_be_created list was not working due to incorrect itteration:
+	for i in to_be_created2:
+		if i['noahpatientid'] in remove_list:
+			to_be_created.remove(i)		# DO NOT ITEREATE OVER THE SEQUENCE FROM WHICH YOU WANT TO REMOVE ITEMS!

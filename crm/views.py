@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -7,7 +8,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from django.http import HttpResponse, HttpResponseRedirect
 from .forms import PatientForm
-from .models import Patient, NewInfo, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
+from .models import Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
+from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
@@ -25,7 +27,7 @@ def index(request):
 	if query:
 		patient_list = patient_list.filter(last_name__icontains=query)
 
-	paginator = Paginator(patient_list, 10) # Show X patients per page
+	paginator = Paginator(patient_list, 50) # Show X patients per page
 
 	page = request.GET.get('page')
 	try:
@@ -144,8 +146,8 @@ def edit(request, patient_id):
 	ears =  Hearing_Aid.ears
 	patient_notes = patient.newinfo_set.order_by('-timestamp')
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
-	print 'right: ', patient.hearing_aid_set.filter(ear="right")
 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
+
 	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
 	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
 		left_NFZ_confirmed = None 
@@ -164,6 +166,7 @@ def edit(request, patient_id):
 	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
 	if right_invoice and right_invoice.in_progress == False:
 		right_invoice = None
+
 	context = 	{'patient': patient,
 				'ha_list': ha_list,
 				'ears': ears,
@@ -177,6 +180,13 @@ def edit(request, patient_id):
 				'time_now': datetime.datetime.now(),
 				'left_invoice': left_invoice,
 				'right_invoice': right_invoice}
+
+	if patient.audiogram_set.filter(ear="left"):
+		left_audiogram = patient.audiogram_set.filter(ear="left").order_by('-time_of_test').last()
+		context['left_audiogram'] = left_audiogram
+	if patient.audiogram_set.filter(ear="right"): 
+		right_audiogram = patient.audiogram_set.filter(ear="right").order_by('-time_of_test').last()
+		context['right_audiogram'] = right_audiogram
 
 	return render(request, 'crm/edit.html', context)
 
@@ -239,13 +249,25 @@ def store(request):
 		patient.save()
 
 
-	messages.success(request, "Successfully Created")
-	return HttpResponseRedirect(reverse('crm:detail', args=(patient_id,)))
+	messages.success(request, "Pomyślnie utworzono")
+	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
 
 def updating(request, patient_id):
 	# for updating egzisting patients in database
 
+	print request.POST
+
 	patient = Patient.objects.get(pk=patient_id)
+
+
+	print 'prawe: ', patient.hearing_aid_set.filter(ear="right")
+	print 'lewe: ', patient.hearing_aid_set.filter(ear="right")
+
+	print 'pcpr left: ', PCPR_Estimate.objects.filter(patient=patient, ear='left')
+	print 'pcpr right: ', PCPR_Estimate.objects.filter(patient=patient, ear='right')
+
+
+
 	patient.first_name=request.POST['fname']
 	patient.last_name=request.POST['lname']
 	patient.phone_no=request.POST['usrtel']
@@ -265,14 +287,6 @@ def updating(request, patient_id):
 		new_info.save()
 	except:
 		pass
-	#  for some reason this does not work:
-	# if request.POST['audiometrist']:
-	# 	new_info.audiometrist = request.POST['audiometrist']
-	# 	new_info.save()
-
-	# print request.POST['level2']
-	# print request.POST['level1']
-	# print request.POST['level0']
 	
 	print 'data:'
 	if request.POST.get('left_ha', None):
@@ -295,7 +309,6 @@ def updating(request, patient_id):
 				hearing_aid.our = False
 				hearing_aid.save()
 		except:
-			print 'cos nie poszlo'
 			pass
 
 
@@ -313,21 +326,21 @@ def updating(request, patient_id):
 			pass
 
 	for ear in Hearing_Aid.ears:
-			try:
-				request.POST[ear + '_pcpr_ha']
-				ha = request.POST[ear + '_pcpr_ha']
-				ha_make, ha_family, ha_model = ha.split('_')
-				pcpr_estimate = PCPR_Estimate(
-					patient=patient,
-					ha_make=ha_make,
-					ha_family=ha_family,
-					ha_model=ha_model,
-					ear=ear,
-					date=request.POST[ear + '_PCPR_date'])
-				pcpr_estimate.save()
-				print pcpr_estimate.ear
-			except:
-				pass
+		try:
+			request.POST[ear + '_pcpr_ha']
+			ha = request.POST[ear + '_pcpr_ha']
+			ha_make, ha_family, ha_model = ha.split('_')
+			pcpr_estimate = PCPR_Estimate(
+				patient=patient,
+				ha_make=ha_make,
+				ha_family=ha_family,
+				ha_model=ha_model,
+				ear=ear,
+				date=request.POST[ear + '_PCPR_date'])
+			pcpr_estimate.save()
+			print 'pcrpr est', pcpr_estimate.ha_model, pcpr_estimate.ear
+		except:
+			pass
 
 	for ear in Hearing_Aid.ears:
 
@@ -368,11 +381,15 @@ def updating(request, patient_id):
 			nfz_confirmed.save()
 
 			
+	if request.POST.get('remove_audiogram') == 'remove':
+		current_left_audiogram = patient.audiogram_set.filter(ear = 'left').order_by('-time_of_test').last()
+		current_right_audiogram = patient.audiogram_set.filter(ear = 'right').order_by('-time_of_test').last()
+		if current_left_audiogram: current_left_audiogram.delete()
+		if current_right_audiogram: current_right_audiogram.delete()
 
+	messages.success(request, "Zaktualizowano dane")
 
-	messages.success(request, "Successfully Updated")
-
-	return HttpResponseRedirect(reverse('crm:detail', args=(patient_id,)))
+	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
 
 def deleteconfirm(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
@@ -381,5 +398,623 @@ def deleteconfirm(request, patient_id):
 def delete_patient(request, patient_id):
 	patient = get_object_or_404(Patient, pk = patient_id)
 	patient.delete()
-	messages.success(request, "Patient %s deleted" % patient.last_name)
+	messages.success(request, "Pacjent %s usunięty" % patient.last_name)
+	return redirect('crm:index')
+
+def select_noach_file(request):
+	''' enables selecting a noach file from user computer'''
+	return render(request, 'crm/select_noach_file.html')
+
+def import_from_noach(request):
+	'''use a xml file with patients exported from Noach to create new patients, audiograms and ha.
+	If patient already in database, update audiograms and ha '''
+
+	# read xml file
+	# noach_patients =		#dict
+
+	patients = Patient.objects.all()
+	noach_file = request.FILES.get('noach_file')
+	# a dict where NoachPatientID is a key and dict with patient data is a value
+	noach_patients = noach_file_handler(noach_file)
+	# a list of patients from noach_file that are not present in crm
+	to_be_created = []
+	remove_list = []  # items to be removed from to_be_created
+
+
+	for patient in patients:
+		if patient.noachID and patient.noachID in noach_patients and \
+		patient.noachcreatedate ==  datetime.datetime.strptime(noach_patients[patient.noachID]["noachcreatedate"], '%Y-%m-%d').date():
+
+
+
+			# print 'jest w crm: ', patient.noachID
+			# print noach_patients
+
+
+			# 		update audiograms if older than in noach file
+			if noach_patients[patient.noachID].get('last_audiogram'):
+				current_left_audiogram = patient.audiogram_set.filter(ear = 'left').order_by('-time_of_test').last()
+				current_right_audiogram = patient.audiogram_set.filter(ear = 'right').order_by('-time_of_test').last()
+				noach_audiograms_time = datetime.datetime.strptime(noach_patients[patient.noachID]['last_audiogram']['time_of_test'], '%Y-%m-%dT%H:%M:%S')
+
+				if current_left_audiogram:
+					print 'current left stary:', current_left_audiogram.time_of_test > noach_audiograms_time
+					if current_left_audiogram.time_of_test > noach_audiograms_time and noach_patients[patient.noachID]['last_audiogram']['results'].get('AirConductorLeft'):
+						
+						current_left_audiogram.time_of_test = noach_audiograms_time
+						update_list = ['time_of_test']
+
+						a250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(250)
+						if a250Hz:
+							current_left_audiogram.a250Hz = a250Hz
+							update_list.append('a250Hz')
+						a500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(500)
+						if a500Hz:
+							current_left_audiogram.a500Hz = a500Hz
+							update_list.append('a500Hz')
+						a1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(1000)
+						if a1kHz:
+							current_left_audiogram.a1kHz = a1kHz
+							update_list.append('a1kHz')
+						a2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(2000)
+						if a2kHz:
+							current_left_audiogram.a2kHz = a2kHz
+							update_list.append('a2kHz')
+						a4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(4000)
+						if a4kHz:
+							current_left_audiogram.a4kHz = a4kHz
+							update_list.append('a4kHz')
+						a8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(8000)
+						if a8kHz:
+							current_left_audiogram.a8kHz = a8kHz
+							update_list.append('a8kHz')
+
+						if noach_patients[patient.noachID]['last_audiogram']['results'].get('BoneConductorRight'):
+							b250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(250)
+							if b250Hz:
+								current_left_audiogram.b250Hz = b250Hz
+								update_list.append('b250Hz')
+							b500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(500)
+							if b500Hz:
+								current_left_audiogram.b500Hz = b500Hz
+								update_list.append('b500Hz')
+							b1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(1000)
+							if b1kHz:
+								current_left_audiogram.b1kHz = b1kHz
+								update_list.append('b1kHz')
+							b2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(2000)
+							if b2kHz:
+								current_left_audiogram.b2kHz = b2kHz
+								update_list.append('b2kHz')
+							b4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(4000)
+							if b4kHz:
+								current_left_audiogram.b4kHz = b4kHz
+								update_list.append('b4kHz')
+							b8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(8000)
+							if b8kHz:
+								current_left_audiogram.b8kHz = b8kHz
+								update_list.append('b8kHz')
+
+
+
+						current_left_audiogram.save(update_fields=update_list)
+
+				else:
+					print 'else left'
+
+
+					new_left_audiogram = Audiogram(patient = patient, time_of_test = noach_audiograms_time, ear = 'left')
+					new_left_audiogram.save()
+					update_list = []
+					if noach_patients[patient.noachID]['last_audiogram']['results'].get('AirConductorLeft'):
+						a250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorLeft'].get(250)
+						if a250Hz:
+							new_left_audiogram.a250Hz = a250Hz
+							update_list.append('a250Hz')
+						a500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorLeft'].get(500)
+						if a500Hz:
+							new_left_audiogram.a500Hz = a500Hz
+							update_list.append('a500Hz')
+						a1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorLeft'].get(1000)
+						if a1kHz:
+							new_left_audiogram.a1kHz = a1kHz
+							update_list.append('a1kHz')
+						a2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorLeft'].get(2000)
+						if a2kHz:
+							new_left_audiogram.a2kHz = a2kHz
+							update_list.append('a2kHz')
+						a4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorLeft'].get(4000)
+						if a4kHz:
+							new_left_audiogram.a4kHz = a4kHz
+							update_list.append('a4kHz')
+						a8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorLeft'].get(8000)
+						if a8kHz:
+							new_left_audiogram.a8kHz = a8kHz
+							update_list.append('a8kHz')
+
+						if noach_patients[patient.noachID]['last_audiogram']['results'].get('BoneConductorLeft'):
+							b250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorLeft'].get(250)
+							if b250Hz:
+								new_left_audiogram.b250Hz = b250Hz
+								update_list.append('b250Hz')
+							b500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorLeft'].get(500)
+							if b500Hz:
+								new_left_audiogram.b500Hz = b500Hz
+								update_list.append('b500Hz')
+							b1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorLeft'].get(1000)
+							if b1kHz:
+								new_left_audiogram.b1kHz = b1kHz
+								update_list.append('b1kHz')
+							b2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorLeft'].get(2000)
+							if b2kHz:
+								new_left_audiogram.b2kHz = b2kHz
+								update_list.append('b2kHz')
+							b4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorLeft'].get(4000)
+							if b4kHz:
+								new_left_audiogram.b4kHz = b4kHz
+								update_list.append('b4kHz')
+							b8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorLeft'].get(8000)
+							if b8kHz:
+								new_left_audiogram.b8kHz = b8kHz
+								update_list.append('b8kHz')
+
+
+
+						new_left_audiogram.save(update_fields=update_list)
+
+						print 'dodalem lewy'
+
+				if current_right_audiogram:
+					print 'current right stary:', current_right_audiogram.time_of_test > noach_audiograms_time
+					if current_right_audiogram.time_of_test > noach_audiograms_time and noach_patients[patient.noachID]['last_audiogram']['results'].get('AirConductorRight'):
+						
+						current_right_audiogram.time_of_test = noach_audiograms_time
+						update_list = ['time_of_test']
+
+
+						a250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(250)
+						if a250Hz:
+							current_right_audiogram.a250Hz = a250Hz
+							update_list.append('a250Hz')
+						a500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(500)
+						if a500Hz:
+							current_right_audiogram.a500Hz = a500Hz
+							update_list.append('a500Hz')
+						a1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(1000)
+						if a1kHz:
+							current_right_audiogram.a1kHz = a1kHz
+							update_list.append('a1kHz')
+						a2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(2000)
+						if a2kHz:
+							current_right_audiogram.a2kHz = a2kHz
+							update_list.append('a2kHz')
+						a4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(4000)
+						if a4kHz:
+							current_right_audiogram.a4kHz = a4kHz
+							update_list.append('a4kHz')
+						a8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(8000)
+						if a8kHz:
+							current_right_audiogram.a8kHz = a8kHz
+							update_list.append('a8kHz')
+
+						if noach_patients[patient.noachID]['last_audiogram']['results'].get('BoneConductorRight'):
+							b250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(250)
+							if b250Hz:
+								current_right_audiogram.b250Hz = b250Hz
+								update_list.append('b250Hz')
+							b500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(500)
+							if b500Hz:
+								current_right_audiogram.b500Hz = b500Hz
+								update_list.append('b500Hz')
+							b1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(1000)
+							if b1kHz:
+								current_right_audiogram.b1kHz = b1kHz
+								update_list.append('b1kHz')
+							b2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(2000)
+							if b2kHz:
+								current_right_audiogram.b2kHz = b2kHz
+								update_list.append('b2kHz')
+							b4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(4000)
+							if b4kHz:
+								current_right_audiogram.b4kHz = b4kHz
+								update_list.append('b4kHz')
+							b8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(8000)
+							if b8kHz:
+								current_right_audiogram.b8kHz = b8kHz
+								update_list.append('b8kHz')
+
+
+
+						current_right_audiogram.save(update_fields=update_list)
+
+				else:
+					# print 'else right'
+					# print 'a1kHz: ', noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(1000)
+
+
+					new_right_audiogram = Audiogram(patient = patient, time_of_test = noach_audiograms_time, ear = 'right')
+					new_right_audiogram.save()
+					update_list = []
+
+					a250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(250)
+					if a250Hz:
+						new_right_audiogram.a250Hz = a250Hz
+						update_list.append('a250Hz')
+					a500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(500)
+					if a500Hz:
+						new_right_audiogram.a500Hz = a500Hz
+						update_list.append('a500Hz')
+					a1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(1000)
+					if a1kHz:
+						new_right_audiogram.a1kHz = a1kHz
+						update_list.append('a1kHz')
+					a2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(2000)
+					if a2kHz:
+						new_right_audiogram.a2kHz = a2kHz
+						update_list.append('a2kHz')
+					a4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(4000)
+					if a4kHz:
+						new_right_audiogram.a4kHz = a4kHz
+						update_list.append('a4kHz')
+					a8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['AirConductorRight'].get(8000)
+					if a8kHz:
+						new_right_audiogram.a8kHz = a8kHz
+						update_list.append('a8kHz')
+
+					if noach_patients[patient.noachID]['last_audiogram']['results'].get('BoneConductorRight'):
+						b250Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(250)
+						if b250Hz:
+							new_right_audiogram.b250Hz = b250Hz
+							update_list.append('b250Hz')
+						b500Hz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(500)
+						if b500Hz:
+							new_right_audiogram.b500Hz = b500Hz
+							update_list.append('b500Hz')
+						b1kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(1000)
+						if b1kHz:
+							new_right_audiogram.b1kHz = b1kHz
+							update_list.append('b1kHz')
+						b2kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(2000)
+						if b2kHz:
+							new_right_audiogram.b2kHz = b2kHz
+							update_list.append('b2kHz')
+						b4kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(4000)
+						if b4kHz:
+							new_right_audiogram.b4kHz = b4kHz
+							update_list.append('b4kHz')
+						b8kHz = noach_patients[patient.noachID]['last_audiogram']['results']['BoneConductorRight'].get(8000)
+						if b8kHz:
+							new_right_audiogram.b8kHz = b8kHz
+							update_list.append('b8kHz')
+
+
+
+					new_right_audiogram.save(update_fields=update_list)
+					# print 'new_right_audiogram.a1kHz: ', new_right_audiogram.a1kHz
+			remove_list.append(patient.noachID)
+			continue
+
+		for noach_patient in noach_patients.values():
+		
+			if patient.first_name == noach_patient['first_name']\
+			and patient.last_name == noach_patient['last_name']\
+			and str(patient.date_of_birth) == str(noach_patient.get('dateofbirth')):
+				# this means that patient was added to crm and now the same patient is imported from noach,
+
+				# add noach create date and noach id
+				phone_from_noach = noach_patient.get('mobilephone') or noach_patient.get('homephone') or noach_patient.get('workphone')
+				patient.noachcreatedate = noach_patient['noachcreatedate']
+				patient.noachID = noach_patient['noahpatientid']
+				update_list = ['noachID', 'noachcreatedate']
+				if phone_from_noach:
+					patient.phone_no = phone_from_noach
+					update_list.append('phone_no')
+				patient.save(update_fields=update_list)
+
+				phone2 = noach_patient.get('homephone') or noach_patient.get('workphone')
+				if phone2:
+					print 'p2', phone2
+					note = 'Dodatkowy nr tel: %s' % phone2
+					new_note = NewInfo(patient = patient, note = note)
+					new_note.save()
+				# if audiograms in noach are newer - replace current audiograms
+				if noach_patient.get('last_audiogram'):
+
+					if noach_patient['last_audiogram']['results'].get('AirConductorLeft'):
+						time_of_test = datetime.datetime.strptime(noach_patient['last_audiogram']['time_of_test'], '%Y-%m-%dT%H:%M:%S')
+						print 'tot L', time_of_test
+						new_left_audiogram = Audiogram(patient = patient,
+														ear = 'left',
+														time_of_test = time_of_test)
+														
+						new_left_audiogram.save()
+						update_list = []
+
+						a250Hz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(250)
+						if a250Hz:
+							new_left_audiogram.a250Hz = a250Hz
+							update_list.append('a250Hz')
+						a500Hz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(500)
+						if a500Hz:
+							new_left_audiogram.a500Hz = a500Hz
+							update_list.append('a500Hz')
+						a1kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(1000)
+						if a1kHz:
+							new_left_audiogram.a1kHz = a1kHz
+							update_list.append('a1kHz')
+						a2kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(2000)
+						if a2kHz:
+							new_left_audiogram.a2kHz = a2kHz
+							update_list.append('a2kHz')
+						a4kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(4000)
+						if a4kHz:
+							new_left_audiogram.a4kHz = a4kHz
+							update_list.append('a4kHz')
+						a8kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(8000)
+						if a8kHz:
+							new_left_audiogram.a8kHz = a8kHz
+							update_list.append('a8kHz')
+
+						if noach_patient['last_audiogram']['results'].get('BoneConductorLeft'):
+							b250Hz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(250)
+							if b250Hz:
+								new_left_audiogram.b250Hz = b250Hz
+								update_list.append('b250Hz')
+							b500Hz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(500)
+							if b500Hz:
+								new_left_audiogram.b500Hz = b500Hz
+								update_list.append('b500Hz')
+							b1kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(1000)
+							if b1kHz:
+								new_left_audiogram.b1kHz = b1kHz
+								update_list.append('b1kHz')
+							b2kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(2000)
+							if b2kHz:
+								new_left_audiogram.b2kHz = b2kHz
+								update_list.append('b2kHz')
+							b4kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(4000)
+							if b4kHz:
+								new_left_audiogram.b4kHz = b4kHz
+								update_list.append('b4kHz')
+							b8kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(8000)
+							if b8kHz:
+								new_left_audiogram.b8kHz = b8kHz
+								update_list.append('b8kHz')
+
+						new_left_audiogram.save(update_fields=update_list)
+
+
+					if noach_patient['last_audiogram']['results'].get('AirConductorRight'):
+						time_of_test = datetime.datetime.strptime(noach_patient['last_audiogram']['time_of_test'], '%Y-%m-%dT%H:%M:%S')
+						print 'tot R', time_of_test							
+						new_right_audiogram = Audiogram(patient = patient,
+														ear = 'right',
+														time_of_test = time_of_test)
+						new_right_audiogram.save()
+						update_list = []
+
+						a250Hz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(250)
+						if a250Hz:
+							new_right_audiogram.a250Hz = a250Hz
+							update_list.append('a250Hz')
+						a500Hz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(500)
+						if a500Hz:
+							new_right_audiogram.a500Hz = a500Hz
+							update_list.append('a500Hz')
+						a1kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(1000)
+						if a1kHz:
+							new_right_audiogram.a1kHz = a1kHz
+							update_list.append('a1kHz')
+						a2kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(2000)
+						if a2kHz:
+							new_right_audiogram.a2kHz = a2kHz
+							update_list.append('a2kHz')
+						a4kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(4000)
+						if a4kHz:
+							new_right_audiogram.a4kHz = a4kHz
+							update_list.append('a4kHz')
+						a8kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(8000)
+						if a8kHz:
+							new_right_audiogram.a8kHz = a8kHz
+							update_list.append('a8kHz')
+
+						if noach_patient['last_audiogram']['results'].get('BoneConductorRight'):
+							b250Hz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(250)
+							if b250Hz:
+								new_right_audiogram.b250Hz = b250Hz
+								update_list.append('b250Hz')
+							b500Hz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(500)
+							if b500Hz:
+								new_right_audiogram.b500Hz = b500Hz
+								update_list.append('b500Hz')
+							b1kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(1000)
+							if b1kHz:
+								new_right_audiogram.b1kHz = b1kHz
+								update_list.append('b1kHz')
+							b2kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(2000)
+							if b2kHz:
+								new_right_audiogram.b2kHz = b2kHz
+								update_list.append('b2kHz')
+							b4kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(4000)
+							if b4kHz:
+								new_right_audiogram.b4kHz = b4kHz
+								update_list.append('b4kHz')
+							b8kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(8000)
+							if b8kHz:
+								new_right_audiogram.b8kHz = b8kHz
+								update_list.append('b8kHz')
+
+						new_right_audiogram.save(update_fields=update_list)
+				remove_list.append(noach_patient['noahpatientid'])
+				break
+			else:
+	 			# add new patient to to_be_created list
+	 			if noach_patient not in to_be_created: to_be_created.append(noach_patient)
+
+	print 'len before', len(to_be_created)
+	
+	# remove patients that were updated to prevent duplicating them
+	
+	to_be_created2 = to_be_created[:]
+	
+	# print 'remove_list: ', remove_list
+	# o = [i['noahpatientid'] for i in to_be_created]
+	# print 'to be c: ', o
+
+	for i in to_be_created2:
+		if i['noahpatientid'] in remove_list:
+			to_be_created.remove(i)
+
+	# o = [i['noahpatientid'] for i in to_be_created]
+	# print 'to be c: ', o
+	
+	
+	# create new patients
+	for noach_patient in to_be_created:
+		new_patient = Patient(first_name = noach_patient['first_name'],
+							last_name = noach_patient['last_name'],
+							date_of_birth = noach_patient.get('dateofbirth'),
+							noachcreatedate = noach_patient['noachcreatedate'],
+							noachID = noach_patient['noahpatientid'])
+		new_patient.save()
+		phone_from_noach = noach_patient.get('mobilephone') or noach_patient.get('homephone') or noach_patient.get('workphone')
+		if phone_from_noach:
+			new_patient(phone_no = phone_from_noach)
+			new_patient.save()
+
+		phone2 = noach_patient.get('homephone') or noach_patient.get('workphone')
+		if phone2:
+			note = 'Dodatkowy nr tel: %s' % phone2
+			new_note = NewInfo(patient = new_patient, note = note)
+			new_note.save()
+
+		if noach_patient.get('last_audiogram'):
+
+			if noach_patient['last_audiogram']['results'].get('AirConductorLeft'):
+				time_of_test = datetime.datetime.strptime(noach_patient['last_audiogram']['time_of_test'], '%Y-%m-%dT%H:%M:%S')
+				print 'tot L', time_of_test
+				new_left_audiogram = Audiogram(patient = new_patient,
+												ear = 'left',
+												time_of_test = time_of_test)
+												
+				new_left_audiogram.save()
+				update_list = []
+
+				a250Hz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(250)
+				if a250Hz:
+					new_left_audiogram.a250Hz = a250Hz
+					update_list.append('a250Hz')
+				a500Hz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(500)
+				if a500Hz:
+					new_left_audiogram.a500Hz = a500Hz
+					update_list.append('a500Hz')
+				a1kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(1000)
+				if a1kHz:
+					new_left_audiogram.a1kHz = a1kHz
+					update_list.append('a1kHz')
+				a2kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(2000)
+				if a2kHz:
+					new_left_audiogram.a2kHz = a2kHz
+					update_list.append('a2kHz')
+				a4kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(4000)
+				if a4kHz:
+					new_left_audiogram.a4kHz = a4kHz
+					update_list.append('a4kHz')
+				a8kHz = noach_patient['last_audiogram']['results']['AirConductorLeft'].get(8000)
+				if a8kHz:
+					new_left_audiogram.a8kHz = a8kHz
+					update_list.append('a8kHz')
+
+				if noach_patient['last_audiogram']['results'].get('BoneConductorLeft'):
+					b250Hz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(250)
+					if b250Hz:
+						new_left_audiogram.b250Hz = b250Hz
+						update_list.append('b250Hz')
+					b500Hz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(500)
+					if b500Hz:
+						new_left_audiogram.b500Hz = b500Hz
+						update_list.append('b500Hz')
+					b1kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(1000)
+					if b1kHz:
+						new_left_audiogram.b1kHz = b1kHz
+						update_list.append('b1kHz')
+					b2kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(2000)
+					if b2kHz:
+						new_left_audiogram.b2kHz = b2kHz
+						update_list.append('b2kHz')
+					b4kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(4000)
+					if b4kHz:
+						new_left_audiogram.b4kHz = b4kHz
+						update_list.append('b4kHz')
+					b8kHz = noach_patient['last_audiogram']['results']['BoneConductorLeft'].get(8000)
+					if b8kHz:
+						new_left_audiogram.b8kHz = b8kHz
+						update_list.append('b8kHz')
+
+				new_left_audiogram.save(update_fields=update_list)
+
+
+			if noach_patient['last_audiogram']['results'].get('AirConductorRight'):
+				time_of_test = datetime.datetime.strptime(noach_patient['last_audiogram']['time_of_test'], '%Y-%m-%dT%H:%M:%S')
+				print 'tot R', time_of_test							
+				new_right_audiogram = Audiogram(patient = new_patient,
+												ear = 'right',
+												time_of_test = time_of_test)
+				new_right_audiogram.save()
+				update_list = []
+
+				a250Hz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(250)
+				if a250Hz:
+					new_right_audiogram.a250Hz = a250Hz
+					update_list.append('a250Hz')
+				a500Hz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(500)
+				if a500Hz:
+					new_right_audiogram.a500Hz = a500Hz
+					update_list.append('a500Hz')
+				a1kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(1000)
+				if a1kHz:
+					new_right_audiogram.a1kHz = a1kHz
+					update_list.append('a1kHz')
+				a2kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(2000)
+				if a2kHz:
+					new_right_audiogram.a2kHz = a2kHz
+					update_list.append('a2kHz')
+				a4kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(4000)
+				if a4kHz:
+					new_right_audiogram.a4kHz = a4kHz
+					update_list.append('a4kHz')
+				a8kHz = noach_patient['last_audiogram']['results']['AirConductorRight'].get(8000)
+				if a8kHz:
+					new_right_audiogram.a8kHz = a8kHz
+					update_list.append('a8kHz')
+
+				if noach_patient['last_audiogram']['results'].get('BoneConductorRight'):
+					b250Hz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(250)
+					if b250Hz:
+						new_right_audiogram.b250Hz = b250Hz
+						update_list.append('b250Hz')
+					b500Hz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(500)
+					if b500Hz:
+						new_right_audiogram.b500Hz = b500Hz
+						update_list.append('b500Hz')
+					b1kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(1000)
+					if b1kHz:
+						new_right_audiogram.b1kHz = b1kHz
+						update_list.append('b1kHz')
+					b2kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(2000)
+					if b2kHz:
+						new_right_audiogram.b2kHz = b2kHz
+						update_list.append('b2kHz')
+					b4kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(4000)
+					if b4kHz:
+						new_right_audiogram.b4kHz = b4kHz
+						update_list.append('b4kHz')
+					b8kHz = noach_patient['last_audiogram']['results']['BoneConductorRight'].get(8000)
+					if b8kHz:
+						new_right_audiogram.b8kHz = b8kHz
+						update_list.append('b8kHz')
+
+				new_right_audiogram.save(update_fields=update_list)
+			
+	messages.success(request, "Pacjenci zaimportowani")
 	return redirect('crm:index')

@@ -4,16 +4,23 @@
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'crm/style.css' %}" />
+<link rel="icon" type="image/png" href="{% static 'crm/favicon.png' %}" />
 	<title></title>
 </head>
 <body>
 
-{% include "crm/messages_display.html" %}
-
 <div class='container'>
 	<div id='header'>
-	<a class='home_link' href="{% url 'crm:index' %}">LISTA PACJENTÓW</a> <a id='add_patient' href="{% url 'crm:create' %}">Dodaj pacjenta</a>
-	<h1>Sonovox CRM</h1>
+	<nav class="old" role="navigation">
+	<ul>
+		<li><a href="{% url 'crm:index' %}">LISTA PACJENTÓW</a></li>
+		<li><a href="{% url 'crm:create' %}">DODAJ PACJENTA</a></li>
+		<li><a href="{% url 'crm:select_noach_file' %}">IMPORT Z NOACH</a></li>
+	</ul>
+	</nav>
+	<img class="logo" src="{% static 'crm/logo.png' %}" />
+
+	{% include "crm/messages_display.html" %}
 	</div>
 {% block content %}
 

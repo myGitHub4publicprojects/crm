@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
 
@@ -11,30 +12,19 @@ class Patient(models.Model):
 	first_name = models.CharField(max_length=120)
 	last_name = models.CharField(max_length=120)
 	date_of_birth = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True)
-	locations = ["Poznan", "Rakoniewice", "Wolsztyn", "Puszczykowo", "Mosina", "Chodziez", "Trzcianka"]
-	location = models.CharField(max_length=120)
-	phone_no = models.IntegerField(null=True, blank=True)
-
+	locations = ["Poznań", "Rakoniewice", "Wolsztyn", "Puszczykowo", "Mosina", "Chodzież", "Trzcianka", "nie podano"]
+	location = models.CharField(max_length=120, default = 'nie podano')
+	phone_no = models.IntegerField(default = 0)
 	invoice_date = models.DateTimeField(null=True, blank=True)
-	# data wystawienia faktury i wziecia wyciskow
-
-	# collection_date = models.DateTimeField(null=True, blank=True)
-	# # data odbioru
-	# final_cost = models.IntegerField()
-	# # kwota doplaty pacjenta
-	# nfz_scans = models.ImageField(upload_to=upload_location,
-	# 	null=True,
-	# 	blank=True,
-	# 	height_field="height_field",
-	# 	width_field="width_field")
-
 	create_date = models.DateTimeField(auto_now=False, auto_now_add=True)
+	noachcreatedate = models.DateField(null=True, blank=True)
+	noachID = models.IntegerField(null=True, blank=True)
 	notes = models.TextField(null=True, blank=True)
 	audiometrist_list = ['Barbara', 'Jakub', 'Sylwia']
-	audiometrist = models.CharField(max_length=120)
+	audiometrist = models.CharField(max_length=120, default= 'ABC')
 	 # person who added a patient or a new note about patient
 
-	def __str__(self):
+	def __unicode__(self):
 		return self.first_name + ' ' + self.last_name
 
 class NewInfo(models.Model):
@@ -47,23 +37,43 @@ class NewInfo(models.Model):
 	def __str__(self):
 		return self.timestamp
 
-class Hearing_Aid(models.Model):
+class Audiogram(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	time_of_test = models.DateTimeField(null=True, blank=True)
+	ear = models.CharField(max_length=14)
+	a250Hz = models.IntegerField(null=True, blank=True)
+	a500Hz = models.IntegerField(null=True, blank=True)
+	a1kHz = models.IntegerField(null=True, blank=True)
+	a2kHz = models.IntegerField(null=True, blank=True)
+	a4kHz = models.IntegerField(null=True, blank=True)
+	a8kHz = models.IntegerField(null=True, blank=True)
+	b250Hz = models.IntegerField(null=True, blank=True)
+	b500Hz = models.IntegerField(null=True, blank=True)
+	b1kHz = models.IntegerField(null=True, blank=True)
+	b2kHz = models.IntegerField(null=True, blank=True)
+	b4kHz = models.IntegerField(null=True, blank=True)
+	b8kHz = models.IntegerField(null=True, blank=True)
+
+class Hearing_Aid_Main(models.Model):
 	ha_make = models.CharField(max_length=20)
 	 # eg. Bernafon
 	ha_family = models.CharField(max_length=20)
 	 # eg. WIN
 	ha_model = models.CharField(max_length=20)
 	 # eg. 102
-	purchase_date = models.DateField(null=True, blank=True)
 	ears = ['left', 'right']
 	ear = models.CharField(max_length=14)
-	our = models.BooleanField(default=True)
-	# kupiony u nas
+	
 	ha_list = ha_list
 
 	def __str__(self):
 		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model + ' ' + self.ear
+
+class Hearing_Aid(Hearing_Aid_Main):
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	purchase_date = models.DateField(null=True, blank=True)
+	our = models.BooleanField(default=True)
+	# kupiony u nas
 
 
 # class Estimated_Hearing_Aid(Hearing_Aid):
@@ -73,22 +83,31 @@ class Hearing_Aid(models.Model):
 # 	# aparat podany kosztorysie
 
 class NFZ_Confirmed(models.Model):
-	# potwierdzone przez NFZ wnioski o aparaty
+	# confirmed by NFZ application for hearing aid
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	date = models.DateField()
 	sides = ['left', 'right']
 	side = models.CharField(max_length=5)
 	in_progress = models.BooleanField(default=True)
-	# zmien na FALSE przy odbiorze aparatu
+	# change to False once collected by patient
 
-class PCPR_Estimate(Hearing_Aid):
-	# kosztorys do PCPR
+	# Additonal features:
+	# nfz_scans = models.ImageField(upload_to=upload_location,
+	# 	null=True,
+	# 	blank=True,
+	# 	height_field="height_field",
+	# 	width_field="width_field")
+
+class PCPR_Estimate(Hearing_Aid_Main):
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	# quote for PCPR
 	date = models.DateField()
 	in_progress = models.BooleanField(default=True)
 	# zmien na FALSE przy odbiorze aparatu
 
-class HA_Invoice(Hearing_Aid):
-	# faktura na aparat
+class HA_Invoice(Hearing_Aid_Main):
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	# hearing aid invoice
 	date = models.DateField()
 	in_progress = models.BooleanField(default=True)
-	# zmien na FALSE przy odbiorze aparatu
+	# change to False once collected by patient

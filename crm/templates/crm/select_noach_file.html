@@ -1,0 +1,13 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+
+<h1>Wybierz plik z którego chcesz importować pacientów:</h1>
+
+<form action="{% url 'crm:import_from_noach' %}" method="post" enctype="multipart/form-data">
+{% csrf_token %}
+<input type="file" name="noach_file" accept=".xml">
+<input class="btn" type="submit" value="użyj tego pliku" />
+</form>
+
+{% endblock content %}

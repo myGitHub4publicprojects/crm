@@ -1,11 +1,128 @@
 body {
     background-color: #eaeaea;
+    background-image: url(brushed-silver-metallic-background1.jpg);
 }
 
 #header {
-	background-color: #a2a2f7;
-	padding-bottom: 1%;
+	background-color: #fff;
+	padding: 1%;
 }
+
+/* Old */
+.old {
+	float: left;
+	margin-right: 5%;
+}
+
+.old ul {
+	margin-top: 28px;
+	outline: none;
+	cursor: pointer;
+	text-align: center;
+	-webkit-box-shadow: 0 1px 0 rgba(0,0,0,.1);
+	-moz-box-shadow: 0 1px 0 rgba(0,0,0,.1);
+	box-shadow: 0 1px 0 rgba(0,0,0,.1);
+}
+
+.old ul li {
+	float: left;
+	list-style: none;
+}
+
+.old ul li a {
+	font: 0.8em "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+	padding: 11px 35px;
+	text-decoration: none;
+	color: rgba(0,0,0,.8);
+	text-shadow: 0 1px 0 rgba(255,255,255,.5);
+	
+	background: -webkit-linear-gradient(top, #cacaca, #848484);
+	background: -moz-linear-gradient(top, #cacaca, #848484);
+	background: -ms-linear-gradient(top, #cacaca, #848484);
+	background: -o-linear-gradient(top, #cacaca, #848484);
+	background: linear-gradient(to bottom, #cacaca, #848484);
+}
+
+.old ul li a:before {
+	border-left: 1px solid rgba(255,255,255,.1);	
+	content: "";
+	padding: 10px 35px;
+	margin: 0 -35px;
+	position: relative;
+}
+
+.old ul li a:after {
+	border-right: 1px solid rgba(255,255,255,.1);	
+	content: "";
+	padding: 10px 35px;
+	margin: 0 -35px;
+	position: relative;
+}
+
+.old ul li:last-child a:after {border: none;}
+
+.old ul li:first-child a {-moz-border-radius: 5px 0 0 5px; border-radius: 5px 0 0 5px;}
+.old ul li:last-child a {-moz-border-radius: 0 5px 5px 0; border-radius: 0 5px 5px 0;}
+
+.old ul li a:hover {
+	border-right: 1px solid rgba(255,255,255,.2);
+	text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+	
+	background: -webkit-linear-gradient(top,  #929292,  #535353);
+	background: -moz-linear-gradient(top,  #929292,  #535353);
+	background: -ms-linear-gradient(top,  #929292,  #535353);
+	background: -o-linear-gradient(top,  #929292,  #535353);
+	background: linear-gradient(to bottom,  #929292,  #535353);
+}
+
+.old ul li a:active {
+	-webkit-box-shadow: inset 0 5px 10px rgba(0,0,0,.5);
+	-moz-box-shadow: inset 0 5px 10px rgba(0,0,0,.5);
+	box-shadow: inset 0 5px 10px rgba(0,0,0,.5);
+}
+
+.old ul li a.current {
+	background: -webkit-linear-gradient(top,  #383a3a,  #525051);
+	background: -moz-linear-gradient(top,  #383a3a,  #525051);
+	background: -ms-linear-gradient(top,  #383a3a,  #525051);
+	background: -o-linear-gradient(top,  #383a3a,  #525051);
+	background: linear-gradient(to bottom,  #383a3a,  #525051);
+	
+	-webkit-box-shadow: inset 0 5px 10px rgba(0,0,0,.8);
+	-moz-box-shadow: inset 0 5px 10px rgba(0,0,0,.8);
+	box-shadow: inset 0 5px 10px rgba(0,0,0,.8);
+	
+	color: #ffffff;
+	text-shadow: 0 1px 0 rgba(0,0,0,.9);
+}
+
+/*/* Minimum width of 960 pixels. */
+@media screen and (min-width: 960px) {
+	body {
+		background-color: #e6e6e6;
+	}
+	body .site {
+		padding: 0 40px;
+		padding: 0 2.857142857rem;
+		margin-top: 48px;
+		margin-top: 3.428571429rem;
+		margin-bottom: 48px;
+		margin-bottom: 3.428571429rem;
+		box-shadow: 0 2px 6px rgba(100, 100, 100, 0.3);
+	}
+	body.custom-background-empty {
+		background-color: #fff;
+	}
+	body.custom-background-empty .site,
+	body.custom-background-white .site {
+		padding: 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		box-shadow: none;
+	}
+}*/
+
+
 h1 {
 	color: #222;
 	font-family: Georgia,"Times New Roman",Times,serif;
@@ -14,33 +131,29 @@ h1 {
 
 .container {
 	margin: 0 5%;
-	border: 1px solid #9a9e9a;
+	border-width: 5px;
+    border-style: ridge;
+    background: #f7f7f7;
 }
 
-a.home_link {
-	font-size: 70%;
-	background-color: #eee;
-	border: 1px;
-	padding: 1%;
+
+ul.messages {
+	background-color: red;
+	font-size: large;
+	font-weight: bold;
+	padding: 5px;
+}
+
+#main {
+	padding: 1% 3%;
+}
+
+#search_form {
+	display: inline-block;
+}
+
+a#advanced_search {
 	text-decoration: none;
-}
-
-#details {
-	background-color: #b4bdb4;
-}
-
-#add_patient {
-	font-size: 90%;
-	display: block;
-	width: 10%;
-	min-width: 85px;
-	float: right;
-	color: white;
-	background-color: blue;
-	border: black 1px;
-	padding: 1%;
-	text-decoration: none;
-	margin: 5px;
 }
 
 
@@ -58,7 +171,11 @@ a.home_link {
 	text-align: center;
     padding: 1%;
     background-color: #ccc2c2;
+    cursor: pointer;
+}
 
+.hearing_aid h4:hover {
+    background-color: #fff;
 }
 
 .left, .right {
@@ -79,11 +196,8 @@ a.home_link {
 }
 
 .patient_info {
-/*	width: 50%;*/
-/*	background-color: #b4bdb4;*/
-/*	display: inline-block;*/
-	padding: 2%;
-/*	border: solid black 1px;*/
+   padding: 1% 2%;
+
 }
 
 #notes li {
@@ -116,15 +230,35 @@ a.home_link {
 	margin: 5%;
 	padding: 2%;
 	background-color: #a79a9a;
+	cursor: pointer;
+}
+
+.btn:hover {
+	background-color: #d6d0d0;
+	cursor: pointer;
 }
 
 .inline_block {
 	display: inline-block;
 }
 
+#note_author{
+	margin-left: 4%;
+}
+
+#note_author small {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.audiometrist {
+	-webkit-margin-before: 0em;
+	-webkit-padding-start: 0;
+}
 
 .audiometrist li {
-	display: inline;
+	float: left;
+	list-style: none;
 }
 
 .col70 {
@@ -144,13 +278,27 @@ a.home_link {
 }
 
 #zmien {
-	background-color: #ccc2c2;
+	background-color: #e4dada;
+	cursor: pointer;
+	padding: 2px;
 }
+
+#zmien:hover {
+	background-color: #fdf9f9;
+}
+
 
 .actions ul li {
 	display: inline-block;
-	background-color: #ccc3c3;
-	padding: 1%;
+	cursor: pointer;
+	padding: 1%;background: -webkit-linear-gradient(top, #cacaca, #848484);
+}
+
+.actions ul li:first-child {-moz-border-radius: 5px 0 0 5px; border-radius: 5px 0 0 5px;}
+.actions ul li:last-child {-moz-border-radius: 0 5px 5px 0; border-radius: 0 5px 5px 0;}
+
+.actions ul li:hover {
+	background: -webkit-linear-gradient(top, #fff, #848484);
 }
 
 .actions ul {
@@ -195,12 +343,13 @@ a.home_link {
 }
 
 table {
-	margin: 5%;
 	border-collapse: collapse;
 }
 
 td, th {
 	padding: 2%;
+	width: 1em;
+	white-space: nowrap;
 }
 
 
@@ -209,3 +358,30 @@ table, th, td {
 }
 
 tr:nth-child(even) {background-color: #f2f2f2}
+
+td a, th a { 
+   display: block;
+   text-decoration: none;
+   }
+
+#left_audiogram , #right_audiogram {
+	width: 250px;
+	height: 150px;
+	/*width: 40%;*/
+	overflow: hidden;
+	/*display: inline-block;*/
+	margin-left: 5%;
+	padding: 0 2%;
+	vertical-align: top;
+	}
+
+#left_audiogram {
+	float: left;
+	}
+
+#right_audiogram {
+	float: right;
+	}
+#remove_audiogram {
+	clear: both;
+}

@@ -1,12 +1,13 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<form method="GET" action="">
+<div id="main" >
+<form id="search_form" method="GET" action="">
 	<input type="search" name="q" placeholder="nazwisko">
 	<input type="submit" value="Szukaj">
 </form>
-<a href="{% url 'crm:advanced_search' %}">wyszukiwanie zaawansowane</a>
-<h2>Lista pacjentów:</h2>
+<button> <a id="advanced_search" href="{% url 'crm:advanced_search' %}">wyszukiwanie zaawansowane</a></button>
+<p>Lista pacjentów:</p>
 
 {% if patients %}
 <table>
@@ -17,12 +18,12 @@
 		<th><a href="?order_by=create_date">Data dodania</a></th>
 	</tr>
 	{% for patient in patients %}
-	<tr><a href="{% url 'crm:edit' patient.id %}">
-		<td>{{ patient.last_name }}</td>
-		<td>{{ patient.first_name }}</td>
-		<td>{{ patient.date_of_birth|date:'Y-m-d' }}</td>
-		<td>{{ patient.create_date|date:'Y-m-d' }}</td>
-		</a>
+	<tr>
+		<td><a href="{% url 'crm:edit' patient.id %}">{{ patient.last_name }}</a></td>
+		<td><a href="{% url 'crm:edit' patient.id %}">{{ patient.first_name }}</a></td>
+		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
+		<td>{{ patient.create_date|date:'Y m d' }}</td>
+	
 	</tr>
 
 	{% endfor %}
@@ -31,20 +32,20 @@
 <div class="pagination">
     <span class="step-links">
         {% if patients.has_previous %}
-            <a href="?page={{ patients.previous_page_number }}">previous</a>
+            <a href="?page={{ patients.previous_page_number }}">poprzednia</a>
         {% endif %}
 
         <span class="current">
-            Page {{ patients.number }} of {{ patients.paginator.num_pages }}.
+            Strona {{ patients.number }} z {{ patients.paginator.num_pages }}.
         </span>
 
         {% if patients.has_next %}
-            <a href="?page={{ patients.next_page_number }}">next</a>
+            <a href="?page={{ patients.next_page_number }}">następna</a>
         {% endif %}
     </span>
 </div>
 {% else %}
 	<p>No patients in database.</p>
 {% endif %}
-
+</div>
 {% endblock content %}
