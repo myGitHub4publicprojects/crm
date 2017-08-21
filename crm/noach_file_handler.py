@@ -30,15 +30,15 @@ def noach_file_handler(noach_file):
             
 			if i.find('pt:homephone').text:
 				homephone = i.find('pt:homephone').text
-				patient['homephone'] = int(homephone)
+				patient['homephone'] = homephone
             
 			if i.find('pt:workphone').text:
 				workphone = i.find('pt:workphone').text
-				patient['workphone'] = int(workphone)
+				patient['workphone'] = workphone
             
 			if i.find('pt:mobilephone').text:
 				mobilephone = i.find('pt:mobilephone').text
-				patient['mobilephone'] = int(mobilephone)
+				patient['mobilephone'] = mobilephone
             
 			action = i.find_all('pt:action')
 			for y in action:

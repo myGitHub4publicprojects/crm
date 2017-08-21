@@ -702,13 +702,21 @@ def import_from_noach(request):
 				# this means that patient was added to crm and now the same patient is imported from noach,
 
 				# add noach create date and noach id
-				phone_from_noach = noach_patient.get('mobilephone') or noach_patient.get('homephone') or noach_patient.get('workphone')
 				patient.noachcreatedate = noach_patient['noachcreatedate']
 				patient.noachID = noach_patient['noahpatientid']
 				update_list = ['noachID', 'noachcreatedate']
+				phone_from_noach = noach_patient.get('mobilephone') or noach_patient.get('homephone') or noach_patient.get('workphone')
 				if phone_from_noach:
-					patient.phone_no = phone_from_noach
-					update_list.append('phone_no')
+					try:
+						phone_from_noach = int(phone_from_noach)
+						patient.phone_no = phone_from_noach
+						update_list.append('phone_no')
+					except:
+						note = 'nr tel: %s' % phone_from_noach
+						new_note = NewInfo(patient = new_patient, note = note)
+						new_note.save()						
+
+					
 				patient.save(update_fields=update_list)
 
 				phone2 = noach_patient.get('homephone') or noach_patient.get('workphone')
@@ -879,8 +887,14 @@ def import_from_noach(request):
 		new_patient.save()
 		phone_from_noach = noach_patient.get('mobilephone') or noach_patient.get('homephone') or noach_patient.get('workphone')
 		if phone_from_noach:
-			new_patient(phone_no = phone_from_noach)
-			new_patient.save()
+			try:
+				phone_from_noach = int(phone_from_noach)
+				new_patient(phone_no = phone_from_noach)
+				new_patient.save()
+			except:
+				note = 'nr tel: %s' % phone_from_noach
+				new_note = NewInfo(patient = new_patient, note = note)
+				new_note.save()						
 
 		phone2 = noach_patient.get('homephone') or noach_patient.get('workphone')
 		if phone2:
