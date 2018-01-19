@@ -21,8 +21,8 @@ ha_list = {
 		['106', '112'], 
 	'Chronos 5': 
 		['ITE D', 'ITC D', 'ITC P', 'ITC PD', 'CIC', 'CIC P', 'Nano', 'Micro', 'Nano RITE', 'Compact Power Plus'], 
-	'Juna7 Nano': 
-		['1'], 
+	'Juna7': 
+		['ITE D', 'ITE PD', 'ITC', 'ITC D', 'ITC PD', 'CIC P', 'CICX', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Chronos 7': 
 		['ITE D', 'ITC D', 'ITC P', 'ITC PD', 'CIC', 'CIC P', 'Nano', 'Micro', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Saphira 3': 
@@ -30,9 +30,9 @@ ha_list = {
 	'Acriva 9': 
 		['ITE D', 'ITC', 'ITC D', 'ITC PD', 'CIC', 'CIC P', 'IIC', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'],
 	'Juna 9': 
-		['ITE D', 'ITE PD', 'ITC', 'ITC D', 'ITC PD', 'CIC P', 'CICX', 'IIC', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
+		['ITE D', 'ITE PD', 'ITC', 'ITC D', 'ITC PD', 'CIC P', 'CICX', 'IIC', 'IICx', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Saphira 5': 
-		['ITE D', 'ITE DP', 'ITC', 'ITC D', 'ITC DP', 'CIC', 'CIC P', 'CICX', 'IIC', 'Nano', 'Nano RITE', 'Pico RITE', 'Power', 'Compact Power', 'Compact Power Plus'], 
+		['ITE D', 'ITE DP', 'ITC', 'ITC D', 'ITC DP', 'CIC', 'CIC P', 'CICX', 'IIC', 'IICx', 'Nano', 'Nano RITE', 'Pico RITE', 'Power', 'Compact Power', 'Compact Power Plus'], 
 	'Inizia 3': 
 		['ITE D', 'ITC', 'ITC D', 'ITC P', 'CIC', 'CIC P', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Xtreme': 
@@ -43,6 +43,12 @@ ha_list = {
 		['ITE D', 'ITE PD', 'ITC', 'ITC D', 'ITC PD', 'CIC', 'CIC P', 'CICX', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Acriva 7': 
 		['ITE D', 'ITC', 'ITC D', 'ITC PD', 'CIC', 'CIC P', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'],
+	'Zerena 5':
+		['BTE 105', 'miniRITE T', 'miniRITE'],
+	'Zerena 7':
+		['BTE 105', 'miniRITE T', 'miniRITE'],
+	'Zerena 9':
+		['BTE 105', 'miniRITE T', 'miniRITE'],
 	'Inny': ['Inny']
 		},
 
