@@ -1,12 +1,6 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<div id="main" >
-<form id="search_form" method="GET" action="">
-	<input type="search" name="q" placeholder="nazwisko">
-	<input type="submit" value="Szukaj">
-</form>
-<button> <a id="advanced_search" href="{% url 'crm:advanced_search' %}">wyszukiwanie zaawansowane</a></button>
 <p>Lista pacjentów:</p>
 
 {% if patients %}

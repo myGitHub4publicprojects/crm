@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-{% load staticfiles %}
+{% extends "crm/base.html" %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'crm/style.css' %}" />
-<link rel="icon" type="image/png" href="{% static 'crm/favicon.png' %}" />
-	<title></title>
+{% block scripts %}
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
       google.charts.load("current", {packages:["corechart"]});
@@ -71,8 +66,9 @@
 
 
     </script>
-</head>
-<body>
+{% endblock scripts %}
+
+{% block content %}
 
 <div class='container'>
 	<div id='header'>
@@ -234,6 +230,4 @@ Lokalizacja: {{ patient.location }} <small onclick="document.getElementById('loc
 <a href="{% url 'crm:deleteconfirm' patient.id %}">USUWAM</a>
 </div>
 </div>
-
-</body>
-</html>
+{% endblock content %}
