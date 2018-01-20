@@ -1,0 +1,34 @@
+{% load staticfiles %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+		
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <span class="navbar-brand">
+        <img src="{% static 'crm/logo.png' %}" alt="">
+    </span>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'crm:index' %}">
+                <button class="btn btn-outline-success my-2 my-sm-0 text-white">LISTA PACJENTÓW</button>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'crm:create' %}">
+                <button class="btn btn-outline-success my-2 my-sm-0 text-white">DODAJ PACJENTA</button>
+            </a>
+        </li>
+        </ul>
+        
+        <form id="search_form" method="GET" action="" class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="search" name="q" placeholder="nazwisko" aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Szukaj</button>
+        </form>
+        <a class="nav-link" href="{% url 'crm:advanced_search' %}">
+            <button class="btn btn-outline-success my-2 my-sm-0 text-white">wyszukiwanie zaawansowane</button>
+        </a>
+
+    </div>
+</nav>
