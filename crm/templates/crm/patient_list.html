@@ -1,10 +1,9 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<p>Lista pacjentów:</p>
 
 {% if patients %}
-<table>
+<table class="table">
 	<tr>
 		<th><a href="?order_by=last_name">Nazwisko</a></th>
 		<th><a href="?order_by=first_name">Imie</a></th>
@@ -39,7 +38,7 @@
     </span>
 </div>
 {% else %}
-	<p>No patients in database.</p>
+	<p>Nie ma takich pacjentów</p>
 {% endif %}
 </div>
 {% endblock content %}

@@ -69,23 +69,11 @@
 {% endblock scripts %}
 
 {% block content %}
+<div class="status">{% include "crm/status.html" %}</div>
+
 
 <div class='container'>
-	<div id='header'>
-	<nav class="old" role="navigation">
-	<ul>
-		<li><a href="{% url 'crm:index' %}">LISTA PACJENTÓW</a></li>
-		<li><a href="{% url 'crm:create' %}">DODAJ PACJENTA</a></li>
-		<li><a href="{% url 'crm:select_noach_file' %}">IMPORT Z NOACH</a></li>
-	</ul>
-	</nav>
-	<img class="logo" src="../../../static/crm/logo.png" />
-
-	{% include "crm/messages_display.html" %}
-	</div>
 <div id="main" >
-
-<div class="status">{% include "crm/status.html" %}</div>
 
 <div id="details">
 <div class="patient_info">
