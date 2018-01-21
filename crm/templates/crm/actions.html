@@ -3,7 +3,7 @@
 	<!-- <li onclick="document.getElementById('wnioski').style.display='block'">wnioski</li>
 	<div id='wnioski' style="display:none">
 		<div class="left">
-		<b>aparat LEWY</b><br>
+		<h4 class="bg-info text-white">aparat LEWY</h4>
 		{% if left_NFZ_confirmed %}
 			potwierdzony wniosek dostarczono: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 			<div class="btn" onclick="document.getElementById('nfz_left').style.display='block'">Zmień tę datę</div>
@@ -15,8 +15,8 @@
 		{% endif %}
 		</div>
 
-		<div class="right">
-		<b>aparat PRAWY</b><br>
+		<div class="right btn btn-outline-danger">
+		<h4 class="bg-danger text-white">aparat PRAWY</h4>
 		{% if right_NFZ_confirmed %}
 			potwierdzony wniosek dostarczono: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 			<div class="btn" onclick="document.getElementById('nfz_right').style.display='block'">Zmień tę datę</div>
@@ -32,7 +32,7 @@
 	<!-- <li onclick="document.getElementById('kosztorys').style.display='block'">kosztorys</li>
 	<div id='kosztorys' style="display:none"> -->
 		<!-- <div class="left">
-		<b>aparat LEWY</b><br>
+		<h4 class="bg-info text-white">aparat LEWY</h4>
 		{% if left_PCPR_estimate %}
 			kosztorys wystawiono: {{ left_PCPR_estimate.date|date:'d-m-Y' }}<br>
 			Aparat: {{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}
@@ -86,8 +86,8 @@
 		{% endif %}
 		</div>
 
-		<div class="right">
-		<b>aparat PRAWY</b><br>
+		<div class="right btn btn-outline-danger">
+		<h4 class="bg-danger text-white">aparat PRAWY</h4>
 		{% if right_PCPR_estimate %}
 			kosztorys wystawiono: {{ right_PCPR_estimate.date|date:'d-m-Y' }}<br>
 			Aparat: {{ right_PCPR_estimate.ha_make }} {{ right_PCPR_estimate.ha_family }} {{ right_PCPR_estimate.ha_model }}
@@ -145,7 +145,7 @@
 	<div id='faktura' style="display:none"> -->
 	
 		<!-- <div class="left">
-		<b>aparat LEWY</b><br>
+		<h4 class="bg-info text-white">aparat LEWY</h4>
 		{% if left_invoice %}
 			fakturę wystawiono: {{ left_invoice.date|date:'d-m-Y' }}<br>
 			Aparat: {{ left_invoice.ha_make }} {{ left_invoice.ha_family }} {{ left_invoice.ha_model }}
@@ -199,8 +199,8 @@
 		{% endif %}
 		</div>
 
-		<div class="right">
-		<b>aparat PRAWY</b><br>
+		<div class="right btn btn-outline-danger">
+		<h4 class="bg-danger text-white">aparat PRAWY</h4>
 		{% if right_invoice %}
 			fakturę wystawiono: {{ right_invoice.date|date:'d-m-Y' }}<br>
 			Aparat: {{ right_invoice.ha_make }} {{ right_invoice.ha_family }} {{ right_invoice.ha_model }}
@@ -258,7 +258,7 @@
 	<div id='odbior' style="display:none">
 	
 		<div class="left">
-		<b>aparat LEWY</b><br>
+		<h4 class="bg-info text-white">aparat LEWY</h4>
 		{% if left_invoice %}
 			
 			Odbiór apartu: {{ left_invoice.ha_make }} {{ left_invoice.ha_family }} {{ left_invoice.ha_model }}<br>
@@ -270,8 +270,8 @@
 		{% endif %}
 		</div>
 
-		<div class="right">
-		<b>aparat PRAWY</b><br>
+		<div class="right btn btn-outline-danger">
+		<h4 class="bg-danger text-white">aparat PRAWY</h4>
 		{% if right_invoice %}
 			Odbiór apartu: {{ right_invoice.ha_make }} {{ right_invoice.ha_family }} {{ right_invoice.ha_model }}<br>
 			Data odbioru: <input type="date" name="right_collection_date" value={{ time_now|date:'Y-m-d' }}><br>
@@ -289,8 +289,8 @@
 		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#wnioski" aria-expanded="false" aria-controls="wnioski">wnioski</div>
 		<div class="collapse" id="wnioski">
 			<div class="card card-body">
-				<div class="left">
-					<b>aparat LEWY</b><br>
+				<div class="left btn btn-outline-info">
+					<h4 class="bg-info text-white">aparat LEWY</h4>
 					{% if left_NFZ_confirmed %}
 						potwierdzony wniosek dostarczono: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 						<div class="btn" onclick="document.getElementById('nfz_left').style.display='block'">Zmień tę datę</div>
@@ -302,8 +302,8 @@
 					{% endif %}
 				</div>
 			
-				<div class="right">
-					<b>aparat PRAWY</b><br>
+				<div class="right btn btn-outline-danger">
+					<h4 class="bg-danger text-white">aparat PRAWY</h4>
 					{% if right_NFZ_confirmed %}
 						potwierdzony wniosek dostarczono: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 						<div class="btn" onclick="document.getElementById('nfz_right').style.display='block'">Zmień tę datę</div>
@@ -321,8 +321,8 @@
 			<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#kosztorys" aria-expanded="false" aria-controls="kosztorys">kosztorys</div>
 			<div class="collapse" id="kosztorys">
 				<div class="card card-body">
-				<div class="left">
-					<b>aparat LEWY</b><br>
+				<div class="left btn btn-outline-info">
+					<h4 class="bg-info text-white">aparat LEWY</h4>
 					{% if left_PCPR_estimate %}
 						kosztorys wystawiono: {{ left_PCPR_estimate.date|date:'d-m-Y' }}<br>
 						Aparat: {{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}
@@ -376,8 +376,8 @@
 						{% endif %}
 						</div>
 						
-						<div class="right">
-						<b>aparat PRAWY</b><br>
+						<div class="right btn btn-outline-danger">
+						<h4 class="bg-danger text-white">aparat PRAWY</h4>
 						{% if right_PCPR_estimate %}
 							kosztorys wystawiono: {{ right_PCPR_estimate.date|date:'d-m-Y' }}<br>
 							Aparat: {{ right_PCPR_estimate.ha_make }} {{ right_PCPR_estimate.ha_family }} {{ right_PCPR_estimate.ha_model }}
@@ -437,8 +437,8 @@
 		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#faktura" aria-expanded="false" aria-controls="faktura">faktura</div>
 		<div class="collapse" id="faktura">
 			<div class="card card-body">
-					<div class="left">
-							<b>aparat LEWY</b><br>
+					<div class="left btn btn-outline-info">
+							<h4 class="bg-info text-white">aparat LEWY</h4>
 							{% if left_invoice %}
 								fakturę wystawiono: {{ left_invoice.date|date:'d-m-Y' }}<br>
 								Aparat: {{ left_invoice.ha_make }} {{ left_invoice.ha_family }} {{ left_invoice.ha_model }}
@@ -492,8 +492,8 @@
 							{% endif %}
 							</div>
 					
-							<div class="right">
-							<b>aparat PRAWY</b><br>
+							<div class="right btn btn-outline-danger">
+							<h4 class="bg-danger text-white">aparat PRAWY</h4>
 							{% if right_invoice %}
 								fakturę wystawiono: {{ right_invoice.date|date:'d-m-Y' }}<br>
 								Aparat: {{ right_invoice.ha_make }} {{ right_invoice.ha_family }} {{ right_invoice.ha_model }}
@@ -555,8 +555,8 @@
 				<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#odbiór" aria-expanded="false" aria-controls="odbiór">odbiór</div>
 				<div class="collapse" id="odbiór">
 					<div class="card card-body">
-						<div class="left">
-							<b>aparat LEWY</b><br>
+						<div class="left btn btn-outline-info">
+							<h4 class="bg-info text-white">aparat LEWY</h4>
 							{% if left_invoice %}
 								
 								Odbiór apartu: {{ left_invoice.ha_make }} {{ left_invoice.ha_family }} {{ left_invoice.ha_model }}<br>
@@ -568,8 +568,8 @@
 							{% endif %}
 						</div>
 					
-						<div class="right">
-							<b>aparat PRAWY</b><br>
+						<div class="right btn btn-outline-danger">
+							<h4 class="bg-danger text-white">aparat PRAWY</h4>
 							{% if right_invoice %}
 								Odbiór apartu: {{ right_invoice.ha_make }} {{ right_invoice.ha_family }} {{ right_invoice.ha_model }}<br>
 								Data odbioru: <input type="date" name="right_collection_date" value={{ time_now|date:'Y-m-d' }}><br>
