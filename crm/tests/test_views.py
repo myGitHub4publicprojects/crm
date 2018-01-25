@@ -78,3 +78,24 @@ class TestIndexView(TestCase):
         response = self.client.get(url, data)
         # should show last page (1)
         self.assertEqual(response.context['patients'].paginator.num_pages, 1)
+
+class TestAdvancedSearchView(TestCase):
+    def setUp(self):
+        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
+        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
+            date_of_birth=today-timedelta(days=1))
+        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
+            date_of_birth=today-timedelta(days=2))
+        patient4 = Patient.objects.create(first_name = 'John', last_name = 'Smith4',
+            date_of_birth=today-timedelta(days=3))
+        patient4.create_date=now-timedelta(days=3)
+        patient4.save()
+    
+    def test_search_last_name(self):
+        '''should return one patient with last name: Smith3'''
+        data={'lname': 'Smith3'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+        response_patient_last_name = response.context['patient_list'][0].last_name
+        self.assertEqual(response_patient_last_name, 'Smith3')

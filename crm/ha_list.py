@@ -21,7 +21,7 @@ ha_list = {
 		['106', '112'], 
 	'Chronos 5': 
 		['ITE D', 'ITC D', 'ITC P', 'ITC PD', 'CIC', 'CIC P', 'Nano', 'Micro', 'Nano RITE', 'Compact Power Plus'], 
-	'Juna7': 
+	'Juna 7': 
 		['ITE D', 'ITE PD', 'ITC', 'ITC D', 'ITC PD', 'CIC P', 'CICX', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Chronos 7': 
 		['ITE D', 'ITC D', 'ITC P', 'ITC PD', 'CIC', 'CIC P', 'Nano', 'Micro', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 

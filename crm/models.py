@@ -40,7 +40,7 @@ class NewInfo(models.Model):
 class Audiogram(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	time_of_test = models.DateTimeField(null=True, blank=True)
-	ear = models.CharField(max_length=14)
+	ear = models.CharField(max_length=5, choices=(('left', 'left'),('right', 'right')))
 	a250Hz = models.IntegerField(null=True, blank=True)
 	a500Hz = models.IntegerField(null=True, blank=True)
 	a1kHz = models.IntegerField(null=True, blank=True)
@@ -61,8 +61,8 @@ class Hearing_Aid_Main(models.Model):
 	 # eg. WIN
 	ha_model = models.CharField(max_length=20)
 	 # eg. 102
-	ears = ['left', 'right']
-	ear = models.CharField(max_length=14)
+
+	ear = models.CharField(max_length=5, choices=(('left', 'left'),('right', 'right')))
 	
 	ha_list = ha_list
 
@@ -86,8 +86,7 @@ class NFZ_Confirmed(models.Model):
 	# confirmed by NFZ application for hearing aid
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	date = models.DateField()
-	sides = ['left', 'right']
-	side = models.CharField(max_length=5)
+	side = models.CharField(max_length=5, choices=(('left', 'left'),('right', 'right')))
 	in_progress = models.BooleanField(default=True)
 	# change to False once collected by patient
 

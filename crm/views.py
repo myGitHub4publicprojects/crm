@@ -143,7 +143,7 @@ def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
-	ears =  Hearing_Aid.ears
+	ears =  ['left', 'right']
 	patient_notes = patient.newinfo_set.order_by('-timestamp')
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
