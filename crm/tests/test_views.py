@@ -11,13 +11,52 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from crm.models import Patient
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
+now = datetime.now()
 
-class IndexViewTests(TestCase):
-    def test_home_view_for_not_authenticated_noerror(self):
-        """
-        if setup is correct - status code 200
-        """
-        client = Client()
-        user = auth.get_user(client) # it returns User or AnonymousUser
-        response = self.client.get(reverse('crm:index'))
-        self.assertEqual(response.status_code, 200)
+class TestIndexView(TestCase):
+    def setUp(self):
+        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
+        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
+            date_of_birth=today-timedelta(days=1))
+        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
+            date_of_birth=today-timedelta(days=2))
+        patient4 = Patient.objects.create(first_name = 'John', last_name = 'Smith4',
+            date_of_birth=today-timedelta(days=3))
+        patient4.create_date=now-timedelta(days=3)
+        patient4.save()
+        # admin = User.objects.create_user(is_staff=True,
+        #                                 username='adminuser', 
+        #                                 email='oo@gmail.com',
+        #                                 password='somepass')
+
+    def test_anonymous(self):
+        url = reverse('crm:index')
+        response = self.client.get(url)
+        all_patients = Patient.objects.all()
+        assert response.status_code == 200, 'Should be callable by anyone'
+        self.assertEqual(len(response.context['patients']), 4)
+
+    def test_order_by_date_of_birth(self):
+        '''should sort patients based on date of birth, starting from those without
+        a specified date, then oldest to youngest'''
+        data={'order_by': 'date_of_birth'}
+        url = reverse('crm:index')
+        response = self.client.get(url, data)
+        first_object = Patient.objects.all().first()
+        first_in_context = response.context['patients'][0]
+        self.assertEqual(first_object, first_in_context)
+        youngest_patient = Patient.objects.get(date_of_birth=today-timedelta(days=1))
+        last_in_context = response.context['patients'][-1]
+        self.assertEqual(youngest_patient, last_in_context)
+
+    def test_order_by_create_date(self):
+        '''should sort patients based on create_date, starting from oldest to youngest'''
+        data={'order_by': 'create_date'}
+        url = reverse('crm:index')
+        response = self.client.get(url, data)
+        object_oldest_create_date = Patient.objects.get(id=4)
+        first_in_context = response.context['patients'][0]
+        self.assertEqual(object_oldest_create_date, first_in_context)
+        object_latest_create_date = Patient.objects.get(id=3)
+        last_in_context = response.context['patients'][-1]
+        self.assertEqual(object_latest_create_date, last_in_context)

@@ -5,3 +5,5 @@ db.sqlite3
 .DS_Store
 crm/migrations/*
 htmlcov/
+.coverage
+.cache/
