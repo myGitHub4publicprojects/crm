@@ -4,11 +4,15 @@ from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from django.contrib import auth
+from django.core.paginator import Paginator
+
 from mixer.backend.django import mixer
 import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
+
 from crm.models import Patient
+
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
 now = datetime.now()
@@ -60,3 +64,17 @@ class TestIndexView(TestCase):
         object_latest_create_date = Patient.objects.get(id=3)
         last_in_context = response.context['patients'][-1]
         self.assertEqual(object_latest_create_date, last_in_context)
+
+    def test_query(self):
+        '''should return patients with last name containing given query'''
+        data={'q': 'Smith'}
+        url = reverse('crm:index')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patients']), 4)
+
+    def test_pagination_page_over_9999(self):
+        data = {'page': '99999'}
+        url = reverse('crm:index')
+        response = self.client.get(url, data)
+        # should show last page (1)
+        self.assertEqual(response.context['patients'].paginator.num_pages, 1)
