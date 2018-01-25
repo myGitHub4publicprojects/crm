@@ -86,9 +86,10 @@ class TestAdvancedSearchView(TestCase):
             date_of_birth=today-timedelta(days=1))
         patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
             date_of_birth=today-timedelta(days=2))
-        patient4 = Patient.objects.create(first_name = 'John', last_name = 'Smith4',
+        patient4 = Patient.objects.create(first_name = 'Adam', last_name = 'Smith4',
             date_of_birth=today-timedelta(days=3))
         patient4.create_date=now-timedelta(days=3)
+        patient4.location = 'Mosina'
         patient4.save()
     
     def test_search_last_name(self):
@@ -99,3 +100,21 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
         response_patient_last_name = response.context['patient_list'][0].last_name
         self.assertEqual(response_patient_last_name, 'Smith3')
+
+    def test_search_first_name(self):
+        '''should return one patient with first name: Adam'''
+        data={'fname': 'Adam'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+        response_patient_first_name = response.context['patient_list'][0].first_name
+        self.assertEqual(response_patient_first_name, 'Adam')
+
+    def test_search_location(self):
+        '''should return one patient with location: Mosina'''
+        data={'loc': 'Mosina'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+        response_patient_location = response.context['patient_list'][0].location
+        self.assertEqual(response_patient_location, 'Mosina')

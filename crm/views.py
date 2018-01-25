@@ -14,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 
+ears = ['left', 'right']
 
 def index(request):
 	#x = Lower('last_name')
@@ -294,7 +295,7 @@ def updating(request, patient_id):
 
 	
 
-	for ear in Hearing_Aid.ears:
+	for ear in ears:
 		try:
 			request.POST[ear + '_ha']
 			ha = request.POST[ear + '_ha']
@@ -312,7 +313,7 @@ def updating(request, patient_id):
 			pass
 
 
-	for ear in Hearing_Aid.ears:
+	for ear in ears:
 		try:
 			request.POST['NFZ_' + ear]
 			if not NFZ_Confirmed.objects.filter(patient=patient, side=ear, in_progress=True):
@@ -325,7 +326,7 @@ def updating(request, patient_id):
 		except:
 			pass
 
-	for ear in Hearing_Aid.ears:
+	for ear in ears:
 		try:
 			request.POST[ear + '_pcpr_ha']
 			ha = request.POST[ear + '_pcpr_ha']
@@ -342,7 +343,7 @@ def updating(request, patient_id):
 		except:
 			pass
 
-	for ear in Hearing_Aid.ears:
+	for ear in ears:
 
 		# invoice procedure
 		if request.POST.get(ear + '_invoice_ha'):
