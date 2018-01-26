@@ -91,6 +91,22 @@ class TestAdvancedSearchView(TestCase):
         patient4.create_date=now-timedelta(days=3)
         patient4.location = 'Mosina'
         patient4.save()
+
+        ha1 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=1),
+                                        ha_make = 'Bernafon',
+	                                    ha_family = 'WIN',
+	                                    ha_model = '102',
+	                                    ear = 'left')
+        ha2 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=2),
+                                        ha_make = 'Bernafon',
+	                                    ha_family = 'WIN',
+	                                    ha_model = '102',
+	                                    ear = 'left')
+        ha3 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=3),
+                                        ha_make = 'Phonak',
+	                                    ha_family = 'Naida Q',
+	                                    ha_model = '30 SP',
+	                                    ear = 'left')
     
     def test_search_last_name(self):
         '''should return one patient with last name: Smith3'''
@@ -119,25 +135,22 @@ class TestAdvancedSearchView(TestCase):
         response_patient_location = response.context['patient_list'][0].location
         self.assertEqual(response_patient_location, 'Mosina')
 
-    def test_search_hearing_aid(self):
-        '''should return patients wearing hearing aids by Bernafon'''
-        ha1 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=1),
-                                        ha_make = 'Bernafon',
-	                                    ha_family = 'WIN',
-	                                    ha_model = '102',
-	                                    ear = 'left')
-        ha2 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=2),
-                                        ha_make = 'Bernafon',
-	                                    ha_family = 'WIN',
-	                                    ha_model = '102',
-	                                    ear = 'left')
-        ha3 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=3),
-                                        ha_make = 'Phonak',
-	                                    ha_family = 'Naida Q',
-	                                    ha_model = '30 SP',
-	                                    ear = 'left')
+    def test_search_hearing_aid_make(self):
+        '''should return patients wearing hearing aids by Bernafon (2)'''
+        ha1 = Hearing_Aid.objects.get(id=1)
+        ha2 = Hearing_Aid.objects.get(id=2)
+        ha3 = Hearing_Aid.objects.get(id=3)
         data={'ha_make': 'Bernafon'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 2)
 
+    def test_search_hearing_aid_make_family_model(self):
+        '''should return patients wearing Phonak Naida Q 30 SP aid (1)'''
+        ha1 = Hearing_Aid.objects.get(id=1)
+        ha2 = Hearing_Aid.objects.get(id=2)
+        ha3 = Hearing_Aid.objects.get(id=3)
+        data={'ha_make_family_model': 'Phonak_Naida Q_30 SP'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
