@@ -93,20 +93,23 @@ class TestAdvancedSearchView(TestCase):
         patient4.save()
 
         ha1 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=1),
-                                        ha_make = 'Bernafon',
-	                                    ha_family = 'WIN',
-	                                    ha_model = '102',
-	                                    ear = 'left')
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            purchase_date = '2000-01-01')
         ha2 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=2),
-                                        ha_make = 'Bernafon',
-	                                    ha_family = 'WIN',
-	                                    ha_model = '102',
-	                                    ear = 'left')
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            purchase_date = '2010-01-01')
         ha3 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=3),
-                                        ha_make = 'Phonak',
-	                                    ha_family = 'Naida Q',
-	                                    ha_model = '30 SP',
-	                                    ear = 'left')
+                            ha_make = 'Phonak',
+                            ha_family = 'Naida Q',
+                            ha_model = '30 SP',
+                            ear = 'left',
+                            purchase_date = '2016-01-01')
     
     def test_search_last_name(self):
         '''should return one patient with last name: Smith3'''
@@ -151,6 +154,43 @@ class TestAdvancedSearchView(TestCase):
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)
         data={'ha_make_family_model': 'Phonak_Naida Q_30 SP'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+
+    def test_search_hearing_aid_by_purchase_date_only_lower_band(self):
+        '''only lower band of dates is given - upper band should default to today
+        should return only patients with hearing aids purchased after the lower band date'''
+        ha1 = Hearing_Aid.objects.get(id=1)
+        ha2 = Hearing_Aid.objects.get(id=2)
+        ha3 = Hearing_Aid.objects.get(id=3)
+        lower_band = '2000-01-02'
+        data={'s_purch_date': lower_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
+    def test_search_hearing_aid_by_purchase_date_only_upper_band(self):
+        '''only upper band of dates is given - lower band should default to '1990-01-01'
+        should return only patients with hearing aids purchased before the upper band date'''
+        ha1 = Hearing_Aid.objects.get(id=1)
+        ha2 = Hearing_Aid.objects.get(id=2)
+        ha3 = Hearing_Aid.objects.get(id=3)
+        upper_band = '2000-01-02'
+        data={'e_purch_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+
+    def test_search_hearing_aid_by_purchase_date_both_lower_and_upper_band(self):
+        '''only upper band of dates is given - lower band should default to '1990-01-01'
+        should return only patients with hearing aids purchased before the upper band date'''
+        ha1 = Hearing_Aid.objects.get(id=1)
+        ha2 = Hearing_Aid.objects.get(id=2)
+        ha3 = Hearing_Aid.objects.get(id=3)
+        lower_band = '2000-01-01'
+        upper_band = '2000-01-02'
+        data={'s_purch_date': lower_band, 'e_purch_date': upper_band}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 1)
