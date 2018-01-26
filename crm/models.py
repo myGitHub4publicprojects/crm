@@ -61,11 +61,10 @@ class Hearing_Aid_Main(models.Model):
 	 # eg. WIN
 	ha_model = models.CharField(max_length=20)
 	 # eg. 102
-
 	ear = models.CharField(max_length=5, choices=(('left', 'left'),('right', 'right')))
-	
 	ha_list = ha_list
-
+	current = models.BooleanField(default=True)
+		# this hearing aid currently is being used by a patient
 	def __str__(self):
 		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model + ' ' + self.ear
 

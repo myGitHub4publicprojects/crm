@@ -11,7 +11,7 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import Patient
+from crm.models import Patient, Hearing_Aid
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -118,3 +118,26 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
         response_patient_location = response.context['patient_list'][0].location
         self.assertEqual(response_patient_location, 'Mosina')
+
+    def test_search_hearing_aid(self):
+        '''should return patients wearing hearing aids by Bernafon'''
+        ha1 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=1),
+                                        ha_make = 'Bernafon',
+	                                    ha_family = 'WIN',
+	                                    ha_model = '102',
+	                                    ear = 'left')
+        ha2 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=2),
+                                        ha_make = 'Bernafon',
+	                                    ha_family = 'WIN',
+	                                    ha_model = '102',
+	                                    ear = 'left')
+        ha3 = Hearing_Aid.objects.create(patient = Patient.objects.get(id=3),
+                                        ha_make = 'Phonak',
+	                                    ha_family = 'Naida Q',
+	                                    ha_model = '30 SP',
+	                                    ear = 'left')
+        data={'ha_make': 'Bernafon'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
