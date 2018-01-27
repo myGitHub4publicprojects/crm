@@ -183,8 +183,8 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
 
     def test_search_hearing_aid_by_purchase_date_both_lower_and_upper_band(self):
-        '''only upper band of dates is given - lower band should default to '1990-01-01'
-        should return only patients with hearing aids purchased before the upper band date'''
+        '''both lower and upper band of dates is given, should return only patients
+        with hearing aids purchased after the lower band and before the upper band date'''
         ha1 = Hearing_Aid.objects.get(id=1)
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)

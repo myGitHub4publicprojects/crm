@@ -55,42 +55,31 @@ def advancedsearch(request):
 	if loc:
 		patient_list = patient_list.filter(location=loc)
 
-	
-	hearing_aids = Hearing_Aid.objects.all()
-	hearing_aids_list = Hearing_Aid.objects.all()
-	current_HAs = []
-	#only current left and right ha for each patient
-	for patient in patient_list:
-		l = patient.hearing_aid_set.filter(ear='left').last()
-		if l: current_HAs.append(l)
-		r = patient.hearing_aid_set.filter(ear='right').last()
-		if r: current_HAs.append(r)
+	def patients_from_ha(HA_queryset):
+		patients_id = [i.patient.id for i in all_ha_make]
+		return Patient.objects.filter(id__in=patients_id)
 
+    # search by ha make
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
-		for ha in current_HAs[:]:
-			if ha.ha_make != ha_make:
-				current_HAs.remove(ha)
-		
+		all_ha_make = Hearing_Aid.objects.filter(ha_make=ha_make)
+		patient_list = patient_list & patients_from_ha(all_ha_make)
+
+	# search by ha make family and model
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
 		ha_make, ha_family, ha_model = ha_make_family_model.split('_')
-		for ha in current_HAs[:]:
-			if ha.ha_make != ha_make or ha.ha_family != ha_family or ha.ha_model != ha_model:
-				current_HAs.remove(ha)
-	
+		all_such_has = Hearing_Aid.objects.filter(ha_make=ha_make, ha_model=ha_model, ha_family=ha_family)
+		patient_list = patient_list & patients_from_ha(all_such_has)
+
+	# search by dates of purchase
 	if request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
 		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
 		ha_purchase_end = request.GET.get('e_purch_date') or str(datetime.datetime.today().date())
-		for ha in current_HAs[:]:
-			if str(ha.purchase_date) < ha_purchase_start or str(ha.purchase_date) > ha_purchase_end:
-				current_HAs.remove(ha)
+		all_such_has = Hearing_Aid.objects.filter(
+			purchase_date__range=[ha_purchase_start,ha_purchase_end])
+		patient_list = patient_list & patients_from_ha(all_such_has)
 
-	if ha_make or ha_make_family_model or request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
-		patient_list = [i.patient for i in current_HAs]
-	else: patient_list
-	# patients_with_ha = [i.patient for i in current_HAs]
-	# patient_list = list(set(patient_list).intersection(patients_with_ha))
 	locations = Patient.locations
 	ha_list = Hearing_Aid.ha_list
 	context = {'patient_list': patient_list, 'locations': locations, 'ha_list': ha_list}
