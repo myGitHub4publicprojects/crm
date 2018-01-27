@@ -194,3 +194,9 @@ class TestAdvancedSearchView(TestCase):
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 1)
+
+class TestCreateView(TestCase):
+    def test_anonymous(self):
+        url = reverse('crm:create')
+        response = self.client.get(url)
+        assert response.status_code == 200, 'Should be callable by anyone'

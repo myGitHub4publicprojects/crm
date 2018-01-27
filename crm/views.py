@@ -56,7 +56,7 @@ def advancedsearch(request):
 		patient_list = patient_list.filter(location=loc)
 
 	def patients_from_ha(HA_queryset):
-		patients_id = [i.patient.id for i in all_ha_make]
+		patients_id = [i.patient.id for i in HA_queryset]
 		return Patient.objects.filter(id__in=patients_id)
 
     # search by ha make
@@ -86,9 +86,7 @@ def advancedsearch(request):
 	return render(request, 'crm/advanced_search.html', context)
 
 def create(request):
-	# upadates database with details collected in edit view form
 	ha_list = Hearing_Aid.ha_list
-	ears =  Hearing_Aid.ears
 	locations = Patient.locations
 	audiometrist_list = Patient.audiometrist_list
 	context = {'ha_list': ha_list, 'ears': ears, 'locations': locations, 'audiometrist_list': audiometrist_list}
