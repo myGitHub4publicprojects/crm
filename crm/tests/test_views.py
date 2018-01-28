@@ -11,7 +11,7 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate
+from crm.models import Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -335,11 +335,60 @@ class TestEditView(TestCase):
         self.assertEqual(response.context['left_PCPR_estimate'], pcpr1)
         self.assertEqual(response.context['right_PCPR_estimate'], pcpr3)
 
+    def test_patient_with_only_inactive_HA_Invoice(self):
+        ''' scenario with only inactive (in_progres=False) latest (.last()) HA_Invoice
+        instances '''
+        patient1 = Patient.objects.get(id=1)
+        invoice1 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            date = today,
+                            in_progress = False)
+        invoice2 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'right',
+                            date = today,
+                            in_progress = False)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertIsNone(response.context['left_invoice'])
+        self.assertIsNone(response.context['right_invoice'])
 
-        # there are only inactive (in_progres=False) latest (.last()) PCPR_Estimate instances
-
-        # there is left active (in_progres=True) latest (.last()) PCPR_Estimate instance
-
-        # there are only inactive (in_progres=False) latest (.last()) HA_Invoice instances
-
-        # there is left active (in_progres=True) latest (.last()) HA_Invoice instance
+    def test_patient_with_two_active_and_two_inactive_HA_Invoice(self):
+        ''' scenario with active (both left and right) and two inactive (in_progres=False)
+        latest (.last()) HA_Invoice instances '''
+        patient1 = Patient.objects.get(id=1)
+        invoice0 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            date = today,
+                            in_progress = False)
+        invoice1 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            date = today,
+                            in_progress = True)
+        invoice2 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'right',
+                            date = today,
+                            in_progress = False)
+        invoice3 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'right',
+                            date = today,
+                            in_progress = True)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertEqual(response.context['left_invoice'], invoice1)
+        self.assertEqual(response.context['right_invoice'], invoice3)
