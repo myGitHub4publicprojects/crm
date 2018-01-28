@@ -93,45 +93,44 @@ def create(request):
 	return render(request, 'crm/create.html', context)
 
 
-def detail(request, patient_id):
-	patient = get_object_or_404(Patient, pk=patient_id)
-	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
-	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
-	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
-	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
-		left_NFZ_confirmed = None 
-	right_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='right').last()
-	if right_NFZ_confirmed and right_NFZ_confirmed.in_progress == False:
-		right_NFZ_confirmed = None	
-	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
-	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
-		left_PCPR_estimate = None		
-	right_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='right').last()
-	if right_PCPR_estimate and right_PCPR_estimate.in_progress == False:
-		right_PCPR_estimate = None
-	left_invoice = HA_Invoice.objects.filter(patient=patient, ear='left').last()
-	if left_invoice and left_invoice.in_progress == False:
-		left_invoice = None
-	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
-	if right_invoice and right_invoice.in_progress == False:
-		right_invoice = None
-	context = {'patient': patient,
-				'left_NFZ_confirmed': left_NFZ_confirmed,
-				'right_NFZ_confirmed': right_NFZ_confirmed,
-				'left_hearing_aid': left_hearing_aid,
-				'right_hearing_aid': right_hearing_aid,
-				'left_PCPR_estimate': left_PCPR_estimate,
-				'right_PCPR_estimate': right_PCPR_estimate,
-				'left_invoice': left_invoice,
-				'right_invoice': right_invoice}	
+# def detail(request, patient_id):
+# 	patient = get_object_or_404(Patient, pk=patient_id)
+# 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
+# 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
+# 	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
+# 	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
+# 		left_NFZ_confirmed = None 
+# 	right_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='right').last()
+# 	if right_NFZ_confirmed and right_NFZ_confirmed.in_progress == False:
+# 		right_NFZ_confirmed = None	
+# 	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
+# 	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
+# 		left_PCPR_estimate = None		
+# 	right_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='right').last()
+# 	if right_PCPR_estimate and right_PCPR_estimate.in_progress == False:
+# 		right_PCPR_estimate = None
+# 	left_invoice = HA_Invoice.objects.filter(patient=patient, ear='left').last()
+# 	if left_invoice and left_invoice.in_progress == False:
+# 		left_invoice = None
+# 	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
+# 	if right_invoice and right_invoice.in_progress == False:
+# 		right_invoice = None
+# 	context = {'patient': patient,
+# 				'left_NFZ_confirmed': left_NFZ_confirmed,
+# 				'right_NFZ_confirmed': right_NFZ_confirmed,
+# 				'left_hearing_aid': left_hearing_aid,
+# 				'right_hearing_aid': right_hearing_aid,
+# 				'left_PCPR_estimate': left_PCPR_estimate,
+# 				'right_PCPR_estimate': right_PCPR_estimate,
+# 				'left_invoice': left_invoice,
+# 				'right_invoice': right_invoice}	
 	
-	return render(request, 'crm/detail.html', context)
+# 	return render(request, 'crm/detail.html', context)
 
 def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
-	ears =  ['left', 'right']
 	patient_notes = patient.newinfo_set.order_by('-timestamp')
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
@@ -165,7 +164,6 @@ def edit(request, patient_id):
 				'right_NFZ_confirmed': right_NFZ_confirmed,
 				'left_PCPR_estimate': left_PCPR_estimate,
 				'right_PCPR_estimate': right_PCPR_estimate,
-				'time_now': datetime.datetime.now(),
 				'left_invoice': left_invoice,
 				'right_invoice': right_invoice}
 

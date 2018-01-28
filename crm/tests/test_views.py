@@ -11,7 +11,7 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import Patient, Hearing_Aid
+from crm.models import Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -200,3 +200,146 @@ class TestCreateView(TestCase):
         url = reverse('crm:create')
         response = self.client.get(url)
         assert response.status_code == 200, 'Should be callable by anyone'
+
+
+class TestEditView(TestCase):
+    def setUp(self):
+        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
+        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',)
+        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',)
+    def test_anonymous(self):
+        patient1 = Patient.objects.get(id=1)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        assert response.status_code == 200, 'Should be callable by anyone'
+
+    def test_patient_with_only_inactive_NFZ_confirmed(self):
+        ''' scenario with only inactive (in_progres=False) latest (.last()) NFZ confirmed
+        instances '''
+        patient1 = Patient.objects.get(id=1)
+        nfz1 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'left',
+                            in_progress = False)
+        nfz2 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'right',
+                            in_progress = False)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertIsNone(response.context['left_NFZ_confirmed'])
+        self.assertIsNone(response.context['right_NFZ_confirmed'])
+
+    def test_patient_with_only_one_active_NFZ_confirmed(self):
+        ''' scenario with only left active (in_progres=True)
+        latest (.last()) NFZ confirmed instance 
+        there is also one, former, inactive left instance'''
+        patient1 = Patient.objects.get(id=1)
+        nfz0 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'left',
+                            in_progress = False)
+        nfz1 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'left',
+                            in_progress = True)
+        nfz2 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'right',
+                            in_progress = False)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertIsNotNone(response.context['left_NFZ_confirmed'])
+        self.assertEqual(response.context['left_NFZ_confirmed'], nfz1)
+        self.assertIsNone(response.context['right_NFZ_confirmed'])
+        
+    def test_patient_with_both_active_NFZ_confirmed(self):
+        ''' scenario with left and right active (in_progres=True)
+        latest (.last()) NFZ confirmed instance 
+        there are also former, inactive left and right instance'''
+        patient1 = Patient.objects.get(id=1)
+        nfz0 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'left',
+                            in_progress = False)
+        nfz1 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'left',
+                            in_progress = True)
+        nfz2 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'right',
+                            in_progress = False)
+        nfz3 = NFZ_Confirmed.objects.create(patient=patient1,
+                            date = today,
+                            side = 'right',
+                            in_progress = True)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertIsNotNone(response.context['left_NFZ_confirmed'])
+        self.assertEqual(response.context['left_NFZ_confirmed'], nfz1)
+        self.assertIsNotNone(response.context['right_NFZ_confirmed'])
+        self.assertEqual(response.context['right_NFZ_confirmed'], nfz3)
+
+    def test_patient_with_only_inactive_PCPR_Estimate(self):
+        ''' scenario with only inactive (in_progres=False) latest (.last()) PCPR_Estimate
+        instances '''
+        patient1 = Patient.objects.get(id=1)
+        pcpr1 = PCPR_Estimate.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            date = today,
+                            in_progress = False)
+        pcpr2 = PCPR_Estimate.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'right',
+                            date = today,
+                            in_progress = False)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertIsNone(response.context['left_PCPR_estimate'])
+        self.assertIsNone(response.context['right_PCPR_estimate'])
+
+    def test_patient_with_two_active_and_two_inactive_PCPR_Estimate(self):
+        ''' scenario with active (both left and right) and two inactive (in_progres=False)
+        latest (.last()) PCPR_Estimate instances '''
+        patient1 = Patient.objects.get(id=1)
+        pcpr0 = PCPR_Estimate.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            date = today,
+                            in_progress = False)
+        pcpr1 = PCPR_Estimate.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'left',
+                            date = today,
+                            in_progress = True)
+        pcpr2 = PCPR_Estimate.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'right',
+                            date = today,
+                            in_progress = False)
+        pcpr3 = PCPR_Estimate.objects.create(patient=patient1,
+                            ha_make = 'Bernafon',
+                            ha_family = 'WIN',
+                            ha_model = '102',
+                            ear = 'right',
+                            date = today,
+                            in_progress = True)
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertEqual(response.context['left_PCPR_estimate'], pcpr1)
+        self.assertEqual(response.context['right_PCPR_estimate'], pcpr3)
+
+
+        # there are only inactive (in_progres=False) latest (.last()) PCPR_Estimate instances
+
+        # there is left active (in_progres=True) latest (.last()) PCPR_Estimate instance
+
+        # there are only inactive (in_progres=False) latest (.last()) HA_Invoice instances
+
+        # there is left active (in_progres=True) latest (.last()) HA_Invoice instance
