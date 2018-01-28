@@ -8,7 +8,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from django.http import HttpResponse, HttpResponseRedirect
 from .forms import PatientForm
-from .models import Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
+from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
+					PCPR_Estimate, HA_Invoice, Audiogram)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
@@ -92,41 +93,6 @@ def create(request):
 	context = {'ha_list': ha_list, 'ears': ears, 'locations': locations, 'audiometrist_list': audiometrist_list}
 	return render(request, 'crm/create.html', context)
 
-
-# def detail(request, patient_id):
-# 	patient = get_object_or_404(Patient, pk=patient_id)
-# 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
-# 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
-# 	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
-# 	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
-# 		left_NFZ_confirmed = None 
-# 	right_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='right').last()
-# 	if right_NFZ_confirmed and right_NFZ_confirmed.in_progress == False:
-# 		right_NFZ_confirmed = None	
-# 	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
-# 	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
-# 		left_PCPR_estimate = None		
-# 	right_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='right').last()
-# 	if right_PCPR_estimate and right_PCPR_estimate.in_progress == False:
-# 		right_PCPR_estimate = None
-# 	left_invoice = HA_Invoice.objects.filter(patient=patient, ear='left').last()
-# 	if left_invoice and left_invoice.in_progress == False:
-# 		left_invoice = None
-# 	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
-# 	if right_invoice and right_invoice.in_progress == False:
-# 		right_invoice = None
-# 	context = {'patient': patient,
-# 				'left_NFZ_confirmed': left_NFZ_confirmed,
-# 				'right_NFZ_confirmed': right_NFZ_confirmed,
-# 				'left_hearing_aid': left_hearing_aid,
-# 				'right_hearing_aid': right_hearing_aid,
-# 				'left_PCPR_estimate': left_PCPR_estimate,
-# 				'right_PCPR_estimate': right_PCPR_estimate,
-# 				'left_invoice': left_invoice,
-# 				'right_invoice': right_invoice}	
-	
-# 	return render(request, 'crm/detail.html', context)
-
 def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
@@ -168,10 +134,10 @@ def edit(request, patient_id):
 				'right_invoice': right_invoice}
 
 	if patient.audiogram_set.filter(ear="left"):
-		left_audiogram = patient.audiogram_set.filter(ear="left").order_by('-time_of_test').last()
+		left_audiogram = patient.audiogram_set.filter(ear="left").order_by('time_of_test').last()
 		context['left_audiogram'] = left_audiogram
 	if patient.audiogram_set.filter(ear="right"): 
-		right_audiogram = patient.audiogram_set.filter(ear="right").order_by('-time_of_test').last()
+		right_audiogram = patient.audiogram_set.filter(ear="right").order_by('time_of_test').last()
 		context['right_audiogram'] = right_audiogram
 
 	return render(request, 'crm/edit.html', context)

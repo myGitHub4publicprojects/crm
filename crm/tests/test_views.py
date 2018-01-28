@@ -11,7 +11,8 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice
+from crm.models import (Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice,
+                        Audiogram)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -392,3 +393,22 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertEqual(response.context['left_invoice'], invoice1)
         self.assertEqual(response.context['right_invoice'], invoice3)
+
+    def test_patient_with_two_left_and_two_right_Audiograms(self):
+        ''' scenario with two left and two right Audiogram instances '''
+        patient1 = Patient.objects.get(id=1)
+        aud0 = Audiogram.objects.create(patient=patient1,
+                            time_of_test=now - timedelta(days=1),
+                            ear = 'left')
+        aud1 = Audiogram.objects.create(patient=patient1,
+                            time_of_test=now,
+                            ear = 'left')
+        aud2 = Audiogram.objects.create(patient=patient1,
+                            time_of_test=now - timedelta(days=1),
+                            ear = 'right')
+        aud3 = Audiogram.objects.create(patient=patient1,
+                            time_of_test=now,
+                            ear = 'right')
+        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+        self.assertEqual(response.context['left_audiogram'], aud1)
+        self.assertEqual(response.context['right_audiogram'], aud3)
