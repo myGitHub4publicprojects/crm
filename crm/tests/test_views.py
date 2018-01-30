@@ -29,10 +29,6 @@ class TestIndexView(TestCase):
             date_of_birth=today-timedelta(days=3))
         patient4.create_date=now-timedelta(days=3)
         patient4.save()
-        # admin = User.objects.create_user(is_staff=True,
-        #                                 username='adminuser', 
-        #                                 email='oo@gmail.com',
-        #                                 password='somepass')
 
     def test_anonymous(self):
         url = reverse('crm:index')
@@ -249,6 +245,7 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertIsNotNone(response.context['left_NFZ_confirmed'])
         self.assertEqual(response.context['left_NFZ_confirmed'], nfz1)
+        self.assertEqual(len(response.context['left_NFZ_confirmed_all']), 1)
         self.assertIsNone(response.context['right_NFZ_confirmed'])
         
     def test_patient_with_both_active_NFZ_confirmed(self):

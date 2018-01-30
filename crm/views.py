@@ -98,15 +98,28 @@ def edit(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
 	patient_notes = patient.newinfo_set.order_by('-timestamp')
+
+	def last_and_previous(queryset):
+		'''returns last obj or None of a qs as "last" and
+		all but last items of such qs'''
+		result = {'last': queryset.last(), 'previous': None}
+		if queryset:
+			result['previous'] = queryset.order_by('-id')[1:]
+			if queryset.last().in_progress == False:
+				result['last'] = None
+		return result
+
+
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
 
-	left_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='left').last()
-	if left_NFZ_confirmed and left_NFZ_confirmed.in_progress == False:
-		left_NFZ_confirmed = None 
-	right_NFZ_confirmed = patient.nfz_confirmed_set.filter(side='right').last()
-	if right_NFZ_confirmed and right_NFZ_confirmed.in_progress == False:
-		right_NFZ_confirmed = None	
+	nfz_left_qs = patient.nfz_confirmed_set.filter(side='left')
+	nfz_right_qs = patient.nfz_confirmed_set.filter(side='right')
+
+
+	
+	
+
 	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
 	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
 		left_PCPR_estimate = None		
@@ -120,18 +133,20 @@ def edit(request, patient_id):
 	if right_invoice and right_invoice.in_progress == False:
 		right_invoice = None
 
-	context = 	{'patient': patient,
-				'ha_list': ha_list,
-				'ears': ears,
-				'patient_notes': patient_notes,
-				'right_hearing_aid': right_hearing_aid,
-				'left_hearing_aid': left_hearing_aid,
-				'left_NFZ_confirmed': left_NFZ_confirmed,
-				'right_NFZ_confirmed': right_NFZ_confirmed,
-				'left_PCPR_estimate': left_PCPR_estimate,
-				'right_PCPR_estimate': right_PCPR_estimate,
-				'left_invoice': left_invoice,
-				'right_invoice': right_invoice}
+	context = {'patient': patient,
+			'ha_list': ha_list,
+			'ears': ears,
+			'patient_notes': patient_notes,
+			'right_hearing_aid': right_hearing_aid,
+			'left_hearing_aid': left_hearing_aid,
+			'left_NFZ_confirmed_all': last_and_previous(nfz_left_qs)['previous'],
+			'left_NFZ_confirmed': last_and_previous(nfz_left_qs)['last'],
+			'right_NFZ_confirmed_all': last_and_previous(nfz_right_qs)['previous'],
+			'right_NFZ_confirmed': last_and_previous(nfz_right_qs)['last'],
+			'left_PCPR_estimate': left_PCPR_estimate,
+			'right_PCPR_estimate': right_PCPR_estimate,
+			'left_invoice': left_invoice,
+			'right_invoice': right_invoice}
 
 	if patient.audiogram_set.filter(ear="left"):
 		left_audiogram = patient.audiogram_set.filter(ear="left").order_by('time_of_test').last()
