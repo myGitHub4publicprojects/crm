@@ -96,8 +96,14 @@ def create(request):
 def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
-	ha_list = Hearing_Aid.ha_list
-	patient_notes = patient.newinfo_set.order_by('-timestamp')
+	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
+	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
+	nfz_left_qs = patient.nfz_confirmed_set.filter(side='left')
+	nfz_right_qs = patient.nfz_confirmed_set.filter(side='right')
+	left_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='left')
+	right_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='right')
+	left_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='left')
+	right_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='right')
 
 	def last_and_previous(queryset):
 		'''returns last obj or None of a qs as "last" and
@@ -109,44 +115,25 @@ def edit(request, patient_id):
 				result['last'] = None
 		return result
 
-
-	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
-	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
-
-	nfz_left_qs = patient.nfz_confirmed_set.filter(side='left')
-	nfz_right_qs = patient.nfz_confirmed_set.filter(side='right')
-
-
-	
-	
-
-	left_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='left').last()
-	if left_PCPR_estimate and left_PCPR_estimate.in_progress == False:
-		left_PCPR_estimate = None		
-	right_PCPR_estimate = PCPR_Estimate.objects.filter(patient=patient, ear='right').last()
-	if right_PCPR_estimate and right_PCPR_estimate.in_progress == False:
-		right_PCPR_estimate = None
-	left_invoice = HA_Invoice.objects.filter(patient=patient, ear='left').last()
-	if left_invoice and left_invoice.in_progress == False:
-		left_invoice = None
-	right_invoice = HA_Invoice.objects.filter(patient=patient, ear='right').last()
-	if right_invoice and right_invoice.in_progress == False:
-		right_invoice = None
-
 	context = {'patient': patient,
-			'ha_list': ha_list,
+			'ha_list': Hearing_Aid.ha_list,
 			'ears': ears,
-			'patient_notes': patient_notes,
+			'patient_notes': patient.newinfo_set.order_by('-timestamp'),
 			'right_hearing_aid': right_hearing_aid,
 			'left_hearing_aid': left_hearing_aid,
 			'left_NFZ_confirmed_all': last_and_previous(nfz_left_qs)['previous'],
 			'left_NFZ_confirmed': last_and_previous(nfz_left_qs)['last'],
 			'right_NFZ_confirmed_all': last_and_previous(nfz_right_qs)['previous'],
 			'right_NFZ_confirmed': last_and_previous(nfz_right_qs)['last'],
-			'left_PCPR_estimate': left_PCPR_estimate,
-			'right_PCPR_estimate': right_PCPR_estimate,
-			'left_invoice': left_invoice,
-			'right_invoice': right_invoice}
+			'left_PCPR_estimate_all': last_and_previous(left_PCPR_qs)['previous'],
+			'left_PCPR_estimate': last_and_previous(left_PCPR_qs)['last'],
+			'right_PCPR_estimate_all': last_and_previous(right_PCPR_qs)['previous'],
+			'right_PCPR_estimate': last_and_previous(right_PCPR_qs)['last'],
+			'left_invoice_all': last_and_previous(left_invoice_qs)['previous'],
+			'left_invoice': last_and_previous(left_invoice_qs)['last'],
+			'right_invoice_all': last_and_previous(right_invoice_qs)['previous'],
+			'right_invoice': last_and_previous(right_invoice_qs)['last']
+			}
 
 	if patient.audiogram_set.filter(ear="left"):
 		left_audiogram = patient.audiogram_set.filter(ear="left").order_by('time_of_test').last()
