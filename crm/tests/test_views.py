@@ -272,12 +272,14 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertIsNotNone(response.context['left_NFZ_confirmed'])
         self.assertEqual(response.context['left_NFZ_confirmed'], nfz1)
+        self.assertEqual(len(response.context['left_NFZ_confirmed_all']), 1)
         self.assertIsNotNone(response.context['right_NFZ_confirmed'])
         self.assertEqual(response.context['right_NFZ_confirmed'], nfz3)
+        self.assertEqual(len(response.context['right_NFZ_confirmed_all']), 1)
 
     def test_patient_with_only_inactive_PCPR_Estimate(self):
         ''' scenario with only inactive (in_progres=False) latest (.last()) PCPR_Estimate
-        instances '''
+        instances'''
         patient1 = Patient.objects.get(id=1)
         pcpr1 = PCPR_Estimate.objects.create(patient=patient1,
                             ha_make = 'Bernafon',
@@ -295,7 +297,9 @@ class TestEditView(TestCase):
                             in_progress = False)
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertIsNone(response.context['left_PCPR_estimate'])
+        self.assertEqual(len(response.context['left_PCPR_estimate_all']), 1)
         self.assertIsNone(response.context['right_PCPR_estimate'])
+        self.assertEqual(len(response.context['right_PCPR_estimate_all']), 1)
 
     def test_patient_with_two_active_and_two_inactive_PCPR_Estimate(self):
         ''' scenario with active (both left and right) and two inactive (in_progres=False)
@@ -331,7 +335,9 @@ class TestEditView(TestCase):
                             in_progress = True)
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertEqual(response.context['left_PCPR_estimate'], pcpr1)
+        self.assertEqual(len(response.context['left_PCPR_estimate_all']), 1)
         self.assertEqual(response.context['right_PCPR_estimate'], pcpr3)
+        self.assertEqual(len(response.context['right_PCPR_estimate_all']), 1)
 
     def test_patient_with_only_inactive_HA_Invoice(self):
         ''' scenario with only inactive (in_progres=False) latest (.last()) HA_Invoice
@@ -353,7 +359,9 @@ class TestEditView(TestCase):
                             in_progress = False)
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertIsNone(response.context['left_invoice'])
+        self.assertEqual(len(response.context['left_invoice_all']), 1)
         self.assertIsNone(response.context['right_invoice'])
+        self.assertEqual(len(response.context['right_invoice_all']), 1)
 
     def test_patient_with_two_active_and_two_inactive_HA_Invoice(self):
         ''' scenario with active (both left and right) and two inactive (in_progres=False)
@@ -389,7 +397,9 @@ class TestEditView(TestCase):
                             in_progress = True)
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertEqual(response.context['left_invoice'], invoice1)
+        self.assertEqual(len(response.context['left_invoice_all']), 1)
         self.assertEqual(response.context['right_invoice'], invoice3)
+        self.assertEqual(len(response.context['right_invoice_all']), 1)
 
     def test_patient_with_two_left_and_two_right_Audiograms(self):
         ''' scenario with two left and two right Audiogram instances '''

@@ -71,151 +71,169 @@
 {% block content %}
 <div class="status">{% include "crm/status.html" %}</div>
 
-
-<div class='container'>
-<div id="main" >
-
-<div id="details">
-<div class="patient_info">
-<div class="col70 inline_block">
-<form action="{% url 'crm:updating' patient.id %}" method="post" id="edit_patient">
-{% csrf_token %}
-{% include "crm/actions.html" %}
-
-
-Imię: <input type="text" name="fname" value="{{ patient.first_name }}" required><br>
-Nazwisko: <input type="text" name="lname" value="{{ patient.last_name }}" required><br>
-Data ur: <input type="date" name="bday" value="{{ patient.date_of_birth|date:'Y-m-d' }}"><br>
-Nr tel.: (jak nie ma to 0 - zero)<input type="tel" name="usrtel" value="{{ patient.phone_no }}" required><br>
-Lokalizacja: {{ patient.location }} <small onclick="document.getElementById('location').style.display='block'" id="zmien">ZMIEN</small><br>
-	<ul id="location" style="display:none">
-	{% for location in patient.locations %}
-		<li>
-		<input type="radio" name="location" id="{{ location }}" value="{{ location }}"
-			{% if location == patient.location %} checked="checked" {% endif %}
-		/>
-		<label for="{{ location }}">{{ location }}</label><br/>
-		</li>
-	{% endfor %}
-	</ul>
-<textarea form="edit_patient" name="new_note" id="patient_note" placeholder="nowa notatka"></textarea>
-
-<section id="note_author">
-<small>Kto sporządził notatkę:</small>
-<ul class="audiometrist inline_block">
-{% for a in patient.audiometrist_list %}
-	<li>
-	<input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a }}" class="inline"/>
-	<label for="a{{ forloop.counter }}">{{ a }}</label><br/>
-	</li>
-{% endfor %}
-</ul>
-</section>
-<div class="hearing_aid">
-		{% for ear in ears %}
-		<div class={{ ear }}>
-
-		<p><b>aparat
-			{% if ear == "right" %}
-				prawy:</b><br>
-				{% if right_hearing_aid %}
-				<small>
-				{{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>Data zakupu: {{ right_hearing_aid.purchase_date }}<br>
-				{% if not right_hearing_aid.our %}<div class="our"><small>APARAT KUPIONY U KONKURENCJI</small></div>{% endif %}
-				</small>
-				{% endif %}
-			{% else %}
-				lewy:</b><br>
-				{% if left_hearing_aid %}
-				<small>
-				{{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>Data zakupu: {{ left_hearing_aid.purchase_date }}<br>
-				{% if not left_hearing_aid.our %}<div class="our"><small>APARAT KUPIONY U KONKURENCJI</small></div>{% endif %}
-				</small>
-				{% endif %}
-			{% endif %}
-		</p>
-
-		<h4 onclick="document.getElementById('{{ ear }}').style.display='block'">ZMIEN</h4>
+<div class="row mt-1">
+	<div class="col-lg-9">
+		<form action="{% url 'crm:updating' patient.id %}" method="post" id="edit_patient">
+		{% csrf_token %}
+		{% include "crm/actions.html" %}
+		<hr>
+		<!-- name age tel -->
+		<div class="row mt-2">
+			<div class="col-xl">
+			<small class="text-muted">Imię: </small><br>
+			<input type="text" name="fname" value="{{ patient.first_name }}" required>
+			</div>
+			<div class="col-xl">
+			<small class="text-muted">Nazwisko: </small><br>
+			<input type="text" name="lname" value="{{ patient.last_name }}" required>
+			</div>
+			<div class="col-xl">
+			<small class="text-muted">Data ur: </small><br>
+			<input type="date" name="bday" value="{{ patient.date_of_birth|date:'Y-m-d' }}">
+			</div>
+			<div class="col-xl">
+			<small class="text-muted">Tel: </small><br>
+			<input type="tel" name="usrtel" value="{{ patient.phone_no }}" required>
+			</div>
+		</div>
+		<hr>
+		<!-- location audometrist note -->
+		<div class="row mt-2">
+			<div class="col-xl-3">
+				<small class="text-muted">Lokalizacja: </small><br>
+				{{ patient.location }}<br>
+				<small onclick="document.getElementById('location').style.display='block'" id="zmien">ZMIEN</small><br>
+				<ul id="location" style="display:none">
+				{% for location in patient.locations %}
+					<li>
+					<input type="radio" name="location" id="{{ location }}" value="{{ location }}"
+						{% if location == patient.location %} checked="checked" {% endif %}
+					/>
+					<label for="{{ location }}">{{ location }}</label><br/>
+					</li>
+				{% endfor %}
+				</ul>
+			</div>
+			<div class="col-xl-3">
+				<small class="text-muted">Autor notatki:</small>
+				<ul class="list-unstyled">
+				{% for a in patient.audiometrist_list %}
+					<li>
+					<input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a }}" class="inline"/>
+					<label for="a{{ forloop.counter }}">{{ a }}</label>
+					</li>
+				{% endfor %}
+				</ul>
+			</div>
+			<div class="col-xl-6">
+				<textarea form="edit_patient" name="new_note" id="patient_note" placeholder="nowa notatka"></textarea>
+			</div>
 		
-		<div  id={{ ear }} style="display:none">
-		<ul>
-			{% for make, families in ha_list.items %}
-			<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
+		</div>
+		<hr>
+		<h4 class="text-center">Aktualnie noszone aparaty:</h4>
+		<!-- current hearing aids -->
+		<div class="row mt-2">
+			{% for ear in ears %}
+			<div class="col-xl-6">
+				<p class="text-center">
+					{% if ear == "right" %}
+						prawy:<br>
+						{% if right_hearing_aid %}
+						
+						{{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>Data zakupu: {{ right_hearing_aid.purchase_date }}<br>
+						{% if not right_hearing_aid.our %}<p class="bg-danger">APARAT KUPIONY U KONKURENCJI</p>{% endif %}
+						
+						<button onclick="document.getElementById('{{ ear }}').style.display='block'">ZMIEN</button>
+						{% endif %}
+					{% else %}
+						lewy:<br>
+						{% if left_hearing_aid %}
+						
+						{{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>Data zakupu: {{ left_hearing_aid.purchase_date }}<br>
+						{% if not left_hearing_aid.our %}<p class="bg-danger">APARAT KUPIONY U KONKURENCJI</p>{% endif %}
+						
+						<button onclick="document.getElementById('{{ ear }}').style.display='block'">ZMIEN</button>
+						{% endif %}
+					{% endif %}
+				</p>
+				<div  id={{ ear }} style="display:none">
+				<ul>
+					{% for make, families in ha_list.items %}
+					<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
 
-			<ul id='{{ ear }}_{{ make }}' style="display:none">
-				{% for family, models in families.items %}
-				<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-					<ul id='{{ ear }}_{{ make }}_{{ family }}' style="display:none">
-						{% for model in models %}
-						<li><input  name="{{ ear }}_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+					<ul id='{{ ear }}_{{ make }}' style="display:none">
+						{% for family, models in families.items %}
+						<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+							<ul id='{{ ear }}_{{ make }}_{{ family }}' style="display:none">
+								{% for model in models %}
+								<li><input  name="{{ ear }}_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+								{% endfor %}
+							</ul>
+						</li>
 						{% endfor %}
 					</ul>
-				</li>
-				{% endfor %}
-			</ul>
+					{% endfor %}
+
+				</ul>
+				Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
+				Kupiony w innej firmie:<input type="checkbox" name="{{ ear }}_ha_other" value="{{ ear }}_ha_other"><br>
+				</div>
+			</div>
 			{% endfor %}
-
-		</ul>
-		Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
-		Kupiony w innej firmie:<input type="checkbox" name="{{ ear }}_ha_other" value="{{ ear }}_ha_other"><br>
 		</div>
+		<hr>
+		<!-- audiograms -->
+		{% if left_audiogram or right_audiogram %}
+		<section id="audiogram" class="mw-100">
+			<div id="left_audiogram">Lewe:
+				<ul>
+					<li>250Hz: {{ left_audiogram.a250Hz }}</li>
+					<li>500Hz: {{ left_audiogram.a500Hz }}</li>
+					<li>1kHz: {{ left_audiogram.a1kHz }}</li>
+					<li>2kHz: {{ left_audiogram.a2kHz }}</li>
+					<li>4kHz: {{ left_audiogram.a4kHz }}</li>
+					<li>8kHz: {{ left_audiogram.a8kHz }}</li>
+				</ul>
+			</div>
+			<div id="right_audiogram">Prawe:
+				<ul>
+					<li>250Hz: {{ right_audiogram.a250Hz }}</li>
+					<li>500Hz: {{ right_audiogram.a500Hz }}</li>
+					<li>1kHz: {{ right_audiogram.a1kHz }}</li>
+					<li>2kHz: {{ right_audiogram.a2kHz }}</li>
+					<li>4kHz: {{ right_audiogram.a4kHz }}</li>
+					<li>8kHz: {{ right_audiogram.a8kHz }}</li>
+				</ul>
+			</div>
+		</section>
 
-		</div>
+		<div id="remove_audiogram">Usuń audiogram: <input type="checkbox" name="remove_audiogram" value="remove" id="remove_audiogram" />
+						<label for="remove_audiogram">usuń</label>
+		</div>l
+		{% endif %}
+
+		<input class="btn" type="submit" value="Aktualizuj dane pacjenta" />
+		</form>
+	</div>
+
+	<div class="col-lg-3">
+		<small>Dodany przez {{ patient.audiometrist }} w dniu {{ patient.create_date|date:'d-m-Y' }}</small>
+		<h3>Ostatnie notatki:</h3>
+		<ul id="notes">
+		{% for note in patient_notes %}
+			<li>
+			<small>{{ note.timestamp|date:'d-m-Y H:i' }}, {{ note.audiometrist }}</small><br>
+			{{ note.note }}
+			<hr>
+			</li>
 		{% endfor %}
-</div>
-{% if left_audiogram or right_audiogram %}
-<section id="audiogram" class="mw-100">
-	<div id="left_audiogram">Lewe:
-		<ul>
-			<li>250Hz: {{ left_audiogram.a250Hz }}</li>
-			<li>500Hz: {{ left_audiogram.a500Hz }}</li>
-			<li>1kHz: {{ left_audiogram.a1kHz }}</li>
-			<li>2kHz: {{ left_audiogram.a2kHz }}</li>
-			<li>4kHz: {{ left_audiogram.a4kHz }}</li>
-			<li>8kHz: {{ left_audiogram.a8kHz }}</li>
 		</ul>
 	</div>
-	<div id="right_audiogram">Prawe:
-		<ul>
-			<li>250Hz: {{ right_audiogram.a250Hz }}</li>
-			<li>500Hz: {{ right_audiogram.a500Hz }}</li>
-			<li>1kHz: {{ right_audiogram.a1kHz }}</li>
-			<li>2kHz: {{ right_audiogram.a2kHz }}</li>
-			<li>4kHz: {{ right_audiogram.a4kHz }}</li>
-			<li>8kHz: {{ right_audiogram.a8kHz }}</li>
-		</ul>
-	</div>
-</section>
-
-<div id="remove_audiogram">Usuń audiogram: <input type="checkbox" name="remove_audiogram" value="remove" id="remove_audiogram" />
-    			<label for="remove_audiogram">usuń</label>
-</div>
-{% endif %}
-
-<input class="btn" type="submit" value="Aktualizuj dane pacjenta" />
-</form>
 </div>
 
-<div class="col30 inline_block eae">
-<small>Dodany przez {{ patient.audiometrist }} w dniu {{ patient.create_date|date:'d-m-Y' }}</small>
-<h3>Ostatnie notatki:</h3>
-<ul id="notes">
-{% for note in patient_notes %}
-	<li>
-	<small>{{ note.timestamp|date:'d-m-Y H:i' }}, {{ note.audiometrist }}</small><br>
-	{{ note.note }}
-	<hr>
-	</li>
-{% endfor %}
-</ul>
-</div>
-
-
-</div>
-
-</div>
 <h3>usuń pacjenta z bazy:</h3>
 <a href="{% url 'crm:deleteconfirm' patient.id %}">USUWAM</a>
-</div>
-</div>
+
+
 {% endblock content %}

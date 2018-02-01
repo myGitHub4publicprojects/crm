@@ -108,11 +108,12 @@ def edit(request, patient_id):
 	def last_and_previous(queryset):
 		'''returns last obj or None of a qs as "last" and
 		all but last items of such qs'''
-		result = {'last': queryset.last(), 'previous': None}
+		result = {'last': queryset.last(), 'previous': queryset}
 		if queryset:
-			result['previous'] = queryset.order_by('-id')[1:]
 			if queryset.last().in_progress == False:
 				result['last'] = None
+		if len(queryset) > 1:
+			result['previous'] = queryset.order_by('-id')[1:]
 		return result
 
 	context = {'patient': patient,
