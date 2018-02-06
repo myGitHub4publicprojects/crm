@@ -1,0 +1,34 @@
+<div class="panel-group" id="pcpr_ha_left">
+    {% for make, families in ha_list.items %}
+    <div class="panel panel-default">
+        <a data-toggle="collapse" data-parent="#pcpr_ha_left" href="#pcpr_{{ make }}_left">
+            <div class="btn btn-primary">{{ make }}</div>
+        </a>
+        <div id="pcpr_{{ make }}_left" class="panel-collapse collapse in">
+            {% for family, models in families.items %}
+            <div class="panel-group" id="inner_pcpr_{{ make }}_left">
+                <div class="panel panel-default">
+                    <a data-toggle="collapse" data-parent="#inner_pcpr_{{ make }}_left" href="#pcpr_{{ make }}_{{ family|cut:" " }}_left">
+                            <div class="btn btn-success">{{ family }}</div>
+                    </a>
+                    <div id="pcpr_{{ make }}_{{ family|cut:" " }}_left" class="panel-collapse collapse in">
+                        {% for model in models %}
+                        <div class="panel-group" id="inner_pcpr_{{ make }}_{{ family|cut:" " }}_left">
+                            <div class="panel panel-default">
+                                <a data-toggle="collapse" data-parent="#inner_pcpr_{{ make }}_{{ family|cut:" " }}_left" href="#pcpr_{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_left">
+                                        <div class="btn btn-warning">{{ model }}</div>
+                                </a>
+                                <div id="pcpr_{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_left" class="panel-collapse collapse in">
+                                        <input  name="left_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' id='pcpr_left_{{ make }}_{{ family }}_{{ model }}' /><label for='pcpr_left_{{ make }}_{{ family }}_{{ model }}'>{{ model }}</label>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>

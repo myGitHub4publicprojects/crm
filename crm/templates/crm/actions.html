@@ -9,14 +9,14 @@
 					{% if left_NFZ_confirmed %}
 						potwierdzony wniosek dostarczono: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 						<div class="w-50 p-3 float-left">
-							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_left" aria-expanded="false" aria-controls="nfz_left">Zmień tę datę</div>
+							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_left" aria-expanded="false" aria-controls="nfz_left">Zmień</div>
 							<div class="collapse" id="nfz_left">
 								<p>Zmieniam datę odebrania tego wniosku na:<p/>
 								<input type="date" name="NFZ_left">
 							</div>
 						</div>
 						<div class="w-50 p-3 float-right">
-							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_left_remove" aria-expanded="false" aria-controls="nfz_left">Anuluj wniosek</div>
+							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_left_remove" aria-expanded="false" aria-controls="nfz_left">Anuluj</div>
 							<div class="collapse" id="nfz_left_remove">
 								<input type="radio" name="nfz_left_remove" id="nfz_left_remove"/>
 								<label for="nfz_left_remove">Anuluj</label>
@@ -34,14 +34,14 @@
 					{% if right_NFZ_confirmed %}
 						potwierdzony wniosek dostarczono: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 						<div class="w-50 p-3 float-left">
-							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_right" aria-expanded="false" aria-controls="nfz_right">Zmień tę datę</div>
+							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_right" aria-expanded="false" aria-controls="nfz_right">Zmień</div>
 							<div class="collapse" id="nfz_right">
 								<p>Zmieniam datę odebrania tego wniosku na:<p/>
 								<input type="date" name="NFZ_right">
 							</div>
 						</div>
 						<div class="w-50 p-3 float-right">
-							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_right_remove">Anuluj wniosek</div>
+							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#nfz_right_remove">Anuluj</div>
 							<div class="collapse" id="nfz_right_remove">
 								<input type="radio" name="nfz_right_remove" id="nfz_right_remove"/>
 								<label for="nfz_right_remove">Anuluj</label>
@@ -89,126 +89,54 @@
 					kosztorys wystawiono: {{ left_PCPR_estimate.date|date:'d-m-Y' }}<br>
 					Aparat: {{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}
 					<div class="w-50 p-3 float-left">
-						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_left" aria-expanded="false" aria-controls="pcpr_left">Zmień tę datę</div>
+						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_left" aria-expanded="false" aria-controls="pcpr_left">Zmień</div>
 						<div class="collapse" id="pcpr_left">
 							Zmieniam aparat na:<br>
-								<ul>
-								{% for make, families in ha_list.items %}
-								<li onclick="document.getElementById('left_pcpr_{{ make }}').style.display='block'">{{ make }}</li>
-				
-								<ul id=left_pcpr_{{ make }} style="display:none">
-									{% for family, models in families.items %}
-									<li onclick="document.getElementById('left_pcpr_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-										<ul id='left_pcpr_{{ make }}_{{ family }}' style="display:none">
-											{% for model in models %}
-											<li><input  name="left_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-											{% endfor %}
-										</ul>
-									</li>
-									{% endfor %}
-								</ul>
-								{% endfor %}
-					
-								</ul>
+							{% include "crm/left_pcpr_ha_select.html" %}
 							Zmieniam datę wystawienia kosztorysu na: <input type="date" name="left_PCPR_date" value={{ left_PCPR_estimate.date|date:'Y-m-d' }} ><br>
 						</div>
 					</div>
 					<div class="w-50 p-3 float-right">
-						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_left_remove" aria-expanded="false" aria-controls="pcpr_left">Anuluj kosztorys</div>
+						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_left_remove" aria-expanded="false" aria-controls="pcpr_left">Anuluj</div>
 						<div class="collapse" id="pcpr_left_remove">
 							<input type="radio" name="pcpr_left_remove" id="pcpr_left_remove"/>
 							<label for="pcpr_left_remove">Anuluj</label>
 						</div>
 					</div>
 					{% else %}
-					<div class="btn" onclick="document.getElementById('add_pcpr_left').style.display='block'">Dodaj Kosztorys</div>
-					<div id="add_pcpr_left" style="display:none">
+					<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#add_pcpr_left" aria-expanded="false" aria-controls="add_pcpr_left">dodaj kosztorys</div>
+					<div class="collapse" id="add_pcpr_left">
 						Aparat:<br>
-						<ul>
-							{% for make, families in ha_list.items %}
-							<li onclick="document.getElementById('left_pcpr_{{ make }}').style.display='block'">{{ make }}</li>
-			
-							<ul id=left_pcpr_{{ make }} style="display:none">
-								{% for family, models in families.items %}
-								<li onclick="document.getElementById('left_pcpr_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-									<ul id='left_pcpr_{{ make }}_{{ family }}' style="display:none">
-										{% for model in models %}
-										<li><input  name="left_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-										{% endfor %}
-									</ul>
-								</li>
-								{% endfor %}
-							</ul>
-							{% endfor %}
-			
-							</ul>
+						{% include "crm/left_pcpr_ha_select.html" %}
 						Data wystawienia: <input type="date" name="left_PCPR_date" value={{ time_now|date:'Y-m-d' }}>
 					</div>
 					{% endif %}
 				</div>
 
-			
-			
 				<div class="btn btn-outline-danger">
 					<h4 class="bg-danger text-white">ucho prawe</h4>
 					{% if right_PCPR_estimate %}
 					kosztorys wystawiono: {{ right_PCPR_estimate.date|date:'d-m-Y' }}<br>
 					Aparat: {{ right_PCPR_estimate.ha_make }} {{ right_PCPR_estimate.ha_family }} {{ right_PCPR_estimate.ha_model }}
 					<div class="w-50 p-3 float-left">
-						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_right" aria-expanded="false" aria-controls="pcpr_right">Zmień tę datę</div>
+						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_right" aria-expanded="false" aria-controls="pcpr_right">Zmień</div>
 						<div class="collapse" id="pcpr_right">
 							Zmieniam aparat na:<br>
-								<ul>
-								{% for make, families in ha_list.items %}
-								<li onclick="document.getElementById('right_pcpr_{{ make }}').style.display='block'">{{ make }}</li>
-				
-								<ul id=right_pcpr_{{ make }} style="display:none">
-									{% for family, models in families.items %}
-									<li onclick="document.getElementById('right_pcpr_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-										<ul id='right_pcpr_{{ make }}_{{ family }}' style="display:none">
-											{% for model in models %}
-											<li><input  name="right_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-											{% endfor %}
-										</ul>
-									</li>
-									{% endfor %}
-								</ul>
-								{% endfor %}
-					
-								</ul>
+								{% include "crm/right_pcpr_ha_select.html" %}
 							Zmieniam datę wystawienia kosztorysu na: <input type="date" name="right_PCPR_date" value={{ right_PCPR_estimate.date|date:'Y-m-d' }} ><br>
 						</div>
 					</div>
 					<div class="w-50 p-3 float-right">
-							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_right_remove" aria-expanded="false" aria-controls="pcpr_right">Anuluj kosztorys</div>
+							<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#pcpr_right_remove" aria-expanded="false" aria-controls="pcpr_right">Anuluj</div>
 							<div class="collapse" id="pcpr_right_remove">
 								<input type="radio" name="pcpr_right_remove" id="pcpr_right_remove"/>
 								<label for="pcpr_right_remove">Anuluj</label>
 							</div>
-						</div>
 					</div>
 					{% else %}
-					<div class="btn" onclick="document.getElementById('add_pcpr_right').style.display='block'">Dodaj Kosztorys</div>
-					<div id="add_pcpr_right" style="display:none">
-						Aparat:<br>
-						<ul>
-							{% for make, families in ha_list.items %}
-							<li onclick="document.getElementById('right_pcpr_{{ make }}').style.display='block'">{{ make }}</li>
-			
-							<ul id=right_pcpr_{{ make }} style="display:none">
-								{% for family, models in families.items %}
-								<li onclick="document.getElementById('right_pcpr_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-									<ul id='right_pcpr_{{ make }}_{{ family }}' style="display:none">
-										{% for model in models %}
-										<li><input  name="right_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-										{% endfor %}
-									</ul>
-								</li>
-								{% endfor %}
-							</ul>
-							{% endfor %}
-			
-						</ul>
+					<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#add_pcpr_right" aria-expanded="false" aria-controls="add_pcpr_right">dodaj kosztorys</div>
+					<div class="collapse" id="add_pcpr_right">
+						{% include "crm/right_pcpr_ha_select.html" %}
 						Data wystawienia: <input type="date" name="right_PCPR_date" value={{ time_now|date:'Y-m-d' }}>
 					</div>
 					{% endif %}
@@ -252,56 +180,22 @@
 						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#left_invoice" aria-expanded="false">Zmień</div>
 						<div class="collapse" id="left_invoice">
 							Zmieniam aparat na:<br>
-								<ul>
-								{% for make, families in ha_list.items %}
-								<li onclick="document.getElementById('left_invoice_{{ make }}').style.display='block'">{{ make }}</li>
-				
-								<ul id=left_invoice_{{ make }} style="display:none">
-									{% for family, models in families.items %}
-									<li onclick="document.getElementById('left_invoice_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-										<ul id='left_invoice_{{ make }}_{{ family }}' style="display:none">
-											{% for model in models %}
-											<li><input  name="left_invoice_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-											{% endfor %}
-										</ul>
-									</li>
-									{% endfor %}
-								</ul>
-								{% endfor %}
-					
-								</ul>
+								{% include "crm/left_invoice_ha_select.html" %}
 							Zmieniam datę wystawienia faktury na: <input type="date" name="left_invoice_date" value={{ left_invoice.date|date:'Y-m-d' }} ><br>
 						</div>
 					</div>
 					<div class="w-50 p-3 float-right">
-						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#left_invoice_remove" aria-expanded="false">Anuluj kosztorys</div>
+						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#left_invoice_remove" aria-expanded="false">Anuluj</div>
 						<div class="collapse" id="left_invoice_remove">
 							<input type="radio" name="left_invoice_remove" id="left_invoice_remove"/>
 							<label for="left_invoice_remove">Anuluj</label>
 						</div>
 					</div>
 					{% else %}
-					<div class="btn" onclick="document.getElementById('add_left_invoice').style.display='block'">Dodaj Fakturę</div>
-					<div id="add_left_invoice" style="display:none">
+					<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#add_left_invoice" aria-expanded="false" aria-controls="add_left_invoice">Dodaj Fakturę</div>
+					<div class="collapse" id="add_left_invoice">
 						Aparat:<br>
-						<ul>
-							{% for make, families in ha_list.items %}
-							<li onclick="document.getElementById('left_invoice_{{ make }}').style.display='block'">{{ make }}</li>
-			
-							<ul id=left_invoice_{{ make }} style="display:none">
-								{% for family, models in families.items %}
-								<li onclick="document.getElementById('left_invoice_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-									<ul id='left_invoice_{{ make }}_{{ family }}' style="display:none">
-										{% for model in models %}
-										<li><input  name="left_invoice_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-										{% endfor %}
-									</ul>
-								</li>
-								{% endfor %}
-							</ul>
-							{% endfor %}
-			
-							</ul>
+						{% include "crm/left_invoice_ha_select.html" %}
 						Data wystawienia: <input type="date" name="left_invoice_date" value={{ time_now|date:'Y-m-d' }}>
 					</div>
 					{% endif %}
@@ -315,24 +209,7 @@
 						<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#right_invoice" aria-expanded="false" aria-controls="right_invoice">Zmień</div>
 						<div class="collapse" id="right_invoice">
 							Zmieniam aparat na:<br>
-								<ul>
-								{% for make, families in ha_list.items %}
-								<li onclick="document.getElementById('right_invoice_{{ make }}').style.display='block'">{{ make }}</li>
-				
-								<ul id=right_invoice_{{ make }} style="display:none">
-									{% for family, models in families.items %}
-									<li onclick="document.getElementById('right_invoice_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-										<ul id='right_invoice_{{ make }}_{{ family }}' style="display:none">
-											{% for model in models %}
-											<li><input  name="right_invoice_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-											{% endfor %}
-										</ul>
-									</li>
-									{% endfor %}
-								</ul>
-								{% endfor %}
-					
-								</ul>
+							{% include "crm/right_invoice_ha_select.html" %}
 							Zmieniam datę wystawienia faktury na: <input type="date" name="right_invoice_date" value={{ right_invoice.date|date:'Y-m-d' }} ><br>
 						</div>
 					</div>
@@ -344,27 +221,10 @@
 						</div>
 					</div>
 					{% else %}
-					<div class="btn" onclick="document.getElementById('add_right_invoice').style.display='block'">Dodaj Fakturę</div>
-					<div id="add_right_invoice" style="display:none">
+					<div class="btn btn-outline-warning" data-toggle="collapse" data-target="#add_right_invoice" aria-expanded="false" aria-controls="add_right_invoice">Dodaj Fakturę</div>
+					<div class="collapse" id="add_right_invoice">
 						Aparat:<br>
-						<ul>
-							{% for make, families in ha_list.items %}
-							<li onclick="document.getElementById('right_invoice_{{ make }}').style.display='block'">{{ make }}</li>
-			
-							<ul id=right_invoice_{{ make }} style="display:none">
-								{% for family, models in families.items %}
-								<li onclick="document.getElementById('right_invoice_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-									<ul id='right_invoice_{{ make }}_{{ family }}' style="display:none">
-										{% for model in models %}
-										<li><input  name="right_invoice_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-										{% endfor %}
-									</ul>
-								</li>
-								{% endfor %}
-							</ul>
-							{% endfor %}
-			
-							</ul>
+						{% include "crm/right_invoice_ha_select.html" %}
 						Data wystawienia: <input type="date" name="right_invoice_date" value={{ time_now|date:'Y-m-d' }}>
 					</div>
 					{% endif %}
