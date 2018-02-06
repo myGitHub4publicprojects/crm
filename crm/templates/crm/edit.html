@@ -77,7 +77,7 @@
 		{% csrf_token %}
 		{% include "crm/actions.html" %}
 		<hr>
-		<!-- name age tel -->
+		<!-- name, age, tel -->
 		<div class="row mt-2">
 			<div class="col-xl">
 			<small class="text-muted">Imię: </small><br>
@@ -97,7 +97,7 @@
 			</div>
 		</div>
 		<hr>
-		<!-- location audometrist note -->
+		<!-- location, audometrist, note -->
 		<div class="row mt-2">
 			<div class="col-xl-3">
 				<small class="text-muted">Lokalizacja: </small><br>
@@ -134,79 +134,39 @@
 		<h4 class="text-center">Aktualnie noszone aparaty:</h4>
 		<!-- current hearing aids -->
 		<div class="row mt-2">
-			{% for ear in ears %}
-			<div class="col-xl-6">
-				<p class="text-center">
-					{% if ear == "right" %}
-						prawy:<br>
-						{% if right_hearing_aid %}
-						
-						{{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>Data zakupu: {{ right_hearing_aid.purchase_date }}<br>
-						{% if not right_hearing_aid.our %}<p class="bg-danger">APARAT KUPIONY U KONKURENCJI</p>{% endif %}
-						
-						<button onclick="document.getElementById('{{ ear }}').style.display='block'">ZMIEN</button>
-						{% endif %}
-					{% else %}
-						lewy:<br>
-						{% if left_hearing_aid %}
-						
-						{{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>Data zakupu: {{ left_hearing_aid.purchase_date }}<br>
-						{% if not left_hearing_aid.our %}<p class="bg-danger">APARAT KUPIONY U KONKURENCJI</p>{% endif %}
-						
-						<button onclick="document.getElementById('{{ ear }}').style.display='block'">ZMIEN</button>
-						{% endif %}
-					{% endif %}
-				</p>
-				<div  id={{ ear }} style="display:none">
-				<ul>
-					{% for make, families in ha_list.items %}
-					<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
-
-					<ul id='{{ ear }}_{{ make }}' style="display:none">
-						{% for family, models in families.items %}
-						<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-							<ul id='{{ ear }}_{{ make }}_{{ family }}' style="display:none">
-								{% for model in models %}
-								<li><input  name="{{ ear }}_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-								{% endfor %}
-							</ul>
-						</li>
-						{% endfor %}
-					</ul>
-					{% endfor %}
-
-				</ul>
-				Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
-				Kupiony w innej firmie:<input type="checkbox" name="{{ ear }}_ha_other" value="{{ ear }}_ha_other"><br>
-				</div>
-			</div>
-			{% endfor %}
+			{% include "crm/current_hearing_aids.html" %}
 		</div>
 		<hr>
+
 		<!-- audiograms -->
 		{% if left_audiogram or right_audiogram %}
-		<section id="audiogram" class="mw-100">
-			<div id="left_audiogram">Lewe:
-				<ul>
-					<li>250Hz: {{ left_audiogram.a250Hz }}</li>
-					<li>500Hz: {{ left_audiogram.a500Hz }}</li>
-					<li>1kHz: {{ left_audiogram.a1kHz }}</li>
-					<li>2kHz: {{ left_audiogram.a2kHz }}</li>
-					<li>4kHz: {{ left_audiogram.a4kHz }}</li>
-					<li>8kHz: {{ left_audiogram.a8kHz }}</li>
-				</ul>
+		<h4 class="text-center">Audiogramy:</h4>
+		<div class="row mt-2">
+			<div class="col-xl-6">
+				<div id="left_audiogram">Lewe:
+					<ul>
+						<li>250Hz: {{ left_audiogram.a250Hz }}</li>
+						<li>500Hz: {{ left_audiogram.a500Hz }}</li>
+						<li>1kHz: {{ left_audiogram.a1kHz }}</li>
+						<li>2kHz: {{ left_audiogram.a2kHz }}</li>
+						<li>4kHz: {{ left_audiogram.a4kHz }}</li>
+						<li>8kHz: {{ left_audiogram.a8kHz }}</li>
+					</ul>
+				</div>
 			</div>
-			<div id="right_audiogram">Prawe:
-				<ul>
-					<li>250Hz: {{ right_audiogram.a250Hz }}</li>
-					<li>500Hz: {{ right_audiogram.a500Hz }}</li>
-					<li>1kHz: {{ right_audiogram.a1kHz }}</li>
-					<li>2kHz: {{ right_audiogram.a2kHz }}</li>
-					<li>4kHz: {{ right_audiogram.a4kHz }}</li>
-					<li>8kHz: {{ right_audiogram.a8kHz }}</li>
-				</ul>
+			<div class="col-xl-6">
+				<div id="right_audiogram">Prawe:
+					<ul>
+						<li>250Hz: {{ right_audiogram.a250Hz }}</li>
+						<li>500Hz: {{ right_audiogram.a500Hz }}</li>
+						<li>1kHz: {{ right_audiogram.a1kHz }}</li>
+						<li>2kHz: {{ right_audiogram.a2kHz }}</li>
+						<li>4kHz: {{ right_audiogram.a4kHz }}</li>
+						<li>8kHz: {{ right_audiogram.a8kHz }}</li>
+					</ul>
+				</div>
 			</div>
-		</section>
+		</div>
 
 		<div id="remove_audiogram">Usuń audiogram: <input type="checkbox" name="remove_audiogram" value="remove" id="remove_audiogram" />
 						<label for="remove_audiogram">usuń</label>
