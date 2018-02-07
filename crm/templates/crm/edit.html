@@ -81,11 +81,11 @@
 		<div class="row mt-2">
 			<div class="col-xl">
 			<small class="text-muted">Imię: </small><br>
-			<input type="text" name="fname" value="{{ patient.first_name }}" required>
+			<input type="text" name="fname" value="{{ patient.first_name }}" class="font-weight-bold" required>
 			</div>
 			<div class="col-xl">
 			<small class="text-muted">Nazwisko: </small><br>
-			<input type="text" name="lname" value="{{ patient.last_name }}" required>
+			<input type="text" name="lname" value="{{ patient.last_name }}" class="font-weight-bold" required>
 			</div>
 			<div class="col-xl">
 			<small class="text-muted">Data ur: </small><br>
@@ -102,17 +102,19 @@
 			<div class="col-xl-3">
 				<small class="text-muted">Lokalizacja: </small><br>
 				{{ patient.location }}<br>
-				<small onclick="document.getElementById('location').style.display='block'" id="zmien">ZMIEN</small><br>
-				<ul id="location" style="display:none">
-				{% for location in patient.locations %}
-					<li>
-					<input type="radio" name="location" id="{{ location }}" value="{{ location }}"
-						{% if location == patient.location %} checked="checked" {% endif %}
-					/>
-					<label for="{{ location }}">{{ location }}</label><br/>
-					</li>
-				{% endfor %}
-				</ul>
+				<div class="btn btn-secondary" data-toggle="collapse" data-target="#location" aria-expanded="false" aria-controls="location">zmień</div>
+				<div class="collapse" id="location">
+					<ul class="list-unstyled">
+					{% for location in patient.locations %}
+						<li>
+						<input type="radio" name="location" id="{{ location }}" value="{{ location }}"
+							{% if location == patient.location %} checked="checked" {% endif %}
+						/>
+						<label for="{{ location }}">{{ location }}</label><br/>
+						</li>
+					{% endfor %}
+					</ul>
+				</div>
 			</div>
 			<div class="col-xl-3">
 				<small class="text-muted">Autor notatki:</small>
@@ -138,9 +140,9 @@
 		</div>
 		<hr>
 
-		<!-- audiograms -->
+		<!-- audiogram -->
 		{% if left_audiogram or right_audiogram %}
-		<h4 class="text-center">Audiogramy:</h4>
+		<h4 class="text-center">Audiogram:</h4>
 		<div class="row mt-2">
 			<div class="col-xl-6">
 				<div id="left_audiogram">Lewe:
@@ -168,19 +170,22 @@
 			</div>
 		</div>
 
-		<div id="remove_audiogram">Usuń audiogram: <input type="checkbox" name="remove_audiogram" value="remove" id="remove_audiogram" />
-						<label for="remove_audiogram">usuń</label>
-		</div>l
+		<div class="btn btn-sm btn-secondary float-right">
+			Usuń audiogram: 
+			<input type="checkbox" name="remove_audiogram" value="remove" />
+		</div>
+		<br>
+		<hr>
 		{% endif %}
 
-		<input class="btn" type="submit" value="Aktualizuj dane pacjenta" />
+		<input class="btn btn-primary btn-lg" type="submit" value="Aktualizuj dane pacjenta" />
 		</form>
 	</div>
 
-	<div class="col-lg-3">
-		<small>Dodany przez {{ patient.audiometrist }} w dniu {{ patient.create_date|date:'d-m-Y' }}</small>
-		<h3>Ostatnie notatki:</h3>
-		<ul id="notes">
+	<div class="col-lg-3 mt-2" id="history">
+		<small class="text-center">Pacjent dodany przez {{ patient.audiometrist }}, dnia {{ patient.create_date|date:'d-m-Y' }}</small>
+		<h3 class="text-center">Historia:</h3>
+		<ul class="list-unstyled">
 		{% for note in patient_notes %}
 			<li>
 			<small>{{ note.timestamp|date:'d-m-Y H:i' }}, {{ note.audiometrist }}</small><br>
@@ -192,8 +197,8 @@
 	</div>
 </div>
 
-<h3>usuń pacjenta z bazy:</h3>
-<a href="{% url 'crm:deleteconfirm' patient.id %}">USUWAM</a>
+<a class="float-right" href="{% url 'crm:deleteconfirm' patient.id %}"><div class="btn btn-outline-danger">usuń pacjenta</div></a>
+
 
 
 {% endblock content %}
