@@ -11,8 +11,8 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import (Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate, HA_Invoice,
-                        Audiogram)
+from crm.models import (Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate,
+                        HA_Invoice, NewInfo, Audiogram)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -464,17 +464,117 @@ class TestUpdatingView(TestCase):
         patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
         patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',)
         patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',)
-    def test_anonymous(self):
+    def test_change_name_tel_location(self):
         patient1 = Patient.objects.get(id=1)
         data = {'fname': 'Adam',
                 'lname': 'Atkins',
                 'usrtel': 1,
-                'location': 'some_location'}
+                'location': 'some_location',
+                }
         url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-        response = self.client.post(url, data)
-        assert response.status_code == 302, 'Should redirect'
+        patient1.refresh_from_db()
+        self.assertEqual(patient1.first_name, 'Adam')
+        self.assertEqual(patient1.last_name, 'Atkins')
+        self.assertEqual(patient1.phone_no, 1)
+        self.assertEqual(patient1.location, 'some_location')
 
-        # data = {'s_purch_date': lower_band, 'e_purch_date': upper_band}
-        # url = reverse('crm:advanced_search')
-        # response = self.client.get(url, data)
+    def test_add_audiometrist_birth_day_note(self):
+        patient1 = Patient.objects.get(id=1)
+        data = {'fname': 'Adam',
+                'lname': 'Atkins',
+                'usrtel': 1,
+                'location': 'some_location',
+                'new_note': 'p_note',
+                'bday': '2000-01-01',
+                'audiometrist': 'John',
+                }
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        patient1.refresh_from_db()
+        self.assertEqual(str(patient1.date_of_birth), '2000-01-01')
+        new_note = NewInfo.objects.get(id=1)
+        self.assertEqual(new_note.note, 'p_note')
+        self.assertEqual(new_note.audiometrist, 'John')
+
+    def test_adding_hearing_aids(self):
+        patient1 = Patient.objects.get(id=1)
+        data = {'fname': 'Adam',
+                'lname': 'Atkins',
+                'usrtel': 1,
+                'location': 'some_location',
+                'left_ha': 'b1_family1_model1',
+                'right_ha': 'b2_family2_model2',
+                }
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_ha_all = Hearing_Aid.objects.filter(patient=patient1, ear='left')
+        right_ha_all = Hearing_Aid.objects.filter(patient=patient1, ear='right')
+        self.assertEqual(len(left_ha_all), 1)
+        self.assertEqual(len(right_ha_all), 1)
+        self.assertEqual(left_ha_all.last().ha_model, 'model1')
+        self.assertEqual(right_ha_all.last().ha_model, 'model2')
+
+    def test_adding_another_hearing_aids(self):
+        patient1 = Patient.objects.get(id=1)
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='left',
+                                    ha_make='m',
+                                    ha_family='f',
+                                    ha_model='m')
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='right',
+                                    ha_make='m',
+                                    ha_family='f',
+                                    ha_model='m')
+        data = {'fname': 'Adam',
+                'lname': 'Atkins',
+                'usrtel': 1,
+                'location': 'some_location',
+                'left_ha': 'b1_family1_model1',
+                'right_ha': 'b2_family2_model2',
+                # 'left_purchase_date': '1999-01-01',
+                # 'right_purchase_date': '1999-01-02',
+                # 'left_NFZ_confirmed_date': '2001-01-01',
+                # 'right_NFZ_confirmed_date': '2002-02-02',
+                # 'nfz_left_remove': True,
+                }
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_ha_all = Hearing_Aid.objects.filter(patient=patient1, ear='left')
+        right_ha_all = Hearing_Aid.objects.filter(
+            patient=patient1, ear='right')
+        self.assertEqual(len(left_ha_all), 2)
+        self.assertEqual(len(right_ha_all), 2)
+        self.assertEqual(left_ha_all.last().ha_model, 'model1')
+        self.assertEqual(right_ha_all.last().ha_model, 'model2')
+
+    def test_remove_hearing_aids(self):
+        pass
+
+    def test_remove_NFZ_confirmed(self):
+        pass

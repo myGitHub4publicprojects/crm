@@ -156,7 +156,6 @@ def store(request):
 		location = request.POST['location']
 		)
 	patient.save()
-	patient_id = patient.id
 
 	for ear in ears:
     		# add hearing aid
@@ -188,11 +187,13 @@ def store(request):
 			pcpr_estimate.save()
 
 	if request.POST.get('note'):
-		patient.notes = request.POST['note']
-		patient.save()
+		new_info = NewInfo(	patient=patient,
+							note=request.POST['note'],
+							audiometrist=request.POST.get('audiometrist'))
+		new_info.save()
 
 	messages.success(request, "Pomyślnie utworzono")
-	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
+	return HttpResponseRedirect(reverse('crm:edit', args=(patient.id,)))
 
 def updating(request, patient_id):
 	# for updating existing patients in database
@@ -262,8 +263,7 @@ def updating(request, patient_id):
 				patient=patient, ear=ear, in_progress=True).last()
 			last_pcpr_in_progress.in_progress = False
 			last_pcpr_in_progress.save()
-
-	for ear in ears:
+			
 		# invoice procedure
 		if request.POST.get(ear + '_invoice_ha'):
 			ha = request.POST[ear + '_invoice_ha']
