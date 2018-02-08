@@ -1,0 +1,46 @@
+<div class="collapse" id="add_ha_right">
+    <div class="panel-group" id="ha_right">
+        {% for make, families in ha_list.items %}
+        <div class="panel panel-default">
+            <a data-toggle="collapse" data-parent="#ha_right" href="#{{ make }}_right">
+                <div class="btn btn-primary">{{ make }}</div>
+            </a>
+            <div id="{{ make }}_right" class="panel-collapse collapse in">
+                {% for family, models in families.items %}
+                <div class="panel-group" id="inner_{{ make }}_right">
+                    <div class="panel panel-default">
+                        <a data-toggle="collapse" data-parent="#inner_{{ make }}_right" href="#{{ make }}_{{ family|cut:" " }}_right">
+                            <div class="btn btn-success">{{ family }}</div>
+                        </a>
+                        <div id="{{ make }}_{{ family|cut:" " }}_right" class="panel-collapse collapse in">
+                            {% for model in models %}
+                            <div class="panel-group" id="inner_{{ make }}_{{ family|cut:" " }}_right">
+                                <div class="panel panel-default">
+                                    <a data-toggle="collapse" data-parent="#inner_{{ make }}_{{ family|cut:" " }}_right" href="#{{ make }}_{{ family|cut:"
+                                        " }}_{{ model|cut:" " }}_right">
+                                        <div class="btn btn-warning">{{ model }}</div>
+                                    </a>
+                                    <div id="{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_right" class="panel-collapse collapse in">
+                                        <input name="right_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' />
+                                        <label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p>
+        <small>Data zakupu:</small>
+        <input type="date" name="right_purchase_date">
+    </p>
+    <p>
+        <small>Kupiony w innej firmie:</small>
+        <input type="checkbox" name="right_ha_other" value="right_ha_other">
+    </p>
+</div>

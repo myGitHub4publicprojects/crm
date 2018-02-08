@@ -1,0 +1,126 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<h1>Dodaj nowego pacjenta</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'crm:store' %}" method="post" id="new_patient">
+{% csrf_token %}
+
+<div id='details'>
+<div class="patient_info">
+
+
+
+
+
+
+
+<div class="actions">
+<ul>
+	<li onclick="document.getElementById('wnioski').style.display='block'">wnioski</li>
+	<div id='wnioski' style="display:none">
+		{% for ear in ears %}
+		<div class={{ ear }}>
+			{{ ear }} aparat:<br>
+			data przyniesienia wniosków: <input type="date" name="{{ ear }}_NFZ_confirmed_date"><br>
+		</div>
+		{% endfor %}
+	</div>
+
+	<li onclick="document.getElementById('kosztorys').style.display='block'">kosztorys</li>
+	<div id='kosztorys' style="display:none">
+		<div class="hearing_aid">
+				{% for ear in ears %}
+				<div class={{ ear }}>
+				<b>Aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</b>
+				<ul>
+					{% for make, families in ha_list.items %}
+					<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
+
+					<ul id={{ ear }}_{{ make }} style="display:none">
+						{% for family, models in families.items %}
+						<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+							<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
+								{% for model in models %}
+								<li><input  name="{{ ear }}_ha_estimate" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+								{% endfor %}
+							</ul>
+						</li>
+						{% endfor %}
+					</ul>
+					{% endfor %}
+
+				</ul>
+				Data wystawienia kosztorysu:<input type="date" name="{{ ear }}_pcpr_etimate_date"><br>
+				</div>
+				{% endfor %}
+		</div>
+	</div>
+</ul>
+</div>
+
+
+
+
+
+
+
+	<input type="text" name="fname" placeholder="Imię" required>
+	<input type="text" name="lname" placeholder="Nazwisko" required><br>
+	Data ur:<input type="date" name="bday" required><br>
+	nr telefonu:<input type="tel" name="usrtel" placeholder="jak nie ma to zero" required><br>
+</div>
+
+
+<div class="hearing_aid">
+		{% for ear in ears %}
+		<div class={{ ear }}>
+		<b>Obecny aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</b>
+		<ul>
+			{% for make, families in ha_list.items %}
+			<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
+
+			<ul id={{ ear }}_{{ make }} style="display:none">
+				{% for family, models in families.items %}
+				<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
+					<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
+						{% for model in models %}
+						<li><input  name="{{ ear }}_ha" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
+						{% endfor %}
+					</ul>
+				</li>
+				{% endfor %}
+			</ul>
+			{% endfor %}
+
+		</ul>
+		Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
+		</div>
+		{% endfor %}
+</div>
+
+<textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
+
+<div class="patient_info">
+Lokalizacja:<br>
+{% for location in locations %}
+	<input type="radio" name="location" id="location{{ forloop.counter }}" value="{{ location }}" required/>
+	<label for="location{{ forloop.counter }}">{{ location }}</label><br/>
+{% endfor %}
+</div>
+
+<div class="patient_info">
+Pacjent dodany przez: <br>
+{% for audiometrist in audiometrist_list %}
+	<input type="radio" name="audiometrist" id="audiometrist{{ forloop.counter }}" value="{{ audiometrist }}" required/>
+	<label for="audiometrist{{ forloop.counter }}">{{ audiometrist }}</label><br/>
+{% endfor %}
+</div>
+</div>
+
+<input class="btn" type="submit" value="UTWÓRZ PACJENTA" />
+</form>
+
+{% endblock content %}

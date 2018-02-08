@@ -48,7 +48,7 @@
 							</div>
 						</div>
 					{% else %}
-						Dodaj potwierdzony wniosek NFZ: <input type="date" name="NFZ_left">
+						Dodaj potwierdzony wniosek NFZ: <input type="date" name="NFZ_right">
 					{% endif %}
 				</div>
 
@@ -142,7 +142,7 @@
 					{% endif %}
 				</div>
 					{% if left_PCPR_estimate_all %}
-						<h4>Poprzednie kosztorysy:</h4>
+						<h4>Poprzednie lewe:</h4>
 						<ul>
 						{% for i in left_PCPR_estimate_all %}
 						<li>

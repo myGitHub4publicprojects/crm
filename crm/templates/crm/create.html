@@ -3,124 +3,141 @@
 {% block content %}
 <h1>Dodaj nowego pacjenta</h1>
 
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+{% if error_message %}
+<p>
+    <strong>{{ error_message }}</strong>
+</p>{% endif %}
 
 <form action="{% url 'crm:store' %}" method="post" id="new_patient">
-{% csrf_token %}
+    {% csrf_token %}
 
-<div id='details'>
-<div class="patient_info">
+    <!-- name, age, tel -->
+    <div class="row mt-2">
+        <div class="col-xl">
+            <small class="text-muted">Imię: </small>
+            <br>
+            <input type="text" name="fname" placeholder="Imię" required>
+        </div>
+        <div class="col-xl">
+            <small class="text-muted">Nazwisko: </small>
+            <br>
+            <input type="text" name="lname" placeholder="Nazwisko" required>
+        </div>
+        <div class="col-xl">
+            <small class="text-muted">Data ur: </small>
+            <br>
+            <input type="date" name="bday" required>
+        </div>
+        <div class="col-xl">
+            <small class="text-muted">Tel: </small>
+            <br>
+            <input type="tel" name="usrtel" required>
+        </div>
+    </div>
+    <hr>
+    <!-- location, audometrist, note -->
 
+    <p>Lokalizacja: 
+        <ul class="list-inline">
+            {% for location in locations %}
+            <li class="list-inline-item">
+                <input type="radio" name="location" id="{{ location }}" value="{{ location }}" />
+                <label for="{{ location }}">{{ location }}</label>
+                <br/>
+            </li>
+            {% endfor %}
+        </ul>
+    </p>
+    <hr>
 
+    <p>Dodaj notatkę:</p>
+    <textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
+    <hr>
 
+    <p>Autor notatki:
+    <ul class="list-inline">
+        {% for a in audiometrist_list %}
+        <li class="list-inline-item">
+            <input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a }}" class="inline" />
+            <label for="a{{ forloop.counter }}">{{ a }}</label>
+        </li>
+        {% endfor %}
+    </ul>
+    </p>
+    <hr>
 
+    <p>Obecnie noszone aparaty:</p>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="btn btn-outline-info w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">dodaj lewy</div>
+                {% include "crm/left_ha_select.html" %}
+            </div>
+        </div>
 
+        <div class="col-xl-6">
+            <div class="btn btn-outline-danger w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_right" aria-expanded="false">dodaj prawy</div>
+                {% include "crm/right_ha_select.html" %}
+            </div>
+        </div>
+    </div>
+    <hr>
 
+    <p>Dodaj potwierdzone wnioski NFZ:</p>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="btn btn-outline-info w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_NFZ_left" aria-expanded="false">dodaj lewy</div>
+                <div class="collapse" id="add_NFZ_left">
+                    Dodaj potwierdzony wniosek NFZ:
+                    <input type="date" name="NFZ_left">
+                </div>
+            </div>
+        </div>
+    
+        <div class="col-xl-6">
+            <div class="btn btn-outline-danger w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_NFZ_right" aria-expanded="false">dodaj lewy</div>
+                <div class="collapse" id="add_NFZ_right">
+                    Dodaj potwierdzony wniosek NFZ:
+                    <input type="date" name="NFZ_right">
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
 
-<div class="actions">
-<ul>
-	<li onclick="document.getElementById('wnioski').style.display='block'">wnioski</li>
-	<div id='wnioski' style="display:none">
-		{% for ear in ears %}
-		<div class={{ ear }}>
-			{{ ear }} aparat:<br>
-			data przyniesienia wniosków: <input type="date" name="{{ ear }}_NFZ_confirmed_date"><br>
-		</div>
-		{% endfor %}
-	</div>
+    <p>Dodaj kosztorys:</p>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="btn btn-outline-info w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_left" aria-expanded="false">dodaj lewy</div>
+                <div class="collapse" id="pcpr_left">
+                    Zmieniam aparat na:
+                    <br> {% include "crm/left_pcpr_ha_select.html" %} Zmieniam datę wystawienia kosztorysu na:
+                    <input type="date" name="left_PCPR_date">
+                    <br>
+                </div>
+            </div>
+        </div>
+    
+        <div class="col-xl-6">
+            <div class="btn btn-outline-danger w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_right" aria-expanded="false">dodaj prawy</div>
+                <div class="collapse" id="pcpr_right">
+                    Zmieniam aparat na:
+                    <br> {% include "crm/left_pcpr_ha_select.html" %} Zmieniam datę wystawienia kosztorysu na:
+                    <input type="date" name="left_PCPR_date">
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
 
-	<li onclick="document.getElementById('kosztorys').style.display='block'">kosztorys</li>
-	<div id='kosztorys' style="display:none">
-		<div class="hearing_aid">
-				{% for ear in ears %}
-				<div class={{ ear }}>
-				<b>Aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</b>
-				<ul>
-					{% for make, families in ha_list.items %}
-					<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
-
-					<ul id={{ ear }}_{{ make }} style="display:none">
-						{% for family, models in families.items %}
-						<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-							<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
-								{% for model in models %}
-								<li><input  name="{{ ear }}_ha_estimate" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-								{% endfor %}
-							</ul>
-						</li>
-						{% endfor %}
-					</ul>
-					{% endfor %}
-
-				</ul>
-				Data wystawienia kosztorysu:<input type="date" name="{{ ear }}_pcpr_etimate_date"><br>
-				</div>
-				{% endfor %}
-		</div>
-	</div>
-</ul>
-</div>
-
-
-
-
-
-
-
-	<input type="text" name="fname" placeholder="Imię" required>
-	<input type="text" name="lname" placeholder="Nazwisko" required><br>
-	Data ur:<input type="date" name="bday" required><br>
-	nr telefonu:<input type="tel" name="usrtel" placeholder="jak nie ma to zero" required><br>
-</div>
-
-
-<div class="hearing_aid">
-		{% for ear in ears %}
-		<div class={{ ear }}>
-		<b>Obecny aparat {% if ear == "right" %}prawy{% else %}lewy{% endif %}:</b>
-		<ul>
-			{% for make, families in ha_list.items %}
-			<li onclick="document.getElementById('{{ ear }}_{{ make }}').style.display='block'">{{ make }}</li>
-
-			<ul id={{ ear }}_{{ make }} style="display:none">
-				{% for family, models in families.items %}
-				<li onclick="document.getElementById('{{ ear }}_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-					<ul id={{ ear }}_{{ make }}_{{ family }} style="display:none">
-						{% for model in models %}
-						<li><input  name="{{ ear }}_ha" type="radio" value={{ make }}_{{ family }}_{{ model }} /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-						{% endfor %}
-					</ul>
-				</li>
-				{% endfor %}
-			</ul>
-			{% endfor %}
-
-		</ul>
-		Data zakupu:<input type="date" name="{{ ear }}_purchase_date"><br>
-		</div>
-		{% endfor %}
-</div>
-
-<textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
-
-<div class="patient_info">
-Lokalizacja:<br>
-{% for location in locations %}
-	<input type="radio" name="location" id="location{{ forloop.counter }}" value="{{ location }}" required/>
-	<label for="location{{ forloop.counter }}">{{ location }}</label><br/>
-{% endfor %}
-</div>
-
-<div class="patient_info">
-Pacjent dodany przez: <br>
-{% for audiometrist in audiometrist_list %}
-	<input type="radio" name="audiometrist" id="audiometrist{{ forloop.counter }}" value="{{ audiometrist }}" required/>
-	<label for="audiometrist{{ forloop.counter }}">{{ audiometrist }}</label><br/>
-{% endfor %}
-</div>
-</div>
-
-<input class="btn" type="submit" value="UTWÓRZ PACJENTA" />
+    <input class="btn btn-primary btn-lg mb-5" type="submit" value="UTWÓRZ PACJENTA" />
+     
 </form>
 
 {% endblock content %}

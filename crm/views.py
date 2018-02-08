@@ -158,32 +158,24 @@ def store(request):
 	patient.save()
 	patient_id = patient.id
 
-	for ear in Hearing_Aid.ears:
-		try:
-			request.POST[ear + '_ha']
-			print request.POST[ear + '_ha']
+	for ear in ears:
+    		# add hearing aid
+		if request.POST.get(ear + '_ha'):
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
 			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
 			hearing_aid.save()
-			if request.POST[ear + '_purchase_date']:
+			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
-		except:
-			pass
 
-
-	for ear in Hearing_Aid.ears:
-		try:
-			request.POST[ear + '_NFZ_confirmed_date']
+			# add NFZ_confirmed
+		if request.POST.get(ear + '_NFZ_confirmed_date'):
 			nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST[ear + '_NFZ_confirmed_date'], side=ear)
 			nfz_confirmed.save()
-		except:
-			pass
 
-	for ear in Hearing_Aid.ears:
-		try:
-			request.POST[ear + '_ha_estimate']
+			# add PCPR_Estimate
+		if request.POST.get(ear + '_ha_estimate'):
 			ha = request.POST[ear + '_ha_estimate']
 			ha_make, ha_family, ha_model = ha.split('_')
 			pcpr_estimate = PCPR_Estimate(
@@ -194,64 +186,36 @@ def store(request):
 				ear=ear,
 				date=request.POST[ear + '_pcpr_etimate_date'])
 			pcpr_estimate.save()
-		except:
-			pass
 
-
-
-	if request.POST['note']:
+	if request.POST.get('note'):
 		patient.notes = request.POST['note']
 		patient.save()
-
 
 	messages.success(request, "Pomyślnie utworzono")
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
 
 def updating(request, patient_id):
-	# for updating egzisting patients in database
-
-	print request.POST
-
-	patient = Patient.objects.get(pk=patient_id)
-
-
-	print 'prawe: ', patient.hearing_aid_set.filter(ear="right")
-	print 'lewe: ', patient.hearing_aid_set.filter(ear="right")
-
-	print 'pcpr left: ', PCPR_Estimate.objects.filter(patient=patient, ear='left')
-	print 'pcpr right: ', PCPR_Estimate.objects.filter(patient=patient, ear='right')
-
-
-
+	# for updating existing patients in database
+	patient = get_object_or_404(Patient, pk=patient_id)
 	patient.first_name=request.POST['fname']
 	patient.last_name=request.POST['lname']
 	patient.phone_no=request.POST['usrtel']
 	patient.location = request.POST['location']
 	update_list = ['first_name', 'last_name', 'phone_no', 'location']
-	if request.POST['bday']:
+	if request.POST.get('bday'):
 		patient.date_of_birth=request.POST['bday']
 		update_list.append('date_of_birth')
 	patient.save(update_fields=update_list)
 
-	if request.POST['new_note']:
-		new_info = NewInfo(patient=patient, note=request.POST['new_note'])
+	if request.POST.get('new_note'):
+		new_info = NewInfo(	patient=patient,
+							note=request.POST['new_note'],
+                    		audiometrist=request.POST.get('audiometrist'))
 		new_info.save()
-
-	try:
-		new_info.audiometrist = request.POST['audiometrist']
-		new_info.save()
-	except:
-		pass
-	
-	print 'data:'
-	if request.POST.get('left_ha', None):
-		print request.POST['left_ha']
-
-	
 
 	for ear in ears:
-		try:
-			request.POST[ear + '_ha']
+    		# adding hearing aid to patient
+		if request.POST.get(ear + '_ha'):
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
 			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
@@ -263,13 +227,8 @@ def updating(request, patient_id):
 			if request.POST.get(ear + '_ha_other'):
 				hearing_aid.our = False
 				hearing_aid.save()
-		except:
-			pass
-
-
-	for ear in ears:
-		try:
-			request.POST['NFZ_' + ear]
+			# adding NFZ_confirmed to patient
+		if request.POST.get('NFZ_' + ear):
 			if not NFZ_Confirmed.objects.filter(patient=patient, side=ear, in_progress=True):
 				nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST['NFZ_' + ear], side=ear)
 			else:
@@ -277,12 +236,15 @@ def updating(request, patient_id):
 				current.date = request.POST['NFZ_' + ear]
 				nfz_confirmed = current
 			nfz_confirmed.save()
-		except:
-			pass
 
-	for ear in ears:
-		try:
-			request.POST[ear + '_pcpr_ha']
+			# remove NFZ_confirmed from currently active
+		if request.POST.get('nfz_' + ear + '_remove'):
+			last_in_progress = NFZ_Confirmed.objects.filter(patient=patient, side=ear, in_progress=True).last()
+			last_in_progress.in_progress = False
+			last_in_progress.save()
+
+			# adding PCPR_Estimate
+		if request.POST.get(ear + '_pcpr_ha'):
 			ha = request.POST[ear + '_pcpr_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
 			pcpr_estimate = PCPR_Estimate(
@@ -293,12 +255,15 @@ def updating(request, patient_id):
 				ear=ear,
 				date=request.POST[ear + '_PCPR_date'])
 			pcpr_estimate.save()
-			print 'pcrpr est', pcpr_estimate.ha_model, pcpr_estimate.ear
-		except:
-			pass
+
+			# remove PCPR_Estimate from currently active
+		if request.POST.get('pcpr_' + ear + '_remove'):
+			last_pcpr_in_progress = PCPR_Estimate.objects.filter(
+				patient=patient, ear=ear, in_progress=True).last()
+			last_pcpr_in_progress.in_progress = False
+			last_pcpr_in_progress.save()
 
 	for ear in ears:
-
 		# invoice procedure
 		if request.POST.get(ear + '_invoice_ha'):
 			ha = request.POST[ear + '_invoice_ha']

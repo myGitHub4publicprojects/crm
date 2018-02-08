@@ -419,3 +419,62 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertEqual(response.context['left_audiogram'], aud1)
         self.assertEqual(response.context['right_audiogram'], aud3)
+
+
+class TestStoreView(TestCase):
+    def setUp(self):
+        patient1 = Patient.objects.create(
+            first_name='John', last_name='Smith1',)
+        patient2 = Patient.objects.create(
+            first_name='John', last_name='Smith2',)
+        patient3 = Patient.objects.create(
+            first_name='John', last_name='Smith3',)
+
+    def test_anonymous(self):
+        data = {'fname': 'Adam',
+                'lname': 'Atkins',
+                'bday': '2000-01-01',
+                'usrtel': 1,
+                'audiometrist': 'Olo',
+                'location': 'some_location',
+                'left_ha': 'model1_family1_brand1',
+                'right_ha': 'model2_family2_brand2',
+                'left_purchase_date': '1999-01-01',
+                'right_purchase_date': '1999-01-02',
+                'left_NFZ_confirmed_date': '2001-01-01',
+                'right_NFZ_confirmed_date': '2002-02-02',
+                'left_ha_estimate': 'model3_f3_b3',
+                'right_ha_estimate': 'b4_f4_m4',
+                'left_pcpr_etimate_date': '2003-01-01',
+                'right_pcpr_etimate_date': '2004-01-01',
+                'note': 'p1_note',
+                }
+
+        url = reverse('crm:store')
+        # id of new patient is set to 4 as there are already 3 in from setUp function
+        expected_url = reverse('crm:edit', args=(4,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                     status_code=302, target_status_code=200)
+
+class TestUpdatingView(TestCase):
+    def setUp(self):
+        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
+        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',)
+        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',)
+    def test_anonymous(self):
+        patient1 = Patient.objects.get(id=1)
+        data = {'fname': 'Adam',
+                'lname': 'Atkins',
+                'usrtel': 1,
+                'location': 'some_location'}
+        url = reverse('crm:updating', args=(patient1.id,))
+
+        response = self.client.post(url, data)
+        assert response.status_code == 302, 'Should redirect'
+
+        # data = {'s_purch_date': lower_band, 'e_purch_date': upper_band}
+        # url = reverse('crm:advanced_search')
+        # response = self.client.get(url, data)
