@@ -229,14 +229,15 @@ def updating(request, patient_id):
 				hearing_aid.our = False
 				hearing_aid.save()
 			# adding NFZ_confirmed to patient
+			# previous NFZ if present are set to inactive
 		if request.POST.get('NFZ_' + ear):
-			if not NFZ_Confirmed.objects.filter(patient=patient, side=ear, in_progress=True):
-				nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST['NFZ_' + ear], side=ear)
-			else:
-				current = NFZ_Confirmed.objects.get(patient=patient, side=ear, in_progress=True)
-				current.date = request.POST['NFZ_' + ear]
-				nfz_confirmed = current
-			nfz_confirmed.save()
+			nfz_confirmed = NFZ_Confirmed.objects.filter(
+					patient=patient, side=ear, in_progress=True)
+			if nfz_confirmed:
+				nfz_confirmed.update(in_progress=False)
+			new_nfz = NFZ_Confirmed.objects.create(
+				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
+    		
 
 			# remove NFZ_confirmed from currently active
 		if request.POST.get('nfz_' + ear + '_remove'):
@@ -263,7 +264,7 @@ def updating(request, patient_id):
 				patient=patient, ear=ear, in_progress=True).last()
 			last_pcpr_in_progress.in_progress = False
 			last_pcpr_in_progress.save()
-			
+
 		# invoice procedure
 		if request.POST.get(ear + '_invoice_ha'):
 			ha = request.POST[ear + '_invoice_ha']
@@ -277,22 +278,28 @@ def updating(request, patient_id):
 				date=request.POST[ear + '_invoice_date'])
 			invoice.save()
 
+		# remove invoice
+		if request.POST.get(ear + '_invoice_remove'):
+			last_invoice_in_progress = HA_Invoice.objects.filter(
+				patient=patient, ear=ear, in_progress=True).last()
+			last_invoice_in_progress.in_progress = False
+			last_invoice_in_progress.save()
+
 		# collection procedure
 		if request.POST.get(ear + '_collection_confirm'):
 			print ear + '_collection_confirm'
 			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
-			ha = Hearing_Aid(
+			Hearing_Aid.objects.create(
 				patient=patient,
 				ha_make = invoiced_ha.ha_make,
 				ha_family = invoiced_ha.ha_family,
 				ha_model = invoiced_ha.ha_model,
 				purchase_date = request.POST[ear + '_collection_date'],
 				ear=ear)
-			ha.save()
 
-			invoice = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
-			invoice.in_progress = False
-			invoice.save()
+			# clear Invoice, PCPR_Estimate and NFZ_Confirmed for this HA
+			invoiced_ha.in_progress = False
+			invoiced_ha.save()
 			pcpr_estimate = PCPR_Estimate.objects.filter(patient=patient, ear=ear).last()
 			pcpr_estimate.in_progress = False
 			pcpr_estimate.save()

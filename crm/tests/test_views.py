@@ -460,17 +460,19 @@ class TestStoreView(TestCase):
                      status_code=302, target_status_code=200)
 
 class TestUpdatingView(TestCase):
+    data = {'fname': 'Adam',
+                    'lname': 'Atkins',
+                    'usrtel': 1,
+                    'location': 'some_location',
+
+                    }
     def setUp(self):
         patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
         patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',)
         patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',)
     def test_change_name_tel_location(self):
         patient1 = Patient.objects.get(id=1)
-        data = {'fname': 'Adam',
-                'lname': 'Atkins',
-                'usrtel': 1,
-                'location': 'some_location',
-                }
+        data = self.data.copy()
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -487,14 +489,10 @@ class TestUpdatingView(TestCase):
 
     def test_add_audiometrist_birth_day_note(self):
         patient1 = Patient.objects.get(id=1)
-        data = {'fname': 'Adam',
-                'lname': 'Atkins',
-                'usrtel': 1,
-                'location': 'some_location',
-                'new_note': 'p_note',
-                'bday': '2000-01-01',
-                'audiometrist': 'John',
-                }
+        data = self.data.copy()
+        data['new_note'] = 'p_note'
+        data['bday'] = '2000-01-01'
+        data['audiometrist'] = 'John'
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -511,13 +509,9 @@ class TestUpdatingView(TestCase):
 
     def test_adding_hearing_aids(self):
         patient1 = Patient.objects.get(id=1)
-        data = {'fname': 'Adam',
-                'lname': 'Atkins',
-                'usrtel': 1,
-                'location': 'some_location',
-                'left_ha': 'b1_family1_model1',
-                'right_ha': 'b2_family2_model2',
-                }
+        data = self.data.copy()
+        data['left_ha'] = 'b1_family1_model1'
+        data['right_ha'] = 'b2_family2_model2'
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -533,7 +527,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(left_ha_all.last().ha_model, 'model1')
         self.assertEqual(right_ha_all.last().ha_model, 'model2')
 
-    def test_adding_another_hearing_aids(self):
+    def test_adding_another_hearing_aids_with_purchase_dates(self):
         patient1 = Patient.objects.get(id=1)
         Hearing_Aid.objects.create(patient=patient1,
                                     ear='left',
@@ -545,18 +539,12 @@ class TestUpdatingView(TestCase):
                                     ha_make='m',
                                     ha_family='f',
                                     ha_model='m')
-        data = {'fname': 'Adam',
-                'lname': 'Atkins',
-                'usrtel': 1,
-                'location': 'some_location',
-                'left_ha': 'b1_family1_model1',
-                'right_ha': 'b2_family2_model2',
-                # 'left_purchase_date': '1999-01-01',
-                # 'right_purchase_date': '1999-01-02',
-                # 'left_NFZ_confirmed_date': '2001-01-01',
-                # 'right_NFZ_confirmed_date': '2002-02-02',
-                # 'nfz_left_remove': True,
-                }
+        data = self.data.copy()
+        data['left_ha'] = 'b1_family1_model1'
+        data['right_ha'] = 'b2_family2_model2'
+        data['left_purchase_date'] = '2001-01-01'
+        data['right_purchase_date'] = '2001-01-02'
+        data['left_ha_other'] = True
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -572,9 +560,293 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_ha_all), 2)
         self.assertEqual(left_ha_all.last().ha_model, 'model1')
         self.assertEqual(right_ha_all.last().ha_model, 'model2')
+        self.assertEqual(str(left_ha_all.last().purchase_date), '2001-01-01')
+        self.assertEqual(str(right_ha_all.last().purchase_date), '2001-01-02')
+        self.assertFalse(left_ha_all.last().our)
 
-    def test_remove_hearing_aids(self):
-        pass
+    def test_adding_NFZ_confirmed(self):
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['NFZ_left'] = '2001-01-01'
+        data['NFZ_right'] = '2001-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-    def test_remove_NFZ_confirmed(self):
-        pass
+        left_nfz_all = NFZ_Confirmed.objects.filter(patient=patient1, side='left')
+        right_nfz_all = NFZ_Confirmed.objects.filter(patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_all), 1)
+        self.assertEqual(len(right_nfz_all), 1)
+        self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
+        self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+
+    def test_adding_another_NFZ(self):
+        patient1 = Patient.objects.get(id=1)
+        NFZ_Confirmed.objects.create(patient=patient1,
+                                   side='left',
+                                   date='2000-01-01')
+        NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        data = self.data.copy()
+        data['NFZ_left'] = '2001-01-01'
+        data['NFZ_right'] = '2001-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+
+        left_nfz_all = NFZ_Confirmed.objects.filter(patient=patient1, side='left')
+        right_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_all), 2)
+        self.assertEqual(len(right_nfz_all), 2)
+        self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
+        self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+
+
+    def test_remove_NFZ(self):
+        patient1 = Patient.objects.get(id=1)
+        NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='left',
+                                     date='2000-01-01')
+        NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        data = self.data.copy()
+        data['nfz_left_remove'] = True
+        data['nfz_right_remove'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_all), 1)
+        self.assertEqual(len(right_nfz_all), 1)
+        self.assertFalse(left_nfz_all.last().in_progress)
+        self.assertFalse(right_nfz_all.last().in_progress)
+
+
+    def test_adding_pcpr_estimates(self):
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['left_pcpr_ha'] = 'b1_family1_model1'
+        data['right_pcpr_ha'] = 'b1_family1_model2'
+        data['left_PCPR_date'] = '2000-01-01'
+        data['right_PCPR_date'] = '2000-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_pcpr_all = PCPR_Estimate.objects.filter(patient=patient1, ear='left')
+        right_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='right')
+        self.assertEqual(len(left_pcpr_all), 1)
+        self.assertEqual(len(right_pcpr_all), 1)
+        self.assertEqual(left_pcpr_all.last().ha_model, 'model1')
+        self.assertEqual(right_pcpr_all.last().ha_model, 'model2')
+        self.assertEqual(str(left_pcpr_all.last().date), '2000-01-01')
+
+    def test_remove_pcpr_estimates(self):
+        patient1 = Patient.objects.get(id=1)
+        PCPR_Estimate.objects.create(patient=patient1,
+            ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        PCPR_Estimate.objects.create(patient=patient1,
+            ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        data = self.data.copy()
+        data['pcpr_left_remove'] = True
+        data['pcpr_right_remove'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_pcpr_all = PCPR_Estimate.objects.filter(patient=patient1, ear='left')
+        right_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='right')
+        self.assertEqual(len(left_pcpr_all), 1)
+        self.assertEqual(len(right_pcpr_all), 1)
+        self.assertFalse(left_pcpr_all.last().in_progress)
+        self.assertFalse(right_pcpr_all.last().in_progress)
+
+    def test_adding_invoice(self):
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['left_invoice_ha'] = 'b1_family1_model1'
+        data['right_invoice_ha'] = 'b1_family1_model2'
+        data['left_invoice_date'] = '2000-01-01'
+        data['right_invoice_date'] = '2000-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='left')
+        right_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='right')
+        self.assertEqual(len(left_invoice_all), 1)
+        self.assertEqual(len(right_invoice_all), 1)
+        self.assertEqual(left_invoice_all.last().ha_model, 'model1')
+        self.assertEqual(right_invoice_all.last().ha_model, 'model2')
+        self.assertEqual(str(left_invoice_all.last().date), '2000-01-01')
+
+
+    def test_remove_invoice(self):
+        patient1 = Patient.objects.get(id=1)
+        HA_Invoice.objects.create(patient=patient1,
+                                     ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        HA_Invoice.objects.create(patient=patient1,
+                                     ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        data = self.data.copy()
+        data['left_invoice_remove'] = True
+        data['right_invoice_remove'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='left')
+        right_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='right')
+        self.assertEqual(len(left_invoice_all), 1)
+        self.assertEqual(len(right_invoice_all), 1)
+        self.assertFalse(left_invoice_all.last().in_progress)
+        self.assertFalse(right_invoice_all.last().in_progress)
+
+    def test_collection_procedure(self):
+        patient1 = Patient.objects.get(id=1)
+        NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='left',
+                                     date='2000-01-01')
+        NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        PCPR_Estimate.objects.create(patient=patient1,
+            ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        PCPR_Estimate.objects.create(patient=patient1,
+            ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        HA_Invoice.objects.create(patient=patient1,
+                                  ear='left', ha_make='m', ha_family='f', ha_model='m1', date='2000-01-01')
+        HA_Invoice.objects.create(patient=patient1,
+                                  ear='right', ha_make='m', ha_family='f', ha_model='m2', date='2000-01-01')
+        data = self.data.copy()
+        data['left_collection_confirm'] = True
+        data['right_collection_confirm'] = True
+        data['left_collection_date'] = '2001-01-01'
+        data['right_collection_date'] = '2001-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        # should create left and right Hearing_Aid instance
+        left_ha = Hearing_Aid.objects.filter(patient=patient1, ear='left').first()
+        self.assertEqual(left_ha.ha_model, 'm1')
+        self.assertEqual(str(left_ha.purchase_date), '2001-01-01')
+
+        right_ha = Hearing_Aid.objects.filter(patient=patient1, ear='right').first()
+        self.assertEqual(right_ha.ha_model, 'm2')
+        self.assertEqual(str(right_ha.purchase_date), '2001-01-02')
+
+        # should set NFZ confirmed to inactive
+        left_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertFalse(left_nfz_all.last().in_progress)
+        self.assertFalse(right_nfz_all.last().in_progress)
+
+        # should set PCPR estimates to inactive
+        left_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='left')
+        right_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='right')
+        self.assertFalse(left_pcpr_all.last().in_progress)
+        self.assertFalse(right_pcpr_all.last().in_progress)
+
+        # should set invoices to inactive
+        left_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='left')
+        right_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='right')
+        self.assertFalse(left_invoice_all.last().in_progress)
+        self.assertFalse(right_invoice_all.last().in_progress)
+
+    def test_remove_audiogram(self):
+        patient1 = Patient.objects.get(id=1)
+        Audiogram.objects.create(patient=patient1, ear='left')
+        
+        data = self.data.copy()
+        data['remove_audiogram'] = 'remove'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_audiogram_all = Audiogram.objects.filter(
+            patient=patient1, ear='left')
+        right_audiogram_all = Audiogram.objects.filter(
+            patient=patient1, ear='right')
+        
+        self.assertEqual(len(left_audiogram_all), 0)
+        self.assertEqual(len(right_audiogram_all), 0)
+
+
+class TestDeleteView(TestCase):
+
+    def test_setup(self):
+        patient = Patient.objects.create(first_name='a', last_name='b')
+        url = reverse('crm:deleteconfirm', args=(1,))
+        response = self.client.get(url)
+        assert response.status_code == 200, 'Should be callable by anyone'
+
+class TestDeletePatientView(TestCase):
+    
+    def test_setup(self):
+        patient = Patient.objects.create(first_name='a', last_name='b')
+        url = reverse('crm:delete', args=(1,))
+        expected_url = reverse('crm:index')
+        response = self.client.post(url,follow=True)
+        assert response.status_code == 200, 'Should redirect'
+        # should redirect to expected_url
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+        # patient should have been deleted
+        self.assertFalse(Patient.objects.all().exists())
+
