@@ -75,11 +75,38 @@ def advancedsearch(request):
 
 	# search by dates of purchase
 	if request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
-		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
+    		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
 		ha_purchase_end = request.GET.get('e_purch_date') or str(datetime.datetime.today().date())
 		all_such_has = Hearing_Aid.objects.filter(
 			purchase_date__range=[ha_purchase_start,ha_purchase_end])
 		patient_list = patient_list & patients_from_ha(all_such_has)
+	
+	# search by dates of NFZ confirmed - only active not prevoius
+	if request.GET.get('s_nfz_date') or request.GET.get('e_nfz_date'):
+		nfz_start = request.GET.get('s_nfz_date') or '1990-01-01'
+		nfz_end = request.GET.get(
+			'e_nfz_date') or str(datetime.datetime.today().date())
+		all_such_nfz = NFZ_Confirmed.objects.filter(
+			date__range=[nfz_start, nfz_end], in_progress=True)
+		patient_list = patient_list & patients_from_ha(all_such_nfz)
+
+	# search by dates of pcpr estimates - only active not prevoius
+	if request.GET.get('s_pcpr_date') or request.GET.get('e_pcpr_date'):
+		pcpr_start = request.GET.get('s_pcpr_date') or '1990-01-01'
+		pcpr_end = request.GET.get(
+			'e_pcpr_date') or str(datetime.datetime.today().date())
+		all_such_pcpr = PCPR_Estimate.objects.filter(
+			date__range=[pcpr_start, pcpr_end], in_progress=True)
+		patient_list = patient_list & patients_from_ha(all_such_pcpr)
+
+	# search by dates of invoice - only active not prevoius
+	if request.GET.get('s_invoice_date') or request.GET.get('e_invoice_date'):
+		invoice_start = request.GET.get('s_invoice_date') or '1990-01-01'
+		invoice_end = request.GET.get(
+			'e_invoice_date') or str(datetime.datetime.today().date())
+		all_such_invoice = HA_Invoice.objects.filter(
+			date__range=[invoice_start, invoice_end], in_progress=True)
+		patient_list = patient_list & patients_from_ha(all_such_invoice)
 
 	locations = Patient.locations
 	ha_list = Hearing_Aid.ha_list

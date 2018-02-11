@@ -1,63 +1,177 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<div id="main" >
-Wyszukiwanie zaawansowane:
-<form method="GET" action="">
+<h1>Wyszukiwanie zaawansowane:</h1>
+
+<form method="GET" action="" class="mb-3">
 	<input type="search" name="lname" placeholder="nazwisko"><br>
 	<hr>
 	<input type="search" name="fname" placeholder="imie"><br>
 	<hr>
-	Lokalizacja:<br>
-	{% for i in locations %}
-	<input  name="loc" type="radio" value='{{ i }}' /><label for={{ i }}>{{ i }}</label><br>
-	{% endfor %}
-	<hr>
-	Wybierz markę aktualnie noszonego aparatu:<br>
-	{% for make, families in ha_list.items %}
-	<input  name="ha_make" type="radio" value='{{ make }}' /><label for={{ make }}>{{ make }}</label><br>
-	{% endfor %}
-	<hr>
-	<div onclick="document.getElementById('makes').style.display='block'"><span style="background-color:pink;">Kliknij aby wybrać markę, rodzinę i model aktualnie noszonego aparatu</span></div>
-	<ul id="makes" style="display:none">
-		{% for make, families in ha_list.items %}
-				<li onclick="document.getElementById('left_pcpr_{{ make }}').style.display='block'">{{ make }}</li>
 
-				<ul id=left_pcpr_{{ make }} style="display:none">
+	<p>
+		Lokalizacja:
+		<ul class="list-inline">
+			{% for location in locations %}
+			<li class="list-inline-item">
+				<input type="radio" name="loc" id="{{ location }}" value="{{ location }}" />
+				<label for="{{ location }}">{{ location }}</label>
+				<br/>
+			</li>
+			{% endfor %}
+		</ul>
+	</p>
+	<hr>
+
+	<p>
+		Marka aparatu:
+		<ul class="list-inline">
+			 {% for make, families in ha_list.items %}
+			<li class="list-inline-item">
+				<input type="radio" name="ha_make" id="make_{{ make }}" value="{{ make }}" />
+				<label for="{{ make }}">{{ make }}</label>
+				<br/>
+			</li>
+			{% endfor %}
+		</ul>
+	</p>
+	<hr>
+
+	<div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha" aria-expanded="false">Wybież konkretny model aparatu:</div>
+	<div class="collapse" id="add_ha">
+		<div class="panel-group" id="ha">
+			{% for make, families in ha_list.items %}
+			<div class="panel panel-default">
+				<a data-toggle="collapse" data-parent="#ha" href="#{{ make }}">
+					<div class="btn btn-primary">{{ make }}</div>
+				</a>
+				<div id="{{ make }}" class="panel-collapse collapse in">
 					{% for family, models in families.items %}
-					<li onclick="document.getElementById('left_pcpr_{{ make }}_{{ family }}').style.display='block'">{{ family }}
-						<ul id='left_pcpr_{{ make }}_{{ family }}' style="display:none">
-							{% for model in models %}
-							<li><input  name="ha_make_family_model" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /><label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label></li>
-							{% endfor %}
-						</ul>
-					</li>
+					<div class="panel-group" id="inner_{{ make }}">
+						<div class="panel panel-default">
+							<a data-toggle="collapse" data-parent="#inner_{{ make }}" href="#{{ make }}_{{ family|cut:" " }}">
+								<div class="btn btn-success">{{ family }}</div>
+							</a>
+							<div id="{{ make }}_{{ family|cut:" " }}" class="panel-collapse collapse in">
+								{% for model in models %}
+								<div class="panel-group" id="inner_{{ make }}_{{ family|cut:" " }}">
+									<div class="panel panel-default">
+										<a data-toggle="collapse" data-parent="#inner_{{ make }}_{{ family|cut:" " }}" 
+															href="#{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}">
+											<div class="btn btn-warning">{{ model }}</div>
+										</a>
+										<div id="{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}" class="panel-collapse collapse in">
+											<input name="ha_make_family_model" type="radio" value='{{ make }}_{{ family }}_{{ model }}' />
+											<label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label>
+										</div>
+									</div>
+								</div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
 					{% endfor %}
-				</ul>
-		{% endfor %}
-	</ul>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
 	<hr>
 
-	Data zakupu aktualnego aparatu po: <input type="date" name="s_purch_date"><br>
+	<h5>Aparaty</h5>
+	<p>Data zakupu aktualnego aparatu po: <input type="date" name="s_purch_date">
+	 Data zakupu aktualnego aparatu przed: <input type="date" name="e_purch_date"></p>
 	<hr>
-	Data zakupu aktualnego aparatu przed: <input type="date" name="e_purch_date"><br>
+
+	<h5>Potwierdzone wnioski NFZ 
+		<small class="text-muted">Tylko jeszcze nie zrelizowane i nie anulowane</small>
+	</h5>
+	<p>Data wniosku po: <input type="date" name="s_nfz_date">
+	 Data wniosku przed: <input type="date" name="e_nfz_date">
+	</p>
 	<hr>
-	<!-- <input type="search" name="ha" placeholder="aparat słuchowy"><br>
-	<input type="search" name="bdate" placeholder="data urodzenia"><br>
-	<input type="search" name="adddate" placeholder="data dodania pacjenta"><br> -->
-	<input type="submit" value="Szukaj">
+
+	<h5>Kosztorysy
+		<small class="text-muted">Tylko jeszcze nie zrelizowane i nie anulowane</small>
+	</h5>
+	<p>Data wystawienia kosztorysu po: <input type="date" name="s_pcpr_date">
+	 Data wystawienia kosztorysu przed: <input type="date" name="e_pcpr_date">
+	</p>
+	<hr>
+
+	<h5>Faktury
+		<small class="text-muted">Tylko jeszcze nie zrelizowane i nie anulowane</small>
+	</h5>
+	<p>Data wystawienia faktury po: <input type="date" name="s_invoice_date">
+	 Data wystawienia faktury przed: <input type="date" name="e_invoice_date">
+	</p>
+	<hr>
+
+	<input type="submit" value="Szukaj" class="btn btn-primary btn-lg">
 </form>
 <h2>Wyniki wyszukiwania:</h2>
+
 {% if patient_list %}
-	<ul>
+<table class="table">
+	<tr>
+		<th>
+			<a href="?order_by=last_name">Nazwisko</a>
+		</th>
+		<th>
+			<a href="?order_by=first_name">Imię</a>
+		</th>
+		<th>
+			<a href="?order_by=date_of_birth">Data urodzenia</a>
+		</th>
+		<th>
+			<a href="?order_by=create_date">Data dodania</a>
+		</th>
+	</tr>
 	{% for patient in patient_list %}
-		<li><a href="{% url 'crm:edit' patient.id %}">{{ patient.last_name }} {{ patient.first_name }} {{ patient.date_of_birth }}</a>
-		</li>
+	<tr>
+		<td>
+			<a href="{% url 'crm:edit' patient.id %}">{{ patient.last_name }}</a>
+		</td>
+		<td>
+			<a href="{% url 'crm:edit' patient.id %}">{{ patient.first_name }}</a>
+		</td>
+		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
+		<td>{{ patient.create_date|date:'Y m d' }}</td>
+
+	</tr>
+
 	{% endfor %}
-	</ul>
+</table>
+
+<!-- <div class="pagination">
+	<span class="step-links">
+		{% if patients.has_previous %}
+		<a href="?page={{ patients.previous_page_number }}">poprzednia</a>
+		{% endif %}
+
+		<span class="current">
+			Strona {{ patients.number }} z {{ patients.paginator.num_pages }}.
+		</span>
+
+		{% if patients.has_next %}
+		<a href="?page={{ patients.next_page_number }}">następna</a>
+		{% endif %}
+	</span>
+</div> -->
 
 {% else %}
-	<p>No patients in database.</p>
+<p>Nie ma takich pacjentów</p>
 {% endif %}
-</div>
+
+
+
+
+
+
+
+
+
+
+
+
 {% endblock content %}

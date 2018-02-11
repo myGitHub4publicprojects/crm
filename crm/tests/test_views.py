@@ -192,6 +192,88 @@ class TestAdvancedSearchView(TestCase):
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 1)
 
+    def test_search_nfz_confirmed_by_date_both_lower_and_upper_band(self):
+        '''both lower and upper band of dates is given, should return only patients
+        with NFZ confirmed after the lower band and before the upper band date'''
+        patient1 = Patient.objects.get(id=1)
+        patient2 = Patient.objects.get(id=2)
+        patient3 = Patient.objects.get(id=3)
+        NFZ_Confirmed.objects.create(patient=patient1, date='2001-01-01', side='left')
+        NFZ_Confirmed.objects.create(patient=patient2, date='2001-01-01', side='left')
+        NFZ_Confirmed.objects.create(patient=patient1, date='2002-01-01', side='left')
+        # date out of range
+        NFZ_Confirmed.objects.create(patient=patient3, date='2003-01-01', side='left')
+        # inactive
+        NFZ_Confirmed.objects.create(patient=patient3, date='2002-01-01', side='left',
+                                        in_progress=False)
+        lower_band = '2000-01-01'
+        upper_band = '2002-01-02'
+        data={'s_nfz_date': lower_band, 'e_nfz_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
+
+    def test_search_pcpr_estimate_date_both_lower_and_upper_band(self):
+        '''both lower and upper band of dates is given, should return only patients
+        with NFZ confirmed after the lower band and before the upper band date'''
+        patient1 = Patient.objects.get(id=1)
+        patient2 = Patient.objects.get(id=2)
+        patient3 = Patient.objects.get(id=3)
+        PCPR_Estimate.objects.create(
+            patient=patient1, date='2001-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+        PCPR_Estimate.objects.create(
+            patient=patient2, date='2001-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+        PCPR_Estimate.objects.create(
+            patient=patient1, date='2002-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+            # date out of range
+        PCPR_Estimate.objects.create(
+            patient=patient3, date='2003-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+            # inactive
+        PCPR_Estimate.objects.create(
+            patient=patient3, date='2001-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c', in_progress=False)
+        lower_band = '2000-01-01'
+        upper_band = '2002-01-02'
+        data = {'s_pcpr_date': lower_band, 'e_pcpr_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
+    def test_search_ha_invoice_date_both_lower_and_upper_band(self):
+        '''both lower and upper band of dates is given, should return only patients
+        with NFZ confirmed after the lower band and before the upper band date'''
+        patient1 = Patient.objects.get(id=1)
+        patient2 = Patient.objects.get(id=2)
+        patient3 = Patient.objects.get(id=3)
+        HA_Invoice.objects.create(
+            patient=patient1, date='2001-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+        HA_Invoice.objects.create(
+            patient=patient2, date='2001-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+        HA_Invoice.objects.create(
+            patient=patient1, date='2002-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+        # date out of range
+        HA_Invoice.objects.create(
+            patient=patient3, date='2003-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c')
+        # inactive
+        HA_Invoice.objects.create(
+            patient=patient3, date='2001-01-01', ear='left',
+            ha_make='a', ha_family='b', ha_model='c', in_progress=False)
+        lower_band = '2000-01-01'
+        upper_band = '2002-01-02'
+        data = {'s_invoice_date': lower_band, 'e_invoice_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
 class TestCreateView(TestCase):
     def test_anonymous(self):
         url = reverse('crm:create')
