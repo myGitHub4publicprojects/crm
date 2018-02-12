@@ -78,33 +78,48 @@
 	</div>
 	<hr>
 
-	<h5>Aparaty</h5>
-	<p>Data zakupu aktualnego aparatu po: <input type="date" name="s_purch_date">
-	 Data zakupu aktualnego aparatu przed: <input type="date" name="e_purch_date"></p>
+	<h5 class="d-inline-block">Daty zakupu aktualnych aparatów: </h5>
+	<div class="btn btn-secondary" data-toggle="collapse" data-target="#ha_dates" aria-expanded="false">Wybież</div>
+	<div class="collapse" id="ha_dates">
+		<p>Data zakupu po:
+			<input type="date" name="s_purch_date"> Data zakupu przed:
+			<input type="date" name="e_purch_date">
+		</p>
+	</div>
 	<hr>
 
-	<h5>Potwierdzone wnioski NFZ 
-		<small class="text-muted">Tylko jeszcze nie zrelizowane i nie anulowane</small>
+	<h5 class="d-inline-block">Daty potwierdzonych wniosków NFZ
+	<small class="text-muted">(tylko jeszcze nie zrelizowane i nie anulowane)</small>: 
 	</h5>
-	<p>Data wniosku po: <input type="date" name="s_nfz_date">
-	 Data wniosku przed: <input type="date" name="e_nfz_date">
-	</p>
+	<div class="btn btn-secondary" data-toggle="collapse" data-target="#nfz_dates" aria-expanded="false">Wybież</div>
+	<div class="collapse" id="nfz_dates">
+		<p>Data wniosku po: <input type="date" name="s_nfz_date">
+		Data wniosku przed: <input type="date" name="e_nfz_date">
+		</p>
+	</div>
 	<hr>
 
-	<h5>Kosztorysy
-		<small class="text-muted">Tylko jeszcze nie zrelizowane i nie anulowane</small>
+
+	<h5 class="d-inline-block">Daty kosztorysów 
+		<small class="text-muted">(tylko jeszcze nie zrelizowane i nie anulowane)</small>: 
 	</h5>
-	<p>Data wystawienia kosztorysu po: <input type="date" name="s_pcpr_date">
-	 Data wystawienia kosztorysu przed: <input type="date" name="e_pcpr_date">
-	</p>
+	<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_dates" aria-expanded="false">Wybież</div>
+	<div class="collapse" id="pcpr_dates">
+		<p>Data wystawienia kosztorysu po: <input type="date" name="s_pcpr_date">
+		Data wystawienia kosztorysu przed: <input type="date" name="e_pcpr_date">
+		</p>
+	</div>
 	<hr>
 
-	<h5>Faktury
-		<small class="text-muted">Tylko jeszcze nie zrelizowane i nie anulowane</small>
+	<h5 class="d-inline-block">Daty faktur do PCPR: 
+		<small class="text-muted">(tylko jeszcze nie zrelizowane i nie anulowane)</small>: 
 	</h5>
-	<p>Data wystawienia faktury po: <input type="date" name="s_invoice_date">
-	 Data wystawienia faktury przed: <input type="date" name="e_invoice_date">
+	<div class="btn btn-secondary" data-toggle="collapse" data-target="#invoice_dates" aria-expanded="false">Wybież</div>
+	<div class="collapse" id="invoice_dates">
+		<p>Data wystawienia faktury po: <input type="date" name="s_invoice_date">
+		Data wystawienia faktury przed: <input type="date" name="e_invoice_date">
 	</p>
+	</div>
 	<hr>
 
 	<input type="submit" value="Szukaj" class="btn btn-primary btn-lg">
