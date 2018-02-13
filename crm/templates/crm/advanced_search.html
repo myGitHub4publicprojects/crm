@@ -158,21 +158,21 @@
 	{% endfor %}
 </table>
 
-<!-- <div class="pagination">
+<div class="pagination">
 	<span class="step-links">
-		{% if patients.has_previous %}
-		<a href="?page={{ patients.previous_page_number }}">poprzednia</a>
+		{% if patient_list.has_previous %}
+		<a href="?page={{ patient_list.previous_page_number }}">poprzednia</a>
 		{% endif %}
 
 		<span class="current">
-			Strona {{ patients.number }} z {{ patients.paginator.num_pages }}.
+			Strona {{ patient_list.number }} z {{ patient_list.paginator.num_pages }}.
 		</span>
 
-		{% if patients.has_next %}
-		<a href="?page={{ patients.next_page_number }}">następna</a>
+		{% if patient_list.has_next %}
+		<a href="?page={{ patient_list.next_page_number }}">następna</a>
 		{% endif %}
 	</span>
-</div> -->
+</div>
 
 {% else %}
 <p>Nie ma takich pacjentów</p>

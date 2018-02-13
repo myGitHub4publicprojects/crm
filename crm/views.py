@@ -108,9 +108,22 @@ def advancedsearch(request):
 			date__range=[invoice_start, invoice_end], in_progress=True)
 		patient_list = patient_list & patients_from_ha(all_such_invoice)
 
-	locations = Patient.locations
-	ha_list = Hearing_Aid.ha_list
-	context = {'patient_list': patient_list, 'locations': locations, 'ha_list': ha_list}
+
+	paginator = Paginator(patient_list, 50)  # Show X patients per page
+
+	page = request.GET.get('page')
+	try:
+		patient_list = paginator.page(page)
+	except PageNotAnInteger:
+		# If page is not an integer, deliver first page.
+		patient_list = paginator.page(1)
+	except EmptyPage:
+		# If page is out of range (e.g. 9999), deliver last page of results.
+		patient_list = paginator.page(paginator.num_pages)
+
+	context = {	'patient_list': patient_list,
+				'locations': Patient.locations,
+				'ha_list': Hearing_Aid.ha_list}
 	return render(request, 'crm/advanced_search.html', context)
 
 def create(request):
