@@ -439,11 +439,18 @@ class TestEditView(TestCase):
                             ear = 'right',
                             date = today,
                             in_progress = False)
+        invoice3 = HA_Invoice.objects.create(patient=patient1,
+                            ha_make='Bernafon',
+                            ha_family='WIN',
+                            ha_model='102',
+                            ear='right',
+                            date=today,
+                            in_progress=False)
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertIsNone(response.context['left_invoice'])
         self.assertEqual(len(response.context['left_invoice_all']), 1)
         self.assertIsNone(response.context['right_invoice'])
-        self.assertEqual(len(response.context['right_invoice_all']), 1)
+        self.assertEqual(len(response.context['right_invoice_all']), 2)
 
     def test_patient_with_two_active_and_two_inactive_HA_Invoice(self):
         ''' scenario with active (both left and right) and two inactive (in_progres=False)
@@ -608,6 +615,11 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_ha_all), 1)
         self.assertEqual(left_ha_all.last().ha_model, 'model1')
         self.assertEqual(right_ha_all.last().ha_model, 'model2')
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Dodano lewy aparat b1 family1 model1. ' + \
+                        'Dodano prawy aparat b2 family2 model2.'
+
+        self.assertEqual(new_info.note, expected_note)
 
     def test_adding_another_hearing_aids_with_purchase_dates(self):
         patient1 = Patient.objects.get(id=1)

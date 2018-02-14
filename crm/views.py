@@ -14,7 +14,7 @@ from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
-
+today = datetime.date.today()
 ears = ['left', 'right']
 
 def index(request):
@@ -147,13 +147,14 @@ def edit(request, patient_id):
 
 	def last_and_previous(queryset):
 		'''returns last obj or None of a qs as "last" and
-		all but last items of such qs'''
-		result = {'last': queryset.last(), 'previous': queryset}
+		all but last items of such qs or None'''
+		result = {'last': queryset.last(), 'previous': None}
 		if queryset:
 			if queryset.last().in_progress == False:
 				result['last'] = None
-		if len(queryset) > 1:
-			result['previous'] = queryset.order_by('-id')[1:]
+				result['previous'] = queryset
+			if len(queryset) > 1 and queryset.last().in_progress:
+				result['previous'] = queryset.order_by('-id')[1:]
 		return result
 
 	context = {'patient': patient,
@@ -214,8 +215,8 @@ def store(request):
 			nfz_confirmed.save()
 
 			# add PCPR_Estimate
-		if request.POST.get(ear + '_ha_estimate'):
-			ha = request.POST[ear + '_ha_estimate']
+		if request.POST.get(ear + '_pcpr_ha'):
+			ha = request.POST[ear + '_pcpr_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
 			pcpr_estimate = PCPR_Estimate(
 				patient=patient,
@@ -223,7 +224,7 @@ def store(request):
 				ha_family=ha_family,
 				ha_model=ha_model,
 				ear=ear,
-				date=request.POST[ear + '_pcpr_etimate_date'])
+				date=request.POST[ear + '_PCPR_date'])
 			pcpr_estimate.save()
 
 	if request.POST.get('note'):
@@ -254,20 +255,30 @@ def updating(request, patient_id):
                     		audiometrist=request.POST.get('audiometrist'))
 		new_info.save()
 
+	new_action = []
 	for ear in ears:
-    		# adding hearing aid to patient
+		pl_side = 'lewy' if ear == 'left' else 'prawy'
+			# adding hearing aid to patient
 		if request.POST.get(ear + '_ha'):
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
-			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
+			hearing_aid = Hearing_Aid(patient=patient,
+									ha_make=ha_make,
+									ha_family=ha_family,
+									ha_model=ha_model,
+									ear=ear)
 			hearing_aid.save()
+			new_action.append('Dodano ' + pl_side + ' aparat ' + 
+							hearing_aid.ha_make + ' ' + hearing_aid.ha_family + 
+							' ' + hearing_aid.ha_model + '.')
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
-			# notofies that patient has ha bought in other shop
+			# notofies that patient has ha bought in another shop
 			if request.POST.get(ear + '_ha_other'):
 				hearing_aid.our = False
 				hearing_aid.save()
+
 			# adding NFZ_confirmed to patient
 			# previous NFZ if present are set to inactive
 		if request.POST.get('NFZ_' + ear):
@@ -277,6 +288,8 @@ def updating(request, patient_id):
 				nfz_confirmed.update(in_progress=False)
 			new_nfz = NFZ_Confirmed.objects.create(
 				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
+			# new_action.append('Dodano ' + pl_side + ' wniosek ' +
+            #                 'z datą ' + request.POST['NFZ_' + ear] + '.')
     		
 
 			# remove NFZ_confirmed from currently active
@@ -295,7 +308,7 @@ def updating(request, patient_id):
 				ha_family=ha_family,
 				ha_model=ha_model,
 				ear=ear,
-				date=request.POST[ear + '_PCPR_date'])
+				date=request.POST.get(ear + '_PCPR_date' or str(today)))
 			pcpr_estimate.save()
 
 			# remove PCPR_Estimate from currently active
@@ -315,7 +328,7 @@ def updating(request, patient_id):
 				ha_family=ha_family,
 				ha_model=ha_model,
 				ear=ear,
-				date=request.POST[ear + '_invoice_date'])
+				date=request.POST.get(ear + '_invoice_date') or str(today))
 			invoice.save()
 
 		# remove invoice
@@ -334,7 +347,7 @@ def updating(request, patient_id):
 				ha_make = invoiced_ha.ha_make,
 				ha_family = invoiced_ha.ha_family,
 				ha_model = invoiced_ha.ha_model,
-				purchase_date = request.POST[ear + '_collection_date'],
+				purchase_date=request.POST.get(ear + '_collection_date') or str(today),
 				ear=ear)
 
 			# clear Invoice, PCPR_Estimate and NFZ_Confirmed for this HA
@@ -354,6 +367,10 @@ def updating(request, patient_id):
 		if current_left_audiogram: current_left_audiogram.delete()
 		if current_right_audiogram: current_right_audiogram.delete()
 
+	if new_action:
+		NewInfo.objects.create(	patient=patient,
+                          		note=' '.join(new_action),
+								audiometrist=request.POST.get('audiometrist'))
 	messages.success(request, "Zaktualizowano dane")
 
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
