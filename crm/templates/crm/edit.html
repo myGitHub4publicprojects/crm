@@ -188,8 +188,11 @@
 		<ul class="list-unstyled">
 		{% for note in patient_notes %}
 			<li>
-			<small>{{ note.timestamp|date:'d-m-Y H:i' }}, {{ note.audiometrist }}</small><br>
-			{{ note.note }}
+			<small class="text-center">
+				<b>{{ note.timestamp|date:'d-m-Y H:i' }}, wykonał: {{ note.audiometrist }}</b>
+				<br>
+				{{ note.note }}
+			</small>
 			<hr>
 			</li>
 		{% endfor %}
