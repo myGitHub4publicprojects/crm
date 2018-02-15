@@ -97,6 +97,15 @@
 			</div>
 		</div>
 		<hr>
+
+		<!-- patient summary note -->
+		<div class="row mt-2">
+			<div class="col-xl">
+			<textarea form="edit_patient" name="summary_note" id="patient_summary" >{{ patient.notes }}</textarea>
+			</div>
+		</div>
+		<hr>
+
 		<!-- location, audometrist, note -->
 		<div class="row mt-2">
 			<div class="col-xl-3">
@@ -200,7 +209,9 @@
 	</div>
 </div>
 
-<a class="float-right" href="{% url 'crm:deleteconfirm' patient.id %}"><div class="btn btn-outline-danger">usuń pacjenta</div></a>
+<a class="float-right mb-3" href="{% url 'crm:deleteconfirm' patient.id %}">
+	<div class="btn btn-outline-danger">usuń pacjenta</div>
+</a>
 
 
 

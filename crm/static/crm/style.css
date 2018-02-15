@@ -7,9 +7,10 @@
     height: 3em;
 }
 
-#patient_note {
+#patient_note, #patient_summary {
     width: 100%;
     height: 100%;
+    background-color: rgb(165, 165, 252);
 }
 
 #history {

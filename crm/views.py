@@ -194,7 +194,8 @@ def store(request):
 		date_of_birth=request.POST['bday'],
 		phone_no=request.POST['usrtel'],
 		audiometrist = request.POST['audiometrist'],
-		location = request.POST['location']
+		location = request.POST['location'],
+        notes = request.POST.get('note')
 		)
 	patient.save()
 
@@ -227,11 +228,11 @@ def store(request):
 				date=request.POST[ear + '_PCPR_date'])
 			pcpr_estimate.save()
 
-	if request.POST.get('note'):
-		new_info = NewInfo(	patient=patient,
-							note=request.POST['note'],
-							audiometrist=request.POST.get('audiometrist'))
-		new_info.save()
+	# if request.POST.get('note'):
+	# 	new_info = NewInfo(	patient=patient,
+	# 						note=request.POST['note'],
+	# 						audiometrist=request.POST.get('audiometrist'))
+	# 	new_info.save()
 
 	messages.success(request, "Pomyślnie utworzono")
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient.id,)))
