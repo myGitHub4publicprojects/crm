@@ -677,6 +677,11 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_nfz_all), 1)
         self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
         self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Dodano lewy wniosek z datą 2001-01-01. ' + \
+                        'Dodano prawy wniosek z datą 2001-01-02.'
+
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_adding_another_NFZ(self):
         patient1 = Patient.objects.get(id=1)
@@ -734,13 +739,18 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_nfz_all), 1)
         self.assertFalse(left_nfz_all.last().in_progress)
         self.assertFalse(right_nfz_all.last().in_progress)
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Usunięto lewy wniosek z datą 2000-01-01. ' + \
+                        'Usunięto prawy wniosek z datą 2000-01-02.'
+
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
 
     def test_adding_pcpr_estimates(self):
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
         data['left_pcpr_ha'] = 'b1_family1_model1'
-        data['right_pcpr_ha'] = 'b1_family1_model2'
+        data['right_pcpr_ha'] = 'b2_family2_model2'
         data['left_PCPR_date'] = '2000-01-01'
         data['right_PCPR_date'] = '2000-01-02'
         url = reverse('crm:updating', args=(patient1.id,))
@@ -759,13 +769,18 @@ class TestUpdatingView(TestCase):
         self.assertEqual(left_pcpr_all.last().ha_model, 'model1')
         self.assertEqual(right_pcpr_all.last().ha_model, 'model2')
         self.assertEqual(str(left_pcpr_all.last().date), '2000-01-01')
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Dodano lewy kosztorys na b1 family1 model1, z datą 2000-01-01. ' + \
+                        'Dodano prawy kosztorys na b2 family2 model2, z datą 2000-01-02.'
+
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_remove_pcpr_estimates(self):
         patient1 = Patient.objects.get(id=1)
         PCPR_Estimate.objects.create(patient=patient1,
             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
         PCPR_Estimate.objects.create(patient=patient1,
-            ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+            ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-02')
         data = self.data.copy()
         data['pcpr_left_remove'] = True
         data['pcpr_right_remove'] = True
@@ -784,6 +799,11 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_pcpr_all), 1)
         self.assertFalse(left_pcpr_all.last().in_progress)
         self.assertFalse(right_pcpr_all.last().in_progress)
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Usunięto lewy kosztorys na m f m, z datą 2000-01-01. ' + \
+                        'Usunięto prawy kosztorys na m1 f1 m1, z datą 2000-01-02.'
+
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_adding_invoice(self):
         patient1 = Patient.objects.get(id=1)
@@ -809,6 +829,11 @@ class TestUpdatingView(TestCase):
         self.assertEqual(left_invoice_all.last().ha_model, 'model1')
         self.assertEqual(right_invoice_all.last().ha_model, 'model2')
         self.assertEqual(str(left_invoice_all.last().date), '2000-01-01')
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Dodano lewą fakturę na b1 family1 model1, z datą 2000-01-01. ' + \
+                        'Dodano prawą fakturę na b1 family1 model2, z datą 2000-01-02.'
+
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
 
     def test_remove_invoice(self):
@@ -816,7 +841,7 @@ class TestUpdatingView(TestCase):
         HA_Invoice.objects.create(patient=patient1,
                                      ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
         HA_Invoice.objects.create(patient=patient1,
-                                     ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+                                     ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-01')
         data = self.data.copy()
         data['left_invoice_remove'] = True
         data['right_invoice_remove'] = True
@@ -836,6 +861,10 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_invoice_all), 1)
         self.assertFalse(left_invoice_all.last().in_progress)
         self.assertFalse(right_invoice_all.last().in_progress)
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Usunięto lewą fakturę na m f m, z datą 2000-01-01. ' + \
+                        'Usunięto prawą fakturę na m1 f1 m1, z datą 2000-01-01.'
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_collection_procedure(self):
         patient1 = Patient.objects.get(id=1)
@@ -898,6 +927,12 @@ class TestUpdatingView(TestCase):
             patient=patient1, ear='right')
         self.assertFalse(left_invoice_all.last().in_progress)
         self.assertFalse(right_invoice_all.last().in_progress)
+
+        # should create a new info to show in history of actions
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-01. ' + \
+                        'Odebrano prawy aparat m f m2, z datą 2000-01-01.'
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_remove_audiogram(self):
         patient1 = Patient.objects.get(id=1)

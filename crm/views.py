@@ -288,28 +288,35 @@ def updating(request, patient_id):
 				nfz_confirmed.update(in_progress=False)
 			new_nfz = NFZ_Confirmed.objects.create(
 				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
-			# new_action.append('Dodano ' + pl_side + ' wniosek ' +
-            #                 'z datą ' + request.POST['NFZ_' + ear] + '.')
-    		
+			new_action.append('Dodano ' + pl_side + ' wniosek ' +
+                            'z datą ' + request.POST['NFZ_' + ear] + '.')
+
 
 			# remove NFZ_confirmed from currently active
 		if request.POST.get('nfz_' + ear + '_remove'):
 			last_in_progress = NFZ_Confirmed.objects.filter(patient=patient, side=ear, in_progress=True).last()
 			last_in_progress.in_progress = False
 			last_in_progress.save()
+			new_action.append('Usunięto ' + pl_side + ' wniosek ' +
+							'z datą ' + str(last_in_progress.date) + '.')
 
 			# adding PCPR_Estimate
 		if request.POST.get(ear + '_pcpr_ha'):
 			ha = request.POST[ear + '_pcpr_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
+			date = request.POST.get(ear + '_PCPR_date') or str(today)
 			pcpr_estimate = PCPR_Estimate(
 				patient=patient,
 				ha_make=ha_make,
 				ha_family=ha_family,
 				ha_model=ha_model,
 				ear=ear,
-				date=request.POST.get(ear + '_PCPR_date' or str(today)))
+				date=date)
 			pcpr_estimate.save()
+			new_action.append('Dodano ' + pl_side + ' kosztorys ' + 'na ' +
+				pcpr_estimate.ha_make + ' ' + pcpr_estimate.ha_family + ' ' +
+                pcpr_estimate.ha_model + ', ' +
+				'z datą ' + date + '.')
 
 			# remove PCPR_Estimate from currently active
 		if request.POST.get('pcpr_' + ear + '_remove'):
@@ -317,19 +324,30 @@ def updating(request, patient_id):
 				patient=patient, ear=ear, in_progress=True).last()
 			last_pcpr_in_progress.in_progress = False
 			last_pcpr_in_progress.save()
+			new_action.append('Usunięto ' + pl_side + ' kosztorys na ' +
+				last_pcpr_in_progress.ha_make + ' ' + 
+				last_pcpr_in_progress.ha_family + ' ' +
+				last_pcpr_in_progress.ha_model + ', ' +
+                'z datą ' + str(last_pcpr_in_progress.date) + '.')
 
 		# invoice procedure
 		if request.POST.get(ear + '_invoice_ha'):
 			ha = request.POST[ear + '_invoice_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
+			date = request.POST.get(ear + '_invoice_date') or str(today)
 			invoice = HA_Invoice(
 				patient=patient,
 				ha_make=ha_make,
 				ha_family=ha_family,
 				ha_model=ha_model,
 				ear=ear,
-				date=request.POST.get(ear + '_invoice_date') or str(today))
+				date=date,)
 			invoice.save()
+			pl_side2 = 'lewą' if ear=='left' else 'prawą'
+			new_action.append('Dodano ' + pl_side2 + ' fakturę ' + 'na ' +
+                            invoice.ha_make + ' ' + invoice.ha_family + ' ' +
+                            invoice.ha_model + ', ' +
+							'z datą ' + date + '.')
 
 		# remove invoice
 		if request.POST.get(ear + '_invoice_remove'):
@@ -337,17 +355,24 @@ def updating(request, patient_id):
 				patient=patient, ear=ear, in_progress=True).last()
 			last_invoice_in_progress.in_progress = False
 			last_invoice_in_progress.save()
+			pl_side2 = 'lewą' if ear == 'left' else 'prawą'
+			new_action.append('Usunięto ' + pl_side2 + ' fakturę na ' +
+                            last_invoice_in_progress.ha_make + ' ' +
+                            last_invoice_in_progress.ha_family + ' ' +
+                            last_invoice_in_progress.ha_model + ', ' +
+                            'z datą ' + str(last_invoice_in_progress.date) + '.')
 
 		# collection procedure
 		if request.POST.get(ear + '_collection_confirm'):
 			print ear + '_collection_confirm'
 			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
+			date = request.POST.get(ear + '_collection_date') or str(today)
 			Hearing_Aid.objects.create(
 				patient=patient,
 				ha_make = invoiced_ha.ha_make,
 				ha_family = invoiced_ha.ha_family,
 				ha_model = invoiced_ha.ha_model,
-				purchase_date=request.POST.get(ear + '_collection_date') or str(today),
+				purchase_date=date,
 				ear=ear)
 
 			# clear Invoice, PCPR_Estimate and NFZ_Confirmed for this HA
@@ -359,6 +384,13 @@ def updating(request, patient_id):
 			nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, side=ear).last()
 			nfz_confirmed.in_progress = False
 			nfz_confirmed.save()
+
+			# create new info instance to show in history of actions
+			new_action.append('Odebrano ' + pl_side + ' aparat ' +
+                            invoiced_ha.ha_make + ' ' +
+                            invoiced_ha.ha_family + ' ' +
+                            invoiced_ha.ha_model + ', ' +
+				'z datą ' + str(invoiced_ha.date) + '.')
 
 			
 	if request.POST.get('remove_audiogram') == 'remove':
