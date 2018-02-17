@@ -114,6 +114,8 @@ USE_I18N = True
 USE_L10N = True
 
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = 'crm:index'
 
 
 # Static files (CSS, JavaScript, Images)

@@ -54,18 +54,6 @@
     <textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
     <hr>
 
-    <p>Autor notatki:
-    <ul class="list-inline">
-        {% for a in audiometrist_list %}
-        <li class="list-inline-item">
-            <input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a }}" class="inline" />
-            <label for="a{{ forloop.counter }}">{{ a }}</label>
-        </li>
-        {% endfor %}
-    </ul>
-    </p>
-    <hr>
-
     <p>Obecnie noszone aparaty:</p>
     <div class="row">
         <div class="col-xl-6">

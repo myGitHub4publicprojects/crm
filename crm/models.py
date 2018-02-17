@@ -2,11 +2,15 @@
 from __future__ import unicode_literals
 import datetime
 
+from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
-from .ha_list import ha_list
+from django.conf import settings
 
-from django.db import models
+from django.contrib.auth.models import User
+jakub = User.objects.all().first()
+
+from .ha_list import ha_list
 
 class Patient(models.Model):
 	first_name = models.CharField(max_length=120)
@@ -20,8 +24,7 @@ class Patient(models.Model):
 	noachcreatedate = models.DateField(null=True, blank=True)
 	noachID = models.IntegerField(null=True, blank=True)
 	notes = models.TextField(null=True, blank=True)
-	audiometrist_list = ['Barbara', 'Jakub', 'Sylwia']
-	audiometrist = models.CharField(max_length=120, default= 'ABC')
+	audiometrist = models.ForeignKey(settings.AUTH_USER_MODEL)
 	 # person who added a patient or a new note about patient
 
 	def __unicode__(self):
@@ -32,7 +35,7 @@ class NewInfo(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
 	note = models.TextField()
-	audiometrist = models.CharField(max_length=20, null=True, blank=True)
+	audiometrist = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
 
 	def __str__(self):
 		return self.timestamp

@@ -5,8 +5,10 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import PatientForm
 from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
 					PCPR_Estimate, HA_Invoice, Audiogram)
@@ -17,6 +19,8 @@ from django.db.models import Q
 today = datetime.date.today()
 ears = ['left', 'right']
 
+
+@login_required
 def index(request):
 	#x = Lower('last_name')
 	order_by = request.GET.get('order_by','last_name')
@@ -44,6 +48,8 @@ def index(request):
 	context = {'patients': patients}
 	return render(request, 'crm/patient_list.html', context)
 
+
+@login_required
 def advancedsearch(request):
 	patient_list = Patient.objects.all().order_by(Lower('last_name'))
 	lname = request.GET.get('lname')
@@ -126,11 +132,13 @@ def advancedsearch(request):
 				'ha_list': Hearing_Aid.ha_list}
 	return render(request, 'crm/advanced_search.html', context)
 
+
+@login_required
 def create(request):
 	ha_list = Hearing_Aid.ha_list
 	locations = Patient.locations
-	audiometrist_list = Patient.audiometrist_list
-	context = {'ha_list': ha_list, 'ears': ears, 'locations': locations, 'audiometrist_list': audiometrist_list}
+	audiometrists = User.objects.all()
+	context = {	'ha_list': ha_list, 'ears': ears, 'locations': locations}
 	return render(request, 'crm/create.html', context)
 
 def edit(request, patient_id):
@@ -144,6 +152,7 @@ def edit(request, patient_id):
 	right_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='right')
 	left_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='left')
 	right_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='right')
+	audiometrists = User.objects.all()
 
 	def last_and_previous(queryset):
 		'''returns last obj or None of a qs as "last" and
@@ -160,6 +169,7 @@ def edit(request, patient_id):
 	context = {'patient': patient,
 			'ha_list': Hearing_Aid.ha_list,
 			'ears': ears,
+            'audiometrists': audiometrists,
 			'patient_notes': patient.newinfo_set.order_by('-timestamp'),
 			'right_hearing_aid': right_hearing_aid,
 			'left_hearing_aid': left_hearing_aid,
@@ -187,13 +197,14 @@ def edit(request, patient_id):
 	return render(request, 'crm/edit.html', context)
 
 
+@login_required
 def store(request):
 	# for adding new patients to database
 	patient = Patient(first_name=request.POST['fname'],
 		last_name=request.POST['lname'],
 		date_of_birth=request.POST['bday'],
 		phone_no=request.POST['usrtel'],
-		audiometrist = request.POST['audiometrist'],
+		audiometrist = request.user,
 		location = request.POST['location'],
         notes = request.POST.get('note')
 		)
@@ -228,32 +239,32 @@ def store(request):
 				date=request.POST[ear + '_PCPR_date'])
 			pcpr_estimate.save()
 
-	# if request.POST.get('note'):
-	# 	new_info = NewInfo(	patient=patient,
-	# 						note=request.POST['note'],
-	# 						audiometrist=request.POST.get('audiometrist'))
-	# 	new_info.save()
-
 	messages.success(request, "Pomyślnie utworzono")
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient.id,)))
 
+
+@login_required
 def updating(request, patient_id):
+    # if not request.user.is_authenticated():
+    #     raise Http404
 	# for updating existing patients in database
 	patient = get_object_or_404(Patient, pk=patient_id)
 	patient.first_name=request.POST['fname']
 	patient.last_name=request.POST['lname']
 	patient.phone_no=request.POST['usrtel']
 	patient.location = request.POST['location']
-	update_list = ['first_name', 'last_name', 'phone_no', 'location']
+	patient.notes = request.POST['summary_note']
+	update_list = ['first_name', 'last_name', 'phone_no', 'location', 'notes']
 	if request.POST.get('bday'):
 		patient.date_of_birth=request.POST['bday']
 		update_list.append('date_of_birth')
 	patient.save(update_fields=update_list)
 
+	audiometrist = request.user
 	if request.POST.get('new_note'):
 		new_info = NewInfo(	patient=patient,
 							note=request.POST['new_note'],
-                    		audiometrist=request.POST.get('audiometrist'))
+                    		audiometrist=audiometrist)
 		new_info.save()
 
 	new_action = []
@@ -403,25 +414,33 @@ def updating(request, patient_id):
 	if new_action:
 		NewInfo.objects.create(	patient=patient,
                           		note=' '.join(new_action),
-								audiometrist=request.POST.get('audiometrist'))
+								audiometrist=audiometrist)
 	messages.success(request, "Zaktualizowano dane")
 
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
 
+
+@login_required
 def deleteconfirm(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
 	return render(request, 'crm/delete-confirm.html', {'patient': patient})
 
+
+@login_required
 def delete_patient(request, patient_id):
 	patient = get_object_or_404(Patient, pk = patient_id)
 	patient.delete()
 	messages.success(request, "Pacjent %s usunięty" % patient.last_name)
 	return redirect('crm:index')
 
+
+@login_required
 def select_noach_file(request):
 	''' enables selecting a noach file from user computer'''
 	return render(request, 'crm/select_noach_file.html')
 
+
+@login_required
 def import_from_noach(request):
 	'''use a xml file with patients exported from Noach to create new patients, audiograms and ha.
 	If patient already in database, update audiograms and ha '''
