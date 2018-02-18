@@ -2,9 +2,13 @@
 
 {% block content %}
 
-<h1>{{ patient.last_name }} {{ patient.first_name }}</h1>
+<h2 class="text-center">Potwierdź usunięcie pacjenta</h2>
 
-<h1>Potwierdzam usunięcie pacjenta z bazy danych</h1>
-<a href="{% url 'crm:delete' patient.id %}">USUWAM</a>
+<h1 class="text-center">Potwierdzam usunięcie pacjenta: {{ patient }} z bazy danych</h1>
 
+<div class="text-center">
+    <a href="{% url 'crm:delete' patient.id %}">
+        <button class="btn btn-primary btn-danger btn-lg">USUWAM</button>
+    </a>
+</div>
 {% endblock content %}

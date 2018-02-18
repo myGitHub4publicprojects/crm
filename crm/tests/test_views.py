@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.core.paginator import Paginator
 
-from mixer.backend.django import mixer
 import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
@@ -20,26 +19,43 @@ now = datetime.now()
 
 class TestIndexView(TestCase):
     def setUp(self):
-        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
+        user_john = User.objects.create_user(username='john',
+                                                email='jlennon@beatles.com',
+                                                password='glassonion')
+        patient1 = Patient.objects.create(first_name = 'John',
+                            last_name='Smith1', audiometrist=user_john)
         patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
-            date_of_birth=today-timedelta(days=1))
+                            date_of_birth=today-timedelta(days=1), audiometrist=user_john)
         patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
-            date_of_birth=today-timedelta(days=2))
+                            date_of_birth=today-timedelta(days=2), audiometrist=user_john)
         patient4 = Patient.objects.create(first_name = 'John', last_name = 'Smith4',
-            date_of_birth=today-timedelta(days=3))
-        patient4.create_date=now-timedelta(days=3)
+                            date_of_birth=today-timedelta(days=3), audiometrist=user_john)
+        patient4.create_date = now-timedelta(days=3)
         patient4.save()
+
 
     def test_anonymous(self):
         url = reverse('crm:index')
+        expected_url = reverse('login') + '?next=/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+
+    def test_logged_in(self):
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:index')
         response = self.client.get(url)
         all_patients = Patient.objects.all()
-        assert response.status_code == 200, 'Should be callable by anyone'
+        assert response.status_code == 200, 'Should be callable by logged in user'
         self.assertEqual(len(response.context['patients']), 4)
 
     def test_order_by_date_of_birth(self):
         '''should sort patients based on date of birth, starting from those without
         a specified date, then oldest to youngest'''
+        self.client.login(username='john', password='glassonion')
         data={'order_by': 'date_of_birth'}
         url = reverse('crm:index')
         response = self.client.get(url, data)
@@ -52,6 +68,7 @@ class TestIndexView(TestCase):
 
     def test_order_by_create_date(self):
         '''should sort patients based on create_date, starting from oldest to youngest'''
+        self.client.login(username='john', password='glassonion')
         data={'order_by': 'create_date'}
         url = reverse('crm:index')
         response = self.client.get(url, data)
@@ -64,12 +81,14 @@ class TestIndexView(TestCase):
 
     def test_query(self):
         '''should return patients with last name containing given query'''
+        self.client.login(username='john', password='glassonion')
         data={'q': 'Smith'}
         url = reverse('crm:index')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patients']), 4)
 
     def test_pagination_page_over_9999(self):
+        self.client.login(username='john', password='glassonion')
         data = {'page': '99999'}
         url = reverse('crm:index')
         response = self.client.get(url, data)
@@ -78,14 +97,17 @@ class TestIndexView(TestCase):
 
 class TestAdvancedSearchView(TestCase):
     def setUp(self):
-        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
-        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
-            date_of_birth=today-timedelta(days=1))
-        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
-            date_of_birth=today-timedelta(days=2))
-        patient4 = Patient.objects.create(first_name = 'Adam', last_name = 'Smith4',
-            date_of_birth=today-timedelta(days=3))
-        patient4.create_date=now-timedelta(days=3)
+        user_john = User.objects.create_user(username='john',
+                                             email='jlennon@beatles.com',
+                                             password='glassonion')
+        patient1 = Patient.objects.create(first_name='Adam',
+                last_name='Smith1', audiometrist=user_john)
+        patient2 = Patient.objects.create(first_name='John', last_name='Smith2',
+                date_of_birth=today-timedelta(days=1), audiometrist=user_john)
+        patient3 = Patient.objects.create(first_name='John', last_name='Smith3',
+                date_of_birth=today-timedelta(days=2), audiometrist=user_john)
+        patient4 = Patient.objects.create(first_name='John', last_name='Smith4',
+                date_of_birth=today-timedelta(days=3), audiometrist=user_john)
         patient4.location = 'Mosina'
         patient4.save()
 
@@ -110,6 +132,7 @@ class TestAdvancedSearchView(TestCase):
     
     def test_search_last_name(self):
         '''should return one patient with last name: Smith3'''
+        self.client.login(username='john', password='glassonion')
         data={'lname': 'Smith3'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
@@ -119,6 +142,7 @@ class TestAdvancedSearchView(TestCase):
 
     def test_search_first_name(self):
         '''should return one patient with first name: Adam'''
+        self.client.login(username='john', password='glassonion')
         data={'fname': 'Adam'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
@@ -128,6 +152,7 @@ class TestAdvancedSearchView(TestCase):
 
     def test_search_location(self):
         '''should return one patient with location: Mosina'''
+        self.client.login(username='john', password='glassonion')
         data={'loc': 'Mosina'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
@@ -137,6 +162,7 @@ class TestAdvancedSearchView(TestCase):
 
     def test_search_hearing_aid_make(self):
         '''should return patients wearing hearing aids by Bernafon (2)'''
+        self.client.login(username='john', password='glassonion')
         ha1 = Hearing_Aid.objects.get(id=1)
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)
@@ -147,6 +173,7 @@ class TestAdvancedSearchView(TestCase):
 
     def test_search_hearing_aid_make_family_model(self):
         '''should return patients wearing Phonak Naida Q 30 SP aid (1)'''
+        self.client.login(username='john', password='glassonion')
         ha1 = Hearing_Aid.objects.get(id=1)
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)
@@ -158,6 +185,7 @@ class TestAdvancedSearchView(TestCase):
     def test_search_hearing_aid_by_purchase_date_only_lower_band(self):
         '''only lower band of dates is given - upper band should default to today
         should return only patients with hearing aids purchased after the lower band date'''
+        self.client.login(username='john', password='glassonion')
         ha1 = Hearing_Aid.objects.get(id=1)
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)
@@ -170,6 +198,7 @@ class TestAdvancedSearchView(TestCase):
     def test_search_hearing_aid_by_purchase_date_only_upper_band(self):
         '''only upper band of dates is given - lower band should default to '1990-01-01'
         should return only patients with hearing aids purchased before the upper band date'''
+        self.client.login(username='john', password='glassonion')
         ha1 = Hearing_Aid.objects.get(id=1)
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)
@@ -182,6 +211,7 @@ class TestAdvancedSearchView(TestCase):
     def test_search_hearing_aid_by_purchase_date_both_lower_and_upper_band(self):
         '''both lower and upper band of dates is given, should return only patients
         with hearing aids purchased after the lower band and before the upper band date'''
+        self.client.login(username='john', password='glassonion')
         ha1 = Hearing_Aid.objects.get(id=1)
         ha2 = Hearing_Aid.objects.get(id=2)
         ha3 = Hearing_Aid.objects.get(id=3)
@@ -195,6 +225,7 @@ class TestAdvancedSearchView(TestCase):
     def test_search_nfz_confirmed_by_date_both_lower_and_upper_band(self):
         '''both lower and upper band of dates is given, should return only patients
         with NFZ confirmed after the lower band and before the upper band date'''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         patient2 = Patient.objects.get(id=2)
         patient3 = Patient.objects.get(id=3)
@@ -217,6 +248,7 @@ class TestAdvancedSearchView(TestCase):
     def test_search_pcpr_estimate_date_both_lower_and_upper_band(self):
         '''both lower and upper band of dates is given, should return only patients
         with NFZ confirmed after the lower band and before the upper band date'''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         patient2 = Patient.objects.get(id=2)
         patient3 = Patient.objects.get(id=3)
@@ -247,6 +279,7 @@ class TestAdvancedSearchView(TestCase):
     def test_search_ha_invoice_date_both_lower_and_upper_band(self):
         '''both lower and upper band of dates is given, should return only patients
         with NFZ confirmed after the lower band and before the upper band date'''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         patient2 = Patient.objects.get(id=2)
         patient3 = Patient.objects.get(id=3)
@@ -277,23 +310,56 @@ class TestAdvancedSearchView(TestCase):
 class TestCreateView(TestCase):
     def test_anonymous(self):
         url = reverse('crm:create')
-        response = self.client.get(url)
-        assert response.status_code == 200, 'Should be callable by anyone'
+        expected_url = reverse('login') + '?next=/create/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_logged_in(self):
+        User.objects.create_user(username='john',
+                                email='jlennon@beatles.com',
+                                password='glassonion')
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:create')
+        response = self.client.post(url)
+        assert response.status_code == 200
 
 
 class TestEditView(TestCase):
     def setUp(self):
-        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
-        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',)
-        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',)
+        user_john = User.objects.create_user(username='john',
+                                             email='jlennon@beatles.com',
+                                             password='glassonion')
+        patient1 = Patient.objects.create(first_name = 'John',
+                            last_name='Smith1', audiometrist=user_john)
+        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
+                            date_of_birth=today-timedelta(days=1), audiometrist=user_john)
+        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
+                            date_of_birth=today-timedelta(days=2), audiometrist=user_john)
     def test_anonymous(self):
+        '''should redirect to login'''
+        patient1 = Patient.objects.get(id=1)
+        url = reverse('crm:edit', args=(patient1.id,))
+        expected_url = reverse('login') + '?next=/' + str(patient1.id) + '/edit/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_logged_in(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
-        assert response.status_code == 200, 'Should be callable by anyone'
+        assert response.status_code == 200, 'Should be callable by logged in user'
+
 
     def test_patient_with_only_inactive_NFZ_confirmed(self):
         ''' scenario with only inactive (in_progres=False) latest (.last()) NFZ confirmed
         instances '''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         nfz1 = NFZ_Confirmed.objects.create(patient=patient1,
                             date = today,
@@ -311,6 +377,7 @@ class TestEditView(TestCase):
         ''' scenario with only left active (in_progres=True)
         latest (.last()) NFZ confirmed instance 
         there is also one, former, inactive left instance'''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         nfz0 = NFZ_Confirmed.objects.create(patient=patient1,
                             date = today,
@@ -334,6 +401,7 @@ class TestEditView(TestCase):
         ''' scenario with left and right active (in_progres=True)
         latest (.last()) NFZ confirmed instance 
         there are also former, inactive left and right instance'''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         nfz0 = NFZ_Confirmed.objects.create(patient=patient1,
                             date = today,
@@ -362,6 +430,7 @@ class TestEditView(TestCase):
     def test_patient_with_only_inactive_PCPR_Estimate(self):
         ''' scenario with only inactive (in_progres=False) latest (.last()) PCPR_Estimate
         instances'''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         pcpr1 = PCPR_Estimate.objects.create(patient=patient1,
                             ha_make = 'Bernafon',
@@ -386,6 +455,7 @@ class TestEditView(TestCase):
     def test_patient_with_two_active_and_two_inactive_PCPR_Estimate(self):
         ''' scenario with active (both left and right) and two inactive (in_progres=False)
         latest (.last()) PCPR_Estimate instances '''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         pcpr0 = PCPR_Estimate.objects.create(patient=patient1,
                             ha_make = 'Bernafon',
@@ -424,6 +494,7 @@ class TestEditView(TestCase):
     def test_patient_with_only_inactive_HA_Invoice(self):
         ''' scenario with only inactive (in_progres=False) latest (.last()) HA_Invoice
         instances '''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         invoice1 = HA_Invoice.objects.create(patient=patient1,
                             ha_make = 'Bernafon',
@@ -455,6 +526,7 @@ class TestEditView(TestCase):
     def test_patient_with_two_active_and_two_inactive_HA_Invoice(self):
         ''' scenario with active (both left and right) and two inactive (in_progres=False)
         latest (.last()) HA_Invoice instances '''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         invoice0 = HA_Invoice.objects.create(patient=patient1,
                             ha_make = 'Bernafon',
@@ -492,6 +564,7 @@ class TestEditView(TestCase):
 
     def test_patient_with_two_left_and_two_right_Audiograms(self):
         ''' scenario with two left and two right Audiogram instances '''
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         aud0 = Audiogram.objects.create(patient=patient1,
                             time_of_test=now - timedelta(days=1),
@@ -512,19 +585,32 @@ class TestEditView(TestCase):
 
 class TestStoreView(TestCase):
     def setUp(self):
-        patient1 = Patient.objects.create(
-            first_name='John', last_name='Smith1',)
-        patient2 = Patient.objects.create(
-            first_name='John', last_name='Smith2',)
-        patient3 = Patient.objects.create(
-            first_name='John', last_name='Smith3',)
+        user_john = User.objects.create_user(username='john',
+                                             email='jlennon@beatles.com',
+                                             password='glassonion')
+        patient1 = Patient.objects.create(first_name='John',
+                last_name='Smith1', audiometrist=user_john)
+        patient2 = Patient.objects.create(first_name='John', last_name='Smith2',
+                date_of_birth=today-timedelta(days=1), audiometrist=user_john)
+        patient3 = Patient.objects.create(first_name='John', last_name='Smith3',
+                date_of_birth=today-timedelta(days=2), audiometrist=user_john)
 
     def test_anonymous(self):
+        url = reverse('crm:store')
+        expected_url = reverse('login') + '?next=/store/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_logged_in(self):
+        user_john = User.objects.get(id=1)
+        self.client.login(username='john', password='glassonion')
         data = {'fname': 'Adam',
                 'lname': 'Atkins',
                 'bday': '2000-01-01',
                 'usrtel': 1,
-                'audiometrist': 'Olo',
                 'location': 'some_location',
                 'left_ha': 'model1_family1_brand1',
                 'right_ha': 'model2_family2_brand2',
@@ -538,7 +624,6 @@ class TestStoreView(TestCase):
                 'right_pcpr_etimate_date': '2004-01-01',
                 'note': 'p1_note',
                 }
-
         url = reverse('crm:store')
         # id of new patient is set to 4 as there are already 3 in from setUp function
         expected_url = reverse('crm:edit', args=(4,))
@@ -548,18 +633,39 @@ class TestStoreView(TestCase):
         self.assertRedirects(response, expected_url,
                      status_code=302, target_status_code=200)
 
+
 class TestUpdatingView(TestCase):
     data = {'fname': 'Adam',
                     'lname': 'Atkins',
                     'usrtel': 1,
                     'location': 'some_location',
-
+                    'summary_note': 'some note'
                     }
     def setUp(self):
-        patient1 = Patient.objects.create(first_name = 'John', last_name = 'Smith1',)
-        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',)
-        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',)
+        user_john = User.objects.create_user(username='john',
+                                             email='jlennon@beatles.com',
+                                             password='glassonion')
+        patient1 = Patient.objects.create(first_name='John',
+                last_name='Smith1', audiometrist=user_john)
+        patient2 = Patient.objects.create(first_name='John', last_name='Smith2',
+                date_of_birth=today-timedelta(days=1), audiometrist=user_john)
+        patient3 = Patient.objects.create(first_name='John', last_name='Smith3',
+                date_of_birth=today-timedelta(days=2), audiometrist=user_john)
+
+    def test_anonymous(self):
+        '''should redirect to login'''
+        patient1 = Patient.objects.get(id=1)
+        url = reverse('crm:edit', args=(patient1.id,))
+        expected_url = reverse('login') + '?next=/' + \
+            str(patient1.id) + '/edit/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+    
     def test_change_name_tel_location(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
         url = reverse('crm:updating', args=(patient1.id,))
@@ -576,12 +682,37 @@ class TestUpdatingView(TestCase):
         self.assertEqual(patient1.phone_no, 1)
         self.assertEqual(patient1.location, 'some_location')
 
-    def test_add_audiometrist_birth_day_note(self):
+    def test_add_birth_day_new_note_change_patient_note(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
-        data['new_note'] = 'p_note'
+        data['summary_note'] = 'summary'
         data['bday'] = '2000-01-01'
-        data['audiometrist'] = 'John'
+        data['new_note'] = 'new note'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+        
+        new_info = NewInfo.objects.get(id=1)
+        patient1.refresh_from_db()
+        self.assertEqual(str(patient1.date_of_birth), '2000-01-01')
+        self.assertEqual(patient1.notes, 'summary')
+        self.assertEqual(new_info.note, 'new note')
+
+    # test adding note or action by other audiometrist - show who created and who added new note
+    def test_add_new_note_by_other_audiometrist(self):
+        adam = User.objects.create_user(username='adam',
+                                email='jlennon@beatles.com',
+                                password='oleole')
+        john = User.objects.get(id=1)
+        self.client.login(username='adam', password='oleole')
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['new_note'] = 'some new info'
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -591,12 +722,20 @@ class TestUpdatingView(TestCase):
                              status_code=302, target_status_code=200)
 
         patient1.refresh_from_db()
-        self.assertEqual(str(patient1.date_of_birth), '2000-01-01')
-        new_note = NewInfo.objects.get(id=1)
-        self.assertEqual(new_note.note, 'p_note')
-        self.assertEqual(new_note.audiometrist, 'John')
+        new_info = NewInfo.objects.get(id=1)
+        # audiometrist who created the patient
+        self.assertEqual(patient1.audiometrist, john)
+        self.assertEqual(new_info.note, 'some new info')
+        # audiometrist who added new note
+        self.assertEqual(new_info.audiometrist, adam)
 
-    def test_adding_hearing_aids(self):
+
+
+    def test_adding_hearing_aids_by_other_audiometrist(self):
+        adam = User.objects.create_user(username='adam',
+                                        email='jlennon@beatles.com',
+                                        password='oleole')
+        self.client.login(username='adam', password='oleole')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
         data['left_ha'] = 'b1_family1_model1'
@@ -620,8 +759,10 @@ class TestUpdatingView(TestCase):
                         'Dodano prawy aparat b2 family2 model2.'
 
         self.assertEqual(new_info.note, expected_note)
+        self.assertEqual(new_info.audiometrist, adam)
 
     def test_adding_another_hearing_aids_with_purchase_dates(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         Hearing_Aid.objects.create(patient=patient1,
                                     ear='left',
@@ -659,6 +800,7 @@ class TestUpdatingView(TestCase):
         self.assertFalse(left_ha_all.last().our)
 
     def test_adding_NFZ_confirmed(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
         data['NFZ_left'] = '2001-01-01'
@@ -684,6 +826,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_adding_another_NFZ(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         NFZ_Confirmed.objects.create(patient=patient1,
                                    side='left',
@@ -713,6 +856,7 @@ class TestUpdatingView(TestCase):
 
 
     def test_remove_NFZ(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         NFZ_Confirmed.objects.create(patient=patient1,
                                      side='left',
@@ -747,6 +891,7 @@ class TestUpdatingView(TestCase):
 
 
     def test_adding_pcpr_estimates(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
         data['left_pcpr_ha'] = 'b1_family1_model1'
@@ -776,6 +921,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_remove_pcpr_estimates(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         PCPR_Estimate.objects.create(patient=patient1,
             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
@@ -806,6 +952,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_adding_invoice(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
         data['left_invoice_ha'] = 'b1_family1_model1'
@@ -837,6 +984,7 @@ class TestUpdatingView(TestCase):
 
 
     def test_remove_invoice(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         HA_Invoice.objects.create(patient=patient1,
                                      ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
@@ -867,6 +1015,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_collection_procedure(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         NFZ_Confirmed.objects.create(patient=patient1,
                                      side='left',
@@ -935,6 +1084,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_remove_audiogram(self):
+        self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         Audiogram.objects.create(patient=patient1, ear='left')
         
@@ -958,17 +1108,54 @@ class TestUpdatingView(TestCase):
 
 
 class TestDeleteView(TestCase):
+    def setUp(self):
+        user_john = User.objects.create_user(username='john',
+                                             email='jlennon@beatles.com',
+                                             password='glassonion')
+        patient1 = Patient.objects.create(first_name='John',
+                last_name='Smith1', audiometrist=user_john)
 
-    def test_setup(self):
-        patient = Patient.objects.create(first_name='a', last_name='b')
+        def test_anonymous(self):
+            '''should redirect to login'''
+        patient1 = Patient.objects.get(id=1)
+        url = reverse('crm:deleteconfirm', args=(patient1.id,))
+        expected_url = reverse('login') + '?next=/' + \
+            str(patient1.id) + '/deleteconfirm/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_setup_logged_in(self):
+        self.client.login(username='john', password='glassonion')
+        patient = Patient.objects.get(id=1)
         url = reverse('crm:deleteconfirm', args=(1,))
         response = self.client.get(url)
-        assert response.status_code == 200, 'Should be callable by anyone'
+        assert response.status_code == 200, 'Should be callable by logged in user'
 
 class TestDeletePatientView(TestCase):
+    def setUp(self):
+        user_john = User.objects.create_user(username='john',
+                                             email='jlennon@beatles.com',
+                                             password='glassonion')
+        patient1 = Patient.objects.create(first_name='John',
+                last_name='Smith1', audiometrist=user_john)
+
+    def test_anonymous(self):
+        '''should redirect to login'''
+        patient1 = Patient.objects.get(id=1)
+        url = reverse('crm:delete', args=(patient1.id,))
+        expected_url = reverse('login') + '?next=/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
     
-    def test_setup(self):
-        patient = Patient.objects.create(first_name='a', last_name='b')
+    def test_setup_logged_in(self):
+        self.client.login(username='john', password='glassonion')
+        patient = Patient.objects.get(id=1)
         url = reverse('crm:delete', args=(1,))
         expected_url = reverse('crm:index')
         response = self.client.post(url,follow=True)

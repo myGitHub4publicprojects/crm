@@ -141,6 +141,8 @@ def create(request):
 	context = {	'ha_list': ha_list, 'ears': ears, 'locations': locations}
 	return render(request, 'crm/create.html', context)
 
+
+@login_required
 def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
