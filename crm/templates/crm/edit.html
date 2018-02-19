@@ -125,18 +125,7 @@
 					</ul>
 				</div>
 			</div>
-			<div class="col-xl-3">
-				<small class="text-muted">Autor notatki:</small>
-				<ul class="list-unstyled">
-				{% for a in audiometrists %}
-					<li>
-					<input type="radio" name="audiometrist" id="a{{ forloop.counter }}" value="{{ a.id }}" class="inline" required/>
-					<label for="a{{ forloop.counter }}">{{ a }}</label>
-					</li>
-				{% endfor %}
-				</ul>
-			</div>
-			<div class="col-xl-6">
+			<div class="col-xl-9">
 				<textarea form="edit_patient" name="new_note" id="patient_note" placeholder="nowa notatka"></textarea>
 			</div>
 		
