@@ -93,7 +93,7 @@
 			</div>
 			<div class="col-xl">
 			<small class="text-muted">Tel: </small><br>
-			<input type="tel" name="usrtel" value="{{ patient.phone_no }}" required>
+			<input id="patient_tel" type="tel" name="usrtel" value="{{ patient.phone_no }}" required>
 			</div>
 		</div>
 		<hr>
@@ -202,6 +202,12 @@
 	<div class="btn btn-outline-danger">usuń pacjenta</div>
 </a>
 
-
+<script>
+	var tel_no = document.querySelector('#patient_tel');
+	if (tel_no.value == 0) {
+		tel_no.className += 'bg-danger';
+		alert('Podaj prawidłowy numer telefonu');
+	}
+</script>
 
 {% endblock content %}
