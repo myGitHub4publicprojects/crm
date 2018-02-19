@@ -101,7 +101,9 @@
 		<!-- patient summary note -->
 		<div class="row mt-2">
 			<div class="col-xl">
-			<textarea form="edit_patient" name="summary_note" id="patient_summary" >{{ patient.notes }}</textarea>
+			<textarea form="edit_patient" name="summary_note" id="patient_summary" >
+				{% if patient.notes %}{{ patient.notes }}{% endif %}
+			</textarea>
 			</div>
 		</div>
 		<hr>
