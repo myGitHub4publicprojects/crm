@@ -247,8 +247,6 @@ def store(request):
 
 @login_required
 def updating(request, patient_id):
-    # if not request.user.is_authenticated():
-    #     raise Http404
 	# for updating existing patients in database
 	patient = get_object_or_404(Patient, pk=patient_id)
 	patient.first_name=request.POST['fname']
@@ -378,7 +376,6 @@ def updating(request, patient_id):
 
 		# collection procedure
 		if request.POST.get(ear + '_collection_confirm'):
-			print ear + '_collection_confirm'
 			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
 			date = request.POST.get(ear + '_collection_date') or str(today)
 			Hearing_Aid.objects.create(

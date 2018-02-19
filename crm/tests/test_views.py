@@ -17,19 +17,25 @@ pytestmark = pytest.mark.django_db
 today = datetime.today().date()
 now = datetime.now()
 
+
+def create_user(username='john', email='jlennon@beatles.com', password='glassonion'):
+    return User.objects.create_user(username=username, email=email, password=password)
+
+
+def create_patient(audiometrist,    first_name='John', 
+                                    last_name='Smith1',
+                                    date_of_birth=None):
+    return Patient.objects.create(  first_name=first_name,
+                                    last_name=last_name,
+                                    audiometrist=audiometrist,
+                                    date_of_birth=date_of_birth)
 class TestIndexView(TestCase):
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                                email='jlennon@beatles.com',
-                                                password='glassonion')
-        patient1 = Patient.objects.create(first_name = 'John',
-                            last_name='Smith1', audiometrist=user_john)
-        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
-                            date_of_birth=today-timedelta(days=1), audiometrist=user_john)
-        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
-                            date_of_birth=today-timedelta(days=2), audiometrist=user_john)
-        patient4 = Patient.objects.create(first_name = 'John', last_name = 'Smith4',
-                            date_of_birth=today-timedelta(days=3), audiometrist=user_john)
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+        patient2 = create_patient(user_john, date_of_birth=today-timedelta(days=1))
+        patient3 = create_patient(user_john, date_of_birth=today-timedelta(days=2))
+        patient4 = create_patient(user_john, date_of_birth=today-timedelta(days=3))
         patient4.create_date = now-timedelta(days=3)
         patient4.save()
 
@@ -97,17 +103,13 @@ class TestIndexView(TestCase):
 
 class TestAdvancedSearchView(TestCase):
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                             email='jlennon@beatles.com',
-                                             password='glassonion')
-        patient1 = Patient.objects.create(first_name='Adam',
-                last_name='Smith1', audiometrist=user_john)
-        patient2 = Patient.objects.create(first_name='John', last_name='Smith2',
-                date_of_birth=today-timedelta(days=1), audiometrist=user_john)
-        patient3 = Patient.objects.create(first_name='John', last_name='Smith3',
-                date_of_birth=today-timedelta(days=2), audiometrist=user_john)
-        patient4 = Patient.objects.create(first_name='John', last_name='Smith4',
-                date_of_birth=today-timedelta(days=3), audiometrist=user_john)
+        user_john = create_user()
+        patient1 = create_patient(user_john, first_name='Adam', last_name='Smith1')
+        patient2 = create_patient(user_john, first_name='John', last_name='Smith2')
+        patient3 = create_patient(user_john, first_name='John', last_name='Smith3')
+        patient4 = create_patient(user_john, first_name='John',
+            last_name='Smith4', date_of_birth=today-timedelta(days=3))
+
         patient4.location = 'Mosina'
         patient4.save()
 
@@ -318,9 +320,7 @@ class TestCreateView(TestCase):
                              status_code=302, target_status_code=200)
 
     def test_logged_in(self):
-        User.objects.create_user(username='john',
-                                email='jlennon@beatles.com',
-                                password='glassonion')
+        create_user()
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:create')
         response = self.client.post(url)
@@ -329,15 +329,12 @@ class TestCreateView(TestCase):
 
 class TestEditView(TestCase):
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                             email='jlennon@beatles.com',
-                                             password='glassonion')
-        patient1 = Patient.objects.create(first_name = 'John',
-                            last_name='Smith1', audiometrist=user_john)
-        patient2 = Patient.objects.create(first_name = 'John', last_name = 'Smith2',
-                            date_of_birth=today-timedelta(days=1), audiometrist=user_john)
-        patient3 = Patient.objects.create(first_name = 'John', last_name = 'Smith3',
-                            date_of_birth=today-timedelta(days=2), audiometrist=user_john)
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+        patient2 = create_patient(user_john,
+            date_of_birth=today-timedelta(days=1), last_name = 'Smith2')
+        patient3 = create_patient(user_john,
+            date_of_birth=today-timedelta(days=2), last_name='Smith3')
     def test_anonymous(self):
         '''should redirect to login'''
         patient1 = Patient.objects.get(id=1)
@@ -585,15 +582,12 @@ class TestEditView(TestCase):
 
 class TestStoreView(TestCase):
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                             email='jlennon@beatles.com',
-                                             password='glassonion')
-        patient1 = Patient.objects.create(first_name='John',
-                last_name='Smith1', audiometrist=user_john)
-        patient2 = Patient.objects.create(first_name='John', last_name='Smith2',
-                date_of_birth=today-timedelta(days=1), audiometrist=user_john)
-        patient3 = Patient.objects.create(first_name='John', last_name='Smith3',
-                date_of_birth=today-timedelta(days=2), audiometrist=user_john)
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+        patient2 = create_patient(user_john,
+                date_of_birth=today-timedelta(days=1), last_name='Smith2')
+        patient3 = create_patient(user_john,
+                date_of_birth=today-timedelta(days=2), last_name='Smith3')
 
     def test_anonymous(self):
         url = reverse('crm:store')
@@ -642,15 +636,12 @@ class TestUpdatingView(TestCase):
                     'summary_note': 'some note'
                     }
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                             email='jlennon@beatles.com',
-                                             password='glassonion')
-        patient1 = Patient.objects.create(first_name='John',
-                last_name='Smith1', audiometrist=user_john)
-        patient2 = Patient.objects.create(first_name='John', last_name='Smith2',
-                date_of_birth=today-timedelta(days=1), audiometrist=user_john)
-        patient3 = Patient.objects.create(first_name='John', last_name='Smith3',
-                date_of_birth=today-timedelta(days=2), audiometrist=user_john)
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+        patient2 = create_patient(user_john,
+                date_of_birth=today-timedelta(days=1), last_name='Smith2')
+        patient3 = create_patient(user_john,
+                date_of_birth=today-timedelta(days=2), last_name='Smith3')
 
     def test_anonymous(self):
         '''should redirect to login'''
@@ -1109,14 +1100,11 @@ class TestUpdatingView(TestCase):
 
 class TestDeleteView(TestCase):
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                             email='jlennon@beatles.com',
-                                             password='glassonion')
-        patient1 = Patient.objects.create(first_name='John',
-                last_name='Smith1', audiometrist=user_john)
-
-        def test_anonymous(self):
-            '''should redirect to login'''
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+        
+    def test_anonymous(self):
+        '''should redirect to login'''
         patient1 = Patient.objects.get(id=1)
         url = reverse('crm:deleteconfirm', args=(patient1.id,))
         expected_url = reverse('login') + '?next=/' + \
@@ -1136,17 +1124,15 @@ class TestDeleteView(TestCase):
 
 class TestDeletePatientView(TestCase):
     def setUp(self):
-        user_john = User.objects.create_user(username='john',
-                                             email='jlennon@beatles.com',
-                                             password='glassonion')
-        patient1 = Patient.objects.create(first_name='John',
-                last_name='Smith1', audiometrist=user_john)
+        user_john = create_user()
+        patient1 = create_patient(user_john)
 
     def test_anonymous(self):
         '''should redirect to login'''
         patient1 = Patient.objects.get(id=1)
         url = reverse('crm:delete', args=(patient1.id,))
-        expected_url = reverse('login') + '?next=/'
+        expected_url = reverse('login') + '?next=/' + \
+            str(patient1.id) + '/delete/'
         response = self.client.post(url, follow=True)
         # should give code 200 as follow is set to True
         assert response.status_code == 200
@@ -1155,7 +1141,6 @@ class TestDeletePatientView(TestCase):
     
     def test_setup_logged_in(self):
         self.client.login(username='john', password='glassonion')
-        patient = Patient.objects.get(id=1)
         url = reverse('crm:delete', args=(1,))
         expected_url = reverse('crm:index')
         response = self.client.post(url,follow=True)
