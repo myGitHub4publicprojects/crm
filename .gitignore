@@ -3,7 +3,8 @@ __pycache__
 myvenv
 db.sqlite3
 .DS_Store
-crm/migrations/*
+crm/migrations/
 htmlcov/
 .coverage
 .cache/
+local_settings.py
