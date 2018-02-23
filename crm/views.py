@@ -168,7 +168,7 @@ def edit(request, patient_id):
 				result['previous'] = queryset.order_by('-id')[1:]
 		return result
 
-	context = {'reminders': len(Reminder.objects.active()),
+	context = {
 			'patient': patient,
 			'ha_list': Hearing_Aid.ha_list,
 			'ears': ears,
@@ -334,6 +334,7 @@ def updating(request, patient_id):
 				pcpr_estimate.ha_make + ' ' + pcpr_estimate.ha_family + ' ' +
                 pcpr_estimate.ha_model + ', ' +
 				'z datą ' + date + '.')
+			Reminder.objects.create(pcpr=pcpr_estimate)
 
 			# remove PCPR_Estimate from currently active
 		if request.POST.get('pcpr_' + ear + '_remove'):
@@ -346,6 +347,9 @@ def updating(request, patient_id):
 				last_pcpr_in_progress.ha_family + ' ' +
 				last_pcpr_in_progress.ha_model + ', ' +
                 'z datą ' + str(last_pcpr_in_progress.date) + '.')
+			reminder = Reminder.objects.get(pcpr=last_pcpr_in_progress)
+			reminder.active = False
+			reminder.save()
 
 		# invoice procedure
 		if request.POST.get(ear + '_invoice_ha'):
@@ -365,6 +369,7 @@ def updating(request, patient_id):
                             invoice.ha_make + ' ' + invoice.ha_family + ' ' +
                             invoice.ha_model + ', ' +
 							'z datą ' + date + '.')
+			Reminder.objects.create(invoice=invoice)
 
 		# remove invoice
 		if request.POST.get(ear + '_invoice_remove'):
@@ -378,6 +383,9 @@ def updating(request, patient_id):
                             last_invoice_in_progress.ha_family + ' ' +
                             last_invoice_in_progress.ha_model + ', ' +
                             'z datą ' + str(last_invoice_in_progress.date) + '.')
+			reminder = Reminder.objects.get(invoice=last_invoice_in_progress)
+			reminder.active = False
+			reminder.save()
 
 		# collection procedure
 		if request.POST.get(ear + '_collection_confirm'):
@@ -457,9 +465,7 @@ def reminders(request):
 		reminder = {'id': i.id, 'subject': subject}
 		reminders_list.append(reminder)
 
-	context = {	'reminders_list': reminders_list,
-             	'reminders': len(reminders_qs)}
-	return render(request, 'crm/reminders.html', context)
+	return render(request, 'crm/reminders.html', {'reminders_list': reminders_list})
 
 
 @login_required
@@ -480,7 +486,7 @@ def reminder(request, reminder_id):
 		side = 'lewy' if r.invoice.ear == 'left' else 'prawy'
 		more = ' na: ' + str(r.invoice) + ' ' + side
 	subject = str(patient) + ', w dniu: ' + \
-		r.timestamp.strftime("%d.%m.%Y") + ' wystawiono ' + type
+		r.timestamp.strftime("%d.%m.%Y") + ' wystawiono ' + type + more
 	
 	context = {'subject': subject, 'patient': patient, 'reminder_id': r.id}
 	return render(request, 'crm/reminder.html', context)
