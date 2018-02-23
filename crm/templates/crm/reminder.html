@@ -1,0 +1,14 @@
+{% extends "crm/base.html" %}
+{% block content %}
+<h4 class="text-center mt-3">{{ subject }}</h4>
+<p class="text-center">Pacjent: <a href="{% url 'crm:edit' patient.id %}">{{ patient }}</a></p>
+<hr>
+
+<a href="{% url 'crm:reminders' %}">
+    <button class="btn btn-lg btn-primary btn-info float-left">Cofnij</button>
+</a>
+
+<a href="{% url 'crm:inactivate_reminder' reminder_id %}">
+    <button class="btn btn-lg btn-primary btn-danger float-right">Usuń przypomnienie</button>
+</a>
+{% endblock %}

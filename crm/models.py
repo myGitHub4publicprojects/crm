@@ -67,7 +67,7 @@ class Hearing_Aid_Main(models.Model):
 	current = models.BooleanField(default=True)
 		# this hearing aid currently is being used by a patient
 	def __str__(self):
-		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model + ' ' + self.ear
+		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model
 
 class Hearing_Aid(Hearing_Aid_Main):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)

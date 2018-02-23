@@ -1,0 +1,11 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<h3 class="text-center">Aktywne przypomnienia:</h3>
+<ul class="list-unstyled ml-3">
+    {% for i in reminders_list %}
+    <li><a href="{% url 'crm:reminder' i.id %}">{{ i.subject }}</a></li>
+    <hr>
+    {% endfor %}
+</ul>
+{% endblock %}

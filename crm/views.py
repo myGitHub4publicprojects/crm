@@ -439,6 +439,63 @@ def delete_patient(request, patient_id):
 
 
 @login_required
+def reminders(request):
+	reminders_qs = Reminder.objects.active()
+	reminders_list = []
+	for i in reminders_qs:
+		if i.nfz:
+			type = 'wniosek NFZ'
+			patient = i.nfz.patient
+		elif i.pcpr:
+			type = 'kosztorys'
+			patient = i.pcpr.patient
+		elif i.invoice:
+			type = 'fakturę'
+			patient = i.invoice.patient
+		subject = str(patient) + ', w dniu: ' + \
+			i.timestamp.strftime("%d.%m.%Y") + ' wystawiono ' + type
+		reminder = {'id': i.id, 'subject': subject}
+		reminders_list.append(reminder)
+
+	context = {	'reminders_list': reminders_list,
+             	'reminders': len(reminders_qs)}
+	return render(request, 'crm/reminders.html', context)
+
+
+@login_required
+def reminder(request, reminder_id):
+	r = get_object_or_404(Reminder, pk=reminder_id)
+	if r.nfz:
+		type = 'wniosek NFZ'
+		patient = r.nfz.patient
+		more = ''
+	elif r.pcpr:
+		type = 'kosztorys'
+		patient = r.pcpr.patient
+		side = 'lewy' if r.pcpr.ear=='left' else 'prawy'
+		more = ' na: ' + str(r.pcpr) + ' ' + side
+	elif r.invoice:
+		type = 'fakturę'
+		patient = r.invoice.patient
+		side = 'lewy' if r.invoice.ear == 'left' else 'prawy'
+		more = ' na: ' + str(r.invoice) + ' ' + side
+	subject = str(patient) + ', w dniu: ' + \
+		r.timestamp.strftime("%d.%m.%Y") + ' wystawiono ' + type
+	
+	context = {'subject': subject, 'patient': patient, 'reminder_id': r.id}
+	return render(request, 'crm/reminder.html', context)
+
+
+@login_required
+def inactivate_reminder(request, reminder_id):
+	r = get_object_or_404(Reminder, pk=reminder_id)
+	r.active = False
+	r.save()
+	messages.success(request, "Przypomnienie usunięte")
+	return redirect('crm:index')
+
+
+@login_required
 def select_noach_file(request):
 	''' enables selecting a noach file from user computer'''
 	return render(request, 'crm/select_noach_file.html')

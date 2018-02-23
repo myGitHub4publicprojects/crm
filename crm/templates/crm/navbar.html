@@ -12,18 +12,18 @@
         <ul class="navbar-nav mr-auto">
         <li class="nav-item">
             <a class="nav-link" href="{% url 'crm:index' %}">
-                <button class="btn btn-outline-success my-2 my-sm-0 text-white">LISTA PACJENTÓW</button>
+                <button class="btn btn-outline-success my-2 my-sm-0 text-white">PACJENCI</button>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="{% url 'crm:create' %}">
-                <button class="btn btn-outline-success my-2 my-sm-0 text-white">DODAJ PACJENTA</button>
+                <button class="btn btn-outline-success my-2 my-sm-0 text-white">DODAJ</button>
             </a>
         </li>
 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'crm:advanced_search' %}">
-                <button class="btn btn-outline-success my-2 my-sm-0 text-white">wyszukiwanie zaawansowane</button>
+                <button class="btn btn-outline-success my-2 my-sm-0 text-white">WYSZUKIWARKA</button>
             </a>
         </li>
         </ul>
@@ -40,8 +40,13 @@
         <button class="btn btn-secondary my-2 my-sm-0" type="submit">Szukaj</button>
         </form>
         
-        <div>{{ reminders }}</div>
-
+        {% if reminders %}
+        <a href="{% url 'crm:reminders' %}">
+            <button class="btn btn-danger rounded-circle my-2 my-sm-0 ml-2 text-white">
+                <b>{{ reminders }}</b>
+            </button>
+        {% endif %}
+        </a>
 
     </div>
 </nav>
