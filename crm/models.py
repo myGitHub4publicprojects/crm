@@ -110,3 +110,19 @@ class HA_Invoice(Hearing_Aid_Main):
 	date = models.DateField()
 	in_progress = models.BooleanField(default=True)
 	# change to False once collected by patient
+
+
+class ReminderManager(models.Manager):
+    def active(self):
+        return super(ReminderManager, self).filter(
+			active=True,
+            timestamp__lte=datetime.datetime.now() - datetime.timedelta(minutes=1))
+
+class Reminder(models.Model):
+	nfz = models.ForeignKey(NFZ_Confirmed, null=True, blank=True)
+	pcpr = models.ForeignKey(PCPR_Estimate, null=True, blank=True)
+	invoice = models.ForeignKey(HA_Invoice, null=True, blank=True)
+	ha = models.ForeignKey(Hearing_Aid, null=True, blank=True)
+	active = models.BooleanField(default=True)
+	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+	objects = ReminderManager()

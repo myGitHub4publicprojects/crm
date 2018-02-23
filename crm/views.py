@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import PatientForm
 from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
-					PCPR_Estimate, HA_Invoice, Audiogram)
+					PCPR_Estimate, HA_Invoice, Audiogram, Reminder)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
@@ -168,7 +168,8 @@ def edit(request, patient_id):
 				result['previous'] = queryset.order_by('-id')[1:]
 		return result
 
-	context = {'patient': patient,
+	context = {'reminders': len(Reminder.objects.active()),
+			'patient': patient,
 			'ha_list': Hearing_Aid.ha_list,
 			'ears': ears,
             'audiometrists': audiometrists,
@@ -302,6 +303,7 @@ def updating(request, patient_id):
 				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
 			new_action.append('Dodano ' + pl_side + ' wniosek ' +
                             'z datą ' + request.POST['NFZ_' + ear] + '.')
+			Reminder.objects.create(nfz=new_nfz)
 
 
 			# remove NFZ_confirmed from currently active
@@ -311,6 +313,9 @@ def updating(request, patient_id):
 			last_in_progress.save()
 			new_action.append('Usunięto ' + pl_side + ' wniosek ' +
 							'z datą ' + str(last_in_progress.date) + '.')
+			reminder = Reminder.objects.get(nfz=last_in_progress)
+			reminder.active = False
+			reminder.save()
 
 			# adding PCPR_Estimate
 		if request.POST.get(ear + '_pcpr_ha'):
