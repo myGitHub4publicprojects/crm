@@ -391,7 +391,7 @@ def updating(request, patient_id):
 		if request.POST.get(ear + '_collection_confirm'):
 			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
 			date = request.POST.get(ear + '_collection_date') or str(today)
-			Hearing_Aid.objects.create(
+			new_ha = Hearing_Aid.objects.create(
 				patient=patient,
 				ha_make = invoiced_ha.ha_make,
 				ha_family = invoiced_ha.ha_family,
@@ -402,12 +402,23 @@ def updating(request, patient_id):
 			# clear Invoice, PCPR_Estimate and NFZ_Confirmed for this HA
 			invoiced_ha.in_progress = False
 			invoiced_ha.save()
+			reminder = Reminder.objects.get(invoice=invoiced_ha)
+			reminder.active = False
+			reminder.save()
 			pcpr_estimate = PCPR_Estimate.objects.filter(patient=patient, ear=ear).last()
-			pcpr_estimate.in_progress = False
-			pcpr_estimate.save()
+			if pcpr_estimate:
+				pcpr_estimate.in_progress = False
+				pcpr_estimate.save()
+				reminder = Reminder.objects.get(pcpr=pcpr_estimate)
+				reminder.active = False
+				reminder.save()
 			nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, side=ear).last()
-			nfz_confirmed.in_progress = False
-			nfz_confirmed.save()
+			if nfz_confirmed:
+				nfz_confirmed.in_progress = False
+				nfz_confirmed.save()
+				reminder = Reminder.objects.get(nfz=nfz_confirmed)
+				reminder.active = False
+				reminder.save()
 
 			# create new info instance to show in history of actions
 			new_action.append('Odebrano ' + pl_side + ' aparat ' +
@@ -415,6 +426,10 @@ def updating(request, patient_id):
                             invoiced_ha.ha_family + ' ' +
                             invoiced_ha.ha_model + ', ' +
 				'z datą ' + str(invoiced_ha.date) + '.')
+
+			# add reminder
+			Reminder.objects.create(
+				ha=new_ha, activation_date=today+datetime.timedelta(days=365))
 
 			
 	if request.POST.get('remove_audiogram') == 'remove':
@@ -452,16 +467,19 @@ def reminders(request):
 	reminders_list = []
 	for i in reminders_qs:
 		if i.nfz:
-			type = 'wniosek NFZ'
+			type = ' wystawiono wniosek NFZ'
 			patient = i.nfz.patient
 		elif i.pcpr:
-			type = 'kosztorys'
+			type = ' wystawiono kosztorys'
 			patient = i.pcpr.patient
 		elif i.invoice:
-			type = 'fakturę'
+			type = ' wystawiono fakturę'
 			patient = i.invoice.patient
+		elif i.ha:
+			type = ' wydano aparat'
+			patient = i.ha.patient
 		subject = str(patient) + ', w dniu: ' + \
-			i.timestamp.strftime("%d.%m.%Y") + ' wystawiono ' + type
+			i.timestamp.strftime("%d.%m.%Y") + type
 		reminder = {'id': i.id, 'subject': subject}
 		reminders_list.append(reminder)
 
@@ -472,21 +490,26 @@ def reminders(request):
 def reminder(request, reminder_id):
 	r = get_object_or_404(Reminder, pk=reminder_id)
 	if r.nfz:
-		type = 'wniosek NFZ'
+		type = ' wystawiono wniosek NFZ'
 		patient = r.nfz.patient
-		more = ''
+		more = ' lewy' if r.nfz.side == 'left' else ' prawy'
 	elif r.pcpr:
-		type = 'kosztorys'
+		type = ' wystawiono kosztorys'
 		patient = r.pcpr.patient
 		side = 'lewy' if r.pcpr.ear=='left' else 'prawy'
 		more = ' na: ' + str(r.pcpr) + ' ' + side
 	elif r.invoice:
-		type = 'fakturę'
+		type = ' wystawiono fakturę'
 		patient = r.invoice.patient
 		side = 'lewy' if r.invoice.ear == 'left' else 'prawy'
 		more = ' na: ' + str(r.invoice) + ' ' + side
+	elif r.ha:
+		type = ' wydano aparat'
+		patient = r.ha.patient
+		side = 'lewy' if r.ha.ear == 'left' else 'prawy'
+		more = ' na: ' + str(r.ha) + ' ' + side
 	subject = str(patient) + ', w dniu: ' + \
-		r.timestamp.strftime("%d.%m.%Y") + ' wystawiono ' + type + more
+		r.timestamp.strftime("%d.%m.%Y") + type + more
 	
 	context = {'subject': subject, 'patient': patient, 'reminder_id': r.id}
 	return render(request, 'crm/reminder.html', context)

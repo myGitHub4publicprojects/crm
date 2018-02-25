@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from crm.models import (Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate,
-                        HA_Invoice, NewInfo, Audiogram)
+                        HA_Invoice, NewInfo, Audiogram, Reminder)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -813,18 +813,21 @@ class TestUpdatingView(TestCase):
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Dodano lewy wniosek z datą 2001-01-01. ' + \
                         'Dodano prawy wniosek z datą 2001-01-02.'
-
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 2)
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
     def test_adding_another_NFZ(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        NFZ_Confirmed.objects.create(patient=patient1,
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
                                    side='left',
                                    date='2000-01-01')
-        NFZ_Confirmed.objects.create(patient=patient1,
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='right',
                                      date='2000-01-02')
+        Reminder.objects.create(nfz=n1, activation_date=today)
+        Reminder.objects.create(nfz=n2, activation_date=today)
         data = self.data.copy()
         data['NFZ_left'] = '2001-01-01'
         data['NFZ_right'] = '2001-01-02'
@@ -844,17 +847,20 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(right_nfz_all), 2)
         self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
         self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+        self.assertEqual(response.context['reminders'],2)
 
 
     def test_remove_NFZ(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        NFZ_Confirmed.objects.create(patient=patient1,
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='left',
                                      date='2000-01-01')
-        NFZ_Confirmed.objects.create(patient=patient1,
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='right',
                                      date='2000-01-02')
+        Reminder.objects.create(nfz=n1)
+        Reminder.objects.create(nfz=n2)
         data = self.data.copy()
         data['nfz_left_remove'] = True
         data['nfz_right_remove'] = True
@@ -914,10 +920,12 @@ class TestUpdatingView(TestCase):
     def test_remove_pcpr_estimates(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        PCPR_Estimate.objects.create(patient=patient1,
+        p1 = PCPR_Estimate.objects.create(patient=patient1,
             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-        PCPR_Estimate.objects.create(patient=patient1,
+        p2 = PCPR_Estimate.objects.create(patient=patient1,
             ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-02')
+        Reminder.objects.create(pcpr=p1)
+        Reminder.objects.create(pcpr=p2)
         data = self.data.copy()
         data['pcpr_left_remove'] = True
         data['pcpr_right_remove'] = True
@@ -977,10 +985,12 @@ class TestUpdatingView(TestCase):
     def test_remove_invoice(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        HA_Invoice.objects.create(patient=patient1,
+        i1 = HA_Invoice.objects.create(patient=patient1,
                                      ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-        HA_Invoice.objects.create(patient=patient1,
+        i2 = HA_Invoice.objects.create(patient=patient1,
                                      ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-01')
+        Reminder.objects.create(invoice=i1)
+        Reminder.objects.create(invoice=i2)
         data = self.data.copy()
         data['left_invoice_remove'] = True
         data['right_invoice_remove'] = True
@@ -1008,20 +1018,31 @@ class TestUpdatingView(TestCase):
     def test_collection_procedure(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        NFZ_Confirmed.objects.create(patient=patient1,
+        patient2 = Patient.objects.get(id=1)
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='left',
                                      date='2000-01-01')
-        NFZ_Confirmed.objects.create(patient=patient1,
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='right',
                                      date='2000-01-02')
-        PCPR_Estimate.objects.create(patient=patient1,
+        n3 = NFZ_Confirmed.objects.create(patient=patient2,
+                                            side='right',
+                                            date='2000-01-02')
+        p1 = PCPR_Estimate.objects.create(patient=patient1,
             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-        PCPR_Estimate.objects.create(patient=patient1,
+        p2 = PCPR_Estimate.objects.create(patient=patient1,
             ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-        HA_Invoice.objects.create(patient=patient1,
+        i1 = HA_Invoice.objects.create(patient=patient1,
                                   ear='left', ha_make='m', ha_family='f', ha_model='m1', date='2000-01-01')
-        HA_Invoice.objects.create(patient=patient1,
+        i2 = HA_Invoice.objects.create(patient=patient1,
                                   ear='right', ha_make='m', ha_family='f', ha_model='m2', date='2000-01-01')
+        Reminder.objects.create(nfz=n1, activation_date=today)
+        Reminder.objects.create(nfz=n2, activation_date=today)
+        Reminder.objects.create(nfz=n3, activation_date=today)
+        Reminder.objects.create(pcpr=p1, activation_date=today)
+        Reminder.objects.create(pcpr=p2, activation_date=today)
+        Reminder.objects.create(invoice=i1, activation_date=today)
+        Reminder.objects.create(invoice=i2, activation_date=today)
         data = self.data.copy()
         data['left_collection_confirm'] = True
         data['right_collection_confirm'] = True
@@ -1073,6 +1094,13 @@ class TestUpdatingView(TestCase):
         expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-01. ' + \
                         'Odebrano prawy aparat m f m2, z datą 2000-01-01.'
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+        # reminders
+        # 6 reminders from nfz, pcpr and invoices should be set to incative,
+        # additional 2 are to be created in collection, additional one should
+        # be left as active
+        self.assertEqual(len(Reminder.objects.all()), 9)
+        self.assertEqual(len(Reminder.objects.active()), 1)
 
     def test_remove_audiogram(self):
         self.client.login(username='john', password='glassonion')

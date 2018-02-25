@@ -116,7 +116,7 @@ class ReminderManager(models.Manager):
     def active(self):
         return super(ReminderManager, self).filter(
 			active=True,
-            timestamp__lte=datetime.datetime.now() - datetime.timedelta(minutes=1))
+            activation_date__lte=datetime.date.today())
 
 class Reminder(models.Model):
 	nfz = models.ForeignKey(NFZ_Confirmed, null=True, blank=True)
@@ -125,4 +125,6 @@ class Reminder(models.Model):
 	ha = models.ForeignKey(Hearing_Aid, null=True, blank=True)
 	active = models.BooleanField(default=True)
 	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+	activation_date = models.DateField(
+		default=datetime.date.today() + datetime.timedelta(days=60))
 	objects = ReminderManager()
