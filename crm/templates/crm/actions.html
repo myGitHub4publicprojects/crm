@@ -89,7 +89,7 @@
 					<h4 class="bg-info text-white">ucho lewe</h4>
 					{% if left_PCPR_estimate %}
 					kosztorys wystawiono: {{ left_PCPR_estimate.date|date:'d-m-Y' }}<br>
-					Aparat: {{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}
+					Aparat: <span id="left_PCPR_ha">{{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}</span>
 					<div class="w-50 p-3 float-left">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_left" aria-expanded="false" aria-controls="pcpr_left">Zmień</div>
 						<div class="collapse" id="pcpr_left">
@@ -119,7 +119,7 @@
 					<h4 class="bg-danger text-white">ucho prawe</h4>
 					{% if right_PCPR_estimate %}
 					kosztorys wystawiono: {{ right_PCPR_estimate.date|date:'d-m-Y' }}<br>
-					Aparat: {{ right_PCPR_estimate.ha_make }} {{ right_PCPR_estimate.ha_family }} {{ right_PCPR_estimate.ha_model }}
+					Aparat: <span id="right_PCPR_ha">{{ right_PCPR_estimate.ha_make }} {{ right_PCPR_estimate.ha_family }} {{ right_PCPR_estimate.ha_model }}</span>
 					<div class="w-50 p-3 float-left">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_right" aria-expanded="false" aria-controls="pcpr_right">Zmień</div>
 						<div class="collapse" id="pcpr_right">

@@ -504,10 +504,10 @@ def reminder(request, reminder_id):
 		side = 'lewy' if r.invoice.ear == 'left' else 'prawy'
 		more = ' na: ' + str(r.invoice) + ' ' + side
 	elif r.ha:
-		type = ' wydano aparat'
+		type = ' wydano aparat '
 		patient = r.ha.patient
 		side = 'lewy' if r.ha.ear == 'left' else 'prawy'
-		more = ' na: ' + str(r.ha) + ' ' + side
+		more = str(r.ha) + ' ' + side
 	subject = str(patient) + ', w dniu: ' + \
 		r.timestamp.strftime("%d.%m.%Y") + type + more
 	
