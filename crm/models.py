@@ -75,13 +75,6 @@ class Hearing_Aid(Hearing_Aid_Main):
 	our = models.BooleanField(default=True)
 	# kupiony u nas
 
-
-# class Estimated_Hearing_Aid(Hearing_Aid):
-# 	nfz_confirmed = models.DateTimeField(null=True, blank=True)
-# 	# data przyniesienia potwierdzonych wnioskow NFZ i wystawienia kosztorysu
-# 	estimated_ha = 
-# 	# aparat podany kosztorysie
-
 class NFZ_Confirmed(models.Model):
 	# confirmed by NFZ application for hearing aid
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -89,6 +82,12 @@ class NFZ_Confirmed(models.Model):
 	side = models.CharField(max_length=5, choices=(('left', 'left'),('right', 'right')))
 	in_progress = models.BooleanField(default=True)
 	# change to False once collected by patient
+
+	# confirmed = models.BooleanField(default=False)
+	# nfz application has just been brought by patient and will be posted to confirm
+	# chenge to True when patient brings it back
+	# issued = models.DateField()
+	# when patient brought from doctor
 
 	# Additonal features:
 	# nfz_scans = models.ImageField(upload_to=upload_location,

@@ -583,11 +583,11 @@ class TestEditView(TestCase):
 class TestStoreView(TestCase):
     def setUp(self):
         user_john = create_user()
-        patient1 = create_patient(user_john)
-        patient2 = create_patient(user_john,
-                date_of_birth=today-timedelta(days=1), last_name='Smith2')
-        patient3 = create_patient(user_john,
-                date_of_birth=today-timedelta(days=2), last_name='Smith3')
+        # patient1 = create_patient(user_john)
+        # patient2 = create_patient(user_john,
+        #         date_of_birth=today-timedelta(days=1), last_name='Smith2')
+        # patient3 = create_patient(user_john,
+        #         date_of_birth=today-timedelta(days=2), last_name='Smith3')
 
     def test_anonymous(self):
         url = reverse('crm:store')
@@ -612,20 +612,25 @@ class TestStoreView(TestCase):
                 'right_purchase_date': '1999-01-02',
                 'left_NFZ_confirmed_date': '2001-01-01',
                 'right_NFZ_confirmed_date': '2002-02-02',
-                'left_ha_estimate': 'model3_f3_b3',
-                'right_ha_estimate': 'b4_f4_m4',
-                'left_pcpr_etimate_date': '2003-01-01',
-                'right_pcpr_etimate_date': '2004-01-01',
+                'left_pcpr_ha': 'model3_f3_b3',
+                'right_pcpr_ha': 'b4_f4_m4',
+                'left_PCPR_date': '2003-01-01',
+                'right_PCPR_date': '2004-01-01',
                 'note': 'p1_note',
                 }
         url = reverse('crm:store')
-        # id of new patient is set to 4 as there are already 3 in from setUp function
-        expected_url = reverse('crm:edit', args=(4,))
+        # id of new patient should be 1
+        expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
         # should give code 200 as follow is set to True
         assert response.status_code == 200
         self.assertRedirects(response, expected_url,
                      status_code=302, target_status_code=200)
+        self.assertEqual(len(Patient.objects.all()), 1)
+        self.assertEqual(len(NFZ_Confirmed.objects.all()), 2)
+        self.assertEqual(len(PCPR_Estimate.objects.all()), 2)
+        self.assertEqual(len(Hearing_Aid.objects.all()), 2)
+        self.assertEqual(len(Reminder.objects.all()),4)
 
 
 class TestUpdatingView(TestCase):

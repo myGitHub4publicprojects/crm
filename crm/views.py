@@ -228,6 +228,7 @@ def store(request):
 		if request.POST.get(ear + '_NFZ_confirmed_date'):
 			nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST[ear + '_NFZ_confirmed_date'], side=ear)
 			nfz_confirmed.save()
+			Reminder.objects.create(nfz=nfz_confirmed)
 
 			# add PCPR_Estimate
 		if request.POST.get(ear + '_pcpr_ha'):
@@ -241,6 +242,7 @@ def store(request):
 				ear=ear,
 				date=request.POST[ear + '_PCPR_date'])
 			pcpr_estimate.save()
+			Reminder.objects.create(pcpr=pcpr_estimate)
 
 	messages.success(request, "Pomyślnie utworzono")
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient.id,)))
