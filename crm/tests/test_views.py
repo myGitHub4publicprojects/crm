@@ -1230,9 +1230,60 @@ class TestReminderView(TestCase):
         self.client.login(username='john', password='glassonion')
         nfz = NFZ_Confirmed.objects.create(
             patient=Patient.objects.get(id=1), date=today, side='left')
-        r = Reminder.objects.create(nfz=nfz, activation_date=today)
+        Reminder.objects.create(nfz=nfz, activation_date=today)
         url = reverse('crm:reminder', args=(1,))
-        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s wystawiono wniosek NFZ lewy' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
+
+    def test_logged_in_ha(self):
+        self.client.login(username='john', password='glassonion')
+        ha = Hearing_Aid.objects.create(
+            patient=Patient.objects.get(id=1),
+            ha_make='m',
+            ha_family='f',
+            ha_model='m1',
+            ear='left'
+        )
+        Reminder.objects.create(
+            ha=ha, activation_date=today)
+        url = reverse('crm:reminder', args=(1,))
+        response = self.client.post(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s wydano aparat m f m1 lewy' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
+
+
+class TestInactivateReminderView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+
+    def test_anonymous(self):
+        '''should redirect to login'''
+        url = reverse('crm:inactivate_reminder', args=(1,))
+        expected_url = reverse('login') + '?next=/1/inactivate_reminder/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_logged_in_nfz(self):
+        self.client.login(username='john', password='glassonion')
+        nfz = NFZ_Confirmed.objects.create(
+            patient=Patient.objects.get(id=1), date=today, side='left')
+        r = Reminder.objects.create(nfz=nfz, activation_date=today)
+        url = reverse('crm:inactivate_reminder', args=(1,))
+        expected_url = reverse('crm:reminders')
+        response = self.client.post(url, follow=True)
         # should give code 200 as follow is set to True
         assert response.status_code == 200
         self.assertRedirects(response, expected_url,

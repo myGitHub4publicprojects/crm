@@ -521,7 +521,7 @@ def inactivate_reminder(request, reminder_id):
 	r.active = False
 	r.save()
 	messages.success(request, "Przypomnienie usunięte")
-	return redirect('crm:index')
+	return redirect('crm:reminders')
 
 
 @login_required
