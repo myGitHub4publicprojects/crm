@@ -1,4 +1,5 @@
 {% extends "crm/base.html" %}
+{% load staticfiles%}
 
 {% block scripts %}
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -63,9 +64,9 @@
         var chart = new google.visualization.LineChart(document.getElementById('right_audiogram'));
         chart.draw(data, options);
     }
-
-
     </script>
+
+<script src="{% static 'crm/scripts/main.js' %}"></script>
 {% endblock scripts %}
 
 {% block content %}

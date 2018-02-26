@@ -17,6 +17,10 @@
     border-left: 1px solid rgb(202, 195, 195);
 }
 
+/* for js print without page title and date */
+@page { 
+    size: auto;  margin: 0mm;
+}
 
 
 @media only screen and (max-width: 800px) {
