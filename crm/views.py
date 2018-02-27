@@ -224,9 +224,22 @@ def store(request):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
 
+				# add NFZ new
+		if request.POST.get(ear + '_new_NFZ'):
+			nfz_new = NFZ_Confirmed.objects.create(
+				patient=patient,
+				date=request.POST[ear + '_new_NFZ'],
+				side=ear,
+				stage='new')
+			Reminder.objects.create(nfz=nfz_new)
+
 			# add NFZ_confirmed
 		if request.POST.get(ear + '_NFZ_confirmed_date'):
-			nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST[ear + '_NFZ_confirmed_date'], side=ear)
+			nfz_confirmed = NFZ_Confirmed(
+				patient=patient,
+				date=request.POST[ear + '_NFZ_confirmed_date'],
+				side=ear,
+				stage='confirmed')
 			nfz_confirmed.save()
 			Reminder.objects.create(nfz=nfz_confirmed)
 
@@ -305,7 +318,7 @@ def updating(request, patient_id):
 				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
 			new_action.append('Dodano ' + pl_side + ' wniosek ' +
                             'z datą ' + request.POST['NFZ_' + ear] + '.')
-			Reminder.objects.create(nfz=new_nfz)
+			Reminder.objects.create(nfz_new=new_nfz)
 
 
 			# remove NFZ_confirmed from currently active
@@ -468,9 +481,12 @@ def reminders(request):
 	reminders_qs = Reminder.objects.active()
 	reminders_list = []
 	for i in reminders_qs:
-		if i.nfz:
-			type = ' wystawiono wniosek NFZ'
-			patient = i.nfz.patient
+		if i.nfz_new:
+			type = ' przyniosiono NOWY wniosek NFZ'
+			patient = i.nfz_new.patient
+		if i.nfz_confirmed:
+			type = ' przyniesiono POTWIERDZONY wniosek NFZ'
+			patient = i.nfz_confirmed.patient
 		elif i.pcpr:
 			type = ' wystawiono kosztorys'
 			patient = i.pcpr.patient
@@ -491,10 +507,14 @@ def reminders(request):
 @login_required
 def reminder(request, reminder_id):
 	r = get_object_or_404(Reminder, pk=reminder_id)
-	if r.nfz:
-		type = ' wystawiono wniosek NFZ'
-		patient = r.nfz.patient
-		more = ' lewy' if r.nfz.side == 'left' else ' prawy'
+	if r.nfz_new:
+		type = ' przyniesiono NOWY wniosek NFZ'
+		patient = r.nfz_new.patient
+		more = ' lewy' if r.nfz_new.side == 'left' else ' prawy'
+	if r.nfz_confirmed:
+		type = ' przyniesiono potwierdzony wniosek NFZ'
+		patient = r.nfz_confirmed.patient
+		more = ' lewy' if r.nfz_confirmed.side == 'left' else ' prawy'
 	elif r.pcpr:
 		type = ' wystawiono kosztorys'
 		patient = r.pcpr.patient
