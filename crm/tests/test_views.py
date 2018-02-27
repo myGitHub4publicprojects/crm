@@ -726,7 +726,8 @@ class TestUpdatingView(TestCase):
         self.assertEqual(patient1.notes, 'summary')
         self.assertEqual(new_info.note, 'new note')
 
-    # test adding note or action by other audiometrist - show who created and who added new note
+    # test adding note or action by other audiometrist
+    # should show who created and who added new note
     def test_add_new_note_by_other_audiometrist(self):
         adam = User.objects.create_user(username='adam',
                                 email='jlennon@beatles.com',
@@ -822,6 +823,103 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(right_ha_all.last().purchase_date), '2001-01-02')
         self.assertFalse(left_ha_all.last().our)
 
+    def test_adding_NFZ_new(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['new_NFZ_left'] = '2001-01-01'
+        data['new_NFZ_right'] = '2001-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_all), 1)
+        self.assertEqual(len(right_nfz_all), 1)
+        self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
+        self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Dodano niepotwierdzony lewy wniosek z datą 2001-01-01. ' + \
+                        'Dodano niepotwierdzony prawy wniosek z datą 2001-01-02.'
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 2)
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+    def test_adding_another_NFZ_new(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        n1 = NFZ_New.objects.create(patient=patient1,
+                                          side='left',
+                                          date='2000-01-01')
+        n2 = NFZ_New.objects.create(patient=patient1,
+                                          side='right',
+                                          date='2000-01-02')
+        Reminder.objects.create(nfz_new=n1, activation_date=today)
+        Reminder.objects.create(nfz_new=n2, activation_date=today)
+        data = self.data.copy()
+        data['new_NFZ_left'] = '2001-01-01'
+        data['new_NFZ_right'] = '2001-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_all), 2)
+        self.assertEqual(len(right_nfz_all), 2)
+        self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
+        self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+        self.assertEqual(response.context['reminders'], 2)
+
+    def test_remove_NFZ(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        n1 = NFZ_New.objects.create(patient=patient1,
+                                          side='left',
+                                          date='2000-01-01')
+        n2 = NFZ_New.objects.create(patient=patient1,
+                                          side='right',
+                                          date='2000-01-02')
+        Reminder.objects.create(nfz_new=n1)
+        Reminder.objects.create(nfz_new=n2)
+        data = self.data.copy()
+        data['nfz_new_left_remove'] = True
+        data['nfz_new_right_remove'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_all), 1)
+        self.assertEqual(len(right_nfz_all), 1)
+        self.assertFalse(left_nfz_all.last().in_progress)
+        self.assertFalse(right_nfz_all.last().in_progress)
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Usunięto lewy niepotwierdzony wniosek z datą 2000-01-01. ' + \
+                        'Usunięto prawy niepotwierdzony wniosek z datą 2000-01-02.'
+
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
     def test_adding_NFZ_confirmed(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
@@ -849,7 +947,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(len(reminders), 2)
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-    def test_adding_another_NFZ(self):
+    def test_adding_another_NFZ_confirmed(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         n1 = NFZ_Confirmed.objects.create(patient=patient1,

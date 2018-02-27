@@ -306,6 +306,31 @@ def updating(request, patient_id):
 				hearing_aid.our = False
 				hearing_aid.save()
 
+			# adding NFZ_new to patient
+			# previous NFZ if present are set to inactive
+		if request.POST.get('new_NFZ_' + ear):
+			nfz_new = NFZ_New.objects.filter(
+                            patient=patient, side=ear, in_progress=True)
+			if nfz_new:
+				nfz_new.update(in_progress=False)
+			new_nfz_new = NFZ_New.objects.create(
+				patient=patient, side=ear, date=request.POST['new_NFZ_' + ear])
+			new_action.append('Dodano niepotwierdzony ' + pl_side + ' wniosek ' +
+                            'z datą ' + request.POST['new_NFZ_' + ear] + '.')
+			Reminder.objects.create(nfz_new=new_nfz_new)
+
+			# remove NFZ_new from currently active
+		if request.POST.get('nfz_new' + ear + '_remove'):
+			last_in_progress = NFZ_New.objects.filter(
+				patient=patient, side=ear, in_progress=True).last()
+			last_in_progress.in_progress = False
+			last_in_progress.save()
+			new_action.append('Usunięto ' + pl_side + ' niepotwierdzony wniosek ' +
+                            'z datą ' + str(last_in_progress.date) + '.')
+			reminder = Reminder.objects.get(nfz_new=last_in_progress)
+			reminder.active = False
+			reminder.save()
+
 			# adding NFZ_confirmed to patient
 			# previous NFZ if present are set to inactive
 		if request.POST.get('NFZ_' + ear):
@@ -413,7 +438,7 @@ def updating(request, patient_id):
 				purchase_date=date,
 				ear=ear)
 
-			# clear Invoice, PCPR_Estimate and NFZ_Confirmed for this HA
+			# clear Invoice, PCPR_Estimate and NFZ_Confirmed and NFZ_New for this HA
 			invoiced_ha.in_progress = False
 			invoiced_ha.save()
 			reminder = Reminder.objects.get(invoice=invoiced_ha)
@@ -424,6 +449,13 @@ def updating(request, patient_id):
 				pcpr_estimate.in_progress = False
 				pcpr_estimate.save()
 				reminder = Reminder.objects.get(pcpr=pcpr_estimate)
+				reminder.active = False
+				reminder.save()
+			nfz_new = NFZ_New.objects.filter(patient=patient, side=ear).last()
+			if nfz_new:
+				nfz_new.in_progress = False
+				nfz_new.save()
+				reminder = Reminder.objects.get(nfz_new=nfz_new)
 				reminder.active = False
 				reminder.save()
 			nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, side=ear).last()
