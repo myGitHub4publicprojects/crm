@@ -71,13 +71,12 @@
 
 {% block content %}
 <div class="status mt-2">{% include "crm/status.html" %}</div>
-
+<form action="{% url 'crm:updating' patient.id %}" method="post" id="edit_patient">
+{% csrf_token %}
+{% include "crm/actions.html" %}
+<hr>
 <div class="row mt-1">
 	<div class="col-lg-9">
-		<form action="{% url 'crm:updating' patient.id %}" method="post" id="edit_patient">
-		{% csrf_token %}
-		{% include "crm/actions.html" %}
-		<hr>
 		<!-- name, age, tel -->
 		<div class="row mt-2">
 			<div class="col-xl">
