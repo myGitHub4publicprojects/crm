@@ -75,19 +75,16 @@ class Hearing_Aid(Hearing_Aid_Main):
 	our = models.BooleanField(default=True)
 	# kupiony u nas
 
-class NFZ_Confirmed(models.Model):
-	# confirmed by NFZ application for hearing aid
-	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+class NFZ(models.Model):
 	date = models.DateField()
 	side = models.CharField(max_length=5, choices=(('left', 'left'),('right', 'right')))
 	in_progress = models.BooleanField(default=True)
 	# change to False once collected by patient
+	
 
-	# confirmed = models.BooleanField(default=False)
-	# nfz application has just been brought by patient and will be posted to confirm
-	# chenge to True when patient brings it back
-	# issued = models.DateField()
-	# when patient brought from doctor
+class NFZ_Confirmed(NFZ):
+	# confirmed by NFZ application for hearing aid
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 
 	# Additonal features:
 	# nfz_scans = models.ImageField(upload_to=upload_location,
@@ -95,6 +92,11 @@ class NFZ_Confirmed(models.Model):
 	# 	blank=True,
 	# 	height_field="height_field",
 	# 	width_field="width_field")
+
+class NFZ_New(NFZ):
+    # new application form to be confirmed by NFZ
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+
 
 class PCPR_Estimate(Hearing_Aid_Main):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -118,7 +120,8 @@ class ReminderManager(models.Manager):
             activation_date__lte=datetime.date.today())
 
 class Reminder(models.Model):
-	nfz = models.ForeignKey(NFZ_Confirmed, null=True, blank=True)
+	nfz_new = models.ForeignKey(NFZ_New, null=True, blank=True)
+	nfz_confirmed = models.ForeignKey(NFZ_Confirmed, null=True, blank=True)
 	pcpr = models.ForeignKey(PCPR_Estimate, null=True, blank=True)
 	invoice = models.ForeignKey(HA_Invoice, null=True, blank=True)
 	ha = models.ForeignKey(Hearing_Aid, null=True, blank=True)

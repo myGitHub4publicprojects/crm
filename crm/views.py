@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import PatientForm
 from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
-					PCPR_Estimate, HA_Invoice, Audiogram, Reminder)
+                     NFZ_New, PCPR_Estimate, HA_Invoice, Audiogram, Reminder)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
@@ -148,8 +148,10 @@ def edit(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
 	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
-	nfz_left_qs = patient.nfz_confirmed_set.filter(side='left')
-	nfz_right_qs = patient.nfz_confirmed_set.filter(side='right')
+	nfz_new_left_qs = patient.nfz_new_set.filter(side='left')
+	nfz_new_right_qs = patient.nfz_new_set.filter(side='right')
+	nfz_confirmed_left_qs = patient.nfz_confirmed_set.filter(side='left')
+	nfz_confirmed_right_qs = patient.nfz_confirmed_set.filter(side='right')
 	left_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='left')
 	right_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='right')
 	left_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='left')
@@ -176,10 +178,14 @@ def edit(request, patient_id):
 			'patient_notes': patient.newinfo_set.order_by('-timestamp'),
 			'right_hearing_aid': right_hearing_aid,
 			'left_hearing_aid': left_hearing_aid,
-			'left_NFZ_confirmed_all': last_and_previous(nfz_left_qs)['previous'],
-			'left_NFZ_confirmed': last_and_previous(nfz_left_qs)['last'],
-			'right_NFZ_confirmed_all': last_and_previous(nfz_right_qs)['previous'],
-			'right_NFZ_confirmed': last_and_previous(nfz_right_qs)['last'],
+			'left_NFZ_new_all': last_and_previous(nfz_new_left_qs)['previous'],
+			'left_NFZ_new': last_and_previous(nfz_new_left_qs)['last'],
+			'right_NFZ_new_all': last_and_previous(nfz_new_right_qs)['previous'],
+			'right_NFZ_new': last_and_previous(nfz_new_right_qs)['last'],
+			'left_NFZ_confirmed_all': last_and_previous(nfz_confirmed_left_qs)['previous'],
+			'left_NFZ_confirmed': last_and_previous(nfz_confirmed_left_qs)['last'],
+			'right_NFZ_confirmed_all': last_and_previous(nfz_confirmed_right_qs)['previous'],
+			'right_NFZ_confirmed': last_and_previous(nfz_confirmed_right_qs)['last'],
 			'left_PCPR_estimate_all': last_and_previous(left_PCPR_qs)['previous'],
 			'left_PCPR_estimate': last_and_previous(left_PCPR_qs)['last'],
 			'right_PCPR_estimate_all': last_and_previous(right_PCPR_qs)['previous'],
@@ -224,11 +230,17 @@ def store(request):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
 
+			# add NFZ_new
+		if request.POST.get(ear + '_NFZ_new'):
+			nfz_new = NFZ_New.objects.create(
+				patient=patient, date=request.POST[ear + '_NFZ_new'], side=ear)
+			Reminder.objects.create(nfz_new=nfz_new)
+
 			# add NFZ_confirmed
 		if request.POST.get(ear + '_NFZ_confirmed_date'):
 			nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST[ear + '_NFZ_confirmed_date'], side=ear)
 			nfz_confirmed.save()
-			Reminder.objects.create(nfz=nfz_confirmed)
+			Reminder.objects.create(nfz_confirmed=nfz_confirmed)
 
 			# add PCPR_Estimate
 		if request.POST.get(ear + '_pcpr_ha'):
@@ -301,11 +313,11 @@ def updating(request, patient_id):
 					patient=patient, side=ear, in_progress=True)
 			if nfz_confirmed:
 				nfz_confirmed.update(in_progress=False)
-			new_nfz = NFZ_Confirmed.objects.create(
+			new_nfz_confirmed = NFZ_Confirmed.objects.create(
 				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
-			new_action.append('Dodano ' + pl_side + ' wniosek ' +
+			new_action.append('Dodano potwierdzony ' + pl_side + ' wniosek ' +
                             'z datą ' + request.POST['NFZ_' + ear] + '.')
-			Reminder.objects.create(nfz=new_nfz)
+			Reminder.objects.create(nfz_confirmed=new_nfz_confirmed)
 
 
 			# remove NFZ_confirmed from currently active
@@ -315,7 +327,7 @@ def updating(request, patient_id):
 			last_in_progress.save()
 			new_action.append('Usunięto ' + pl_side + ' wniosek ' +
 							'z datą ' + str(last_in_progress.date) + '.')
-			reminder = Reminder.objects.get(nfz=last_in_progress)
+			reminder = Reminder.objects.get(nfz_confirmed=last_in_progress)
 			reminder.active = False
 			reminder.save()
 
@@ -418,7 +430,7 @@ def updating(request, patient_id):
 			if nfz_confirmed:
 				nfz_confirmed.in_progress = False
 				nfz_confirmed.save()
-				reminder = Reminder.objects.get(nfz=nfz_confirmed)
+				reminder = Reminder.objects.get(nfz_confirmed=nfz_confirmed)
 				reminder.active = False
 				reminder.save()
 
@@ -468,9 +480,12 @@ def reminders(request):
 	reminders_qs = Reminder.objects.active()
 	reminders_list = []
 	for i in reminders_qs:
-		if i.nfz:
-			type = ' wystawiono wniosek NFZ'
-			patient = i.nfz.patient
+		if i.nfz_new:
+			type = ' otrzymano NOWY wniosek NFZ'
+			patient = i.nfz_new.patient
+		elif i.nfz_confirmed:
+			type = ' Otrzymano POTWIERDZONY wniosek NFZ'
+			patient = i.nfz_confirmed.patient
 		elif i.pcpr:
 			type = ' wystawiono kosztorys'
 			patient = i.pcpr.patient
@@ -491,10 +506,14 @@ def reminders(request):
 @login_required
 def reminder(request, reminder_id):
 	r = get_object_or_404(Reminder, pk=reminder_id)
-	if r.nfz:
-		type = ' wystawiono wniosek NFZ'
-		patient = r.nfz.patient
-		more = ' lewy' if r.nfz.side == 'left' else ' prawy'
+	if r.nfz_new:
+		type = ' otrzymano NOWY wniosek NFZ'
+		patient = r.nfz_new.patient
+		more = ' lewy' if r.nfz_new.side == 'left' else ' prawy'
+	elif r.nfz_confirmed:
+		type = ' otrzymano POTWIERDZONY wniosek NFZ'
+		patient = r.nfz_confirmed.patient
+		more = ' lewy' if r.nfz_confirmed.side == 'left' else ' prawy'
 	elif r.pcpr:
 		type = ' wystawiono kosztorys'
 		patient = r.pcpr.patient
