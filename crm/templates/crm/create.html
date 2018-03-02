@@ -35,8 +35,8 @@
         </div>
     </div>
     <hr>
-    <!-- location, note -->
 
+    <!-- location, note -->
     <p>Lokalizacja: 
         <ul class="list-inline">
             {% for location in locations %}
@@ -52,6 +52,15 @@
 
     <p>Dodaj notatkę:</p>
     <textarea form="new_patient" name="note" id="patient_note" placeholder="notatka o pacjencie"></textarea>
+
+    <!-- helper questions -->
+    <div class="btn btn-outline-secondary btn-sm" data-toggle="collapse" data-target="#kwest">pytania</div>
+    <div class="collapse" id="kwest">
+        <div class="card card-body">
+            {% include "crm/kwest.html" %}
+        </div>
+    </div>
+    
     <hr>
 
     <p>Obecnie noszone aparaty:</p>

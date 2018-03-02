@@ -320,7 +320,7 @@ def updating(request, patient_id):
 			Reminder.objects.create(nfz_new=new_nfz_new)
 
 			# remove NFZ_new from currently active
-		if request.POST.get('nfz_new' + ear + '_remove'):
+		if request.POST.get('nfz_new_' + ear + '_remove'):
 			last_in_progress = NFZ_New.objects.filter(
 				patient=patient, side=ear, in_progress=True).last()
 			last_in_progress.in_progress = False
