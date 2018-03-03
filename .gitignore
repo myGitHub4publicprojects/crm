@@ -8,3 +8,4 @@ htmlcov/
 .coverage
 .cache/
 local_settings.py
+sonovoxcrm/static/
