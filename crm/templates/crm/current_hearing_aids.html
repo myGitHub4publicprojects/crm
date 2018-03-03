@@ -47,7 +47,7 @@
             <input type="checkbox" name="left_ha_other" value="left_ha_other"></p>
         </div>
         {% if not left_hearing_aid.our %}
-            <p class="text-center bg-danger">APARAT KUPIONY U KONKURENCJI</p>
+            <p class="text-center bg-warning">APARAT KUPIONY U KONKURENCJI</p>
         {% endif %}
     {% else %}
         <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">dodaj lewy</div>
@@ -105,7 +105,7 @@
             <input type="checkbox" name="right_ha_other" value="right_ha_other"></p>
         </div>
         {% if not right_hearing_aid.our %}
-            <p class="text-center bg-danger">APARAT KUPIONY U KONKURENCJI</p>
+            <p class="text-center bg-warning">APARAT KUPIONY U KONKURENCJI</p>
         {% endif %}
     {% else %}
         <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_right" aria-expanded="false">dodaj prawy</div>
