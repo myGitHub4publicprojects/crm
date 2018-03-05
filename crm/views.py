@@ -87,6 +87,15 @@ def advancedsearch(request):
 			purchase_date__range=[ha_purchase_start,ha_purchase_end])
 		patient_list = patient_list & patients_from_ha(all_such_has)
 	
+	# search by dates of NFZ new - only active not prevoius
+	if request.GET.get('s_nfz_new_date') or request.GET.get('e_nfz_new_date'):
+		nfz_start = request.GET.get('s_nfz_new_date') or '1990-01-01'
+		nfz_end = request.GET.get(
+			'e_nfz_new_date') or str(datetime.datetime.today().date())
+		all_such_nfz = NFZ_New.objects.filter(
+			date__range=[nfz_start, nfz_end], in_progress=True)
+		patient_list = patient_list & patients_from_ha(all_such_nfz)
+
 	# search by dates of NFZ confirmed - only active not prevoius
 	if request.GET.get('s_nfz_date') or request.GET.get('e_nfz_date'):
 		nfz_start = request.GET.get('s_nfz_date') or '1990-01-01'

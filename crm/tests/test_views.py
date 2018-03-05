@@ -246,6 +246,52 @@ class TestAdvancedSearchView(TestCase):
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 2)
 
+    def test_search_nfz_new_date_only_lower_band(self):
+        '''only lower band of dates is given - upper band should default to today
+        should return only patients with nfz new after the lower band date'''
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        patient2 = Patient.objects.get(id=2)
+        patient3 = Patient.objects.get(id=3)
+        patient4 = Patient.objects.get(id=4)
+        # date out of range
+        NFZ_New.objects.create(
+            patient=patient1, date='2001-01-01', side='left')
+        NFZ_New.objects.create(
+            patient=patient2, date='2002-01-01', side='left')
+        NFZ_New.objects.create(
+            patient=patient3, date='2003-01-01', side='left')
+        # inactive
+        NFZ_New.objects.create(patient=patient4, date='2002-01-01', side='left',
+                               in_progress=False)
+        lower_band = '2002-01-01'
+        data = {'s_nfz_new_date': lower_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
+    def test_search_nfz_new_by_date_both_lower_and_upper_band(self):
+        '''both lower and upper band of dates is given, should return only patients
+        with NFZ new after the lower band and before the upper band date'''
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        patient2 = Patient.objects.get(id=2)
+        patient3 = Patient.objects.get(id=3)
+        NFZ_New.objects.create(patient=patient1, date='2001-01-01', side='left')
+        NFZ_New.objects.create(patient=patient2, date='2001-01-01', side='left')
+        NFZ_New.objects.create(patient=patient1, date='2002-01-01', side='left')
+        # date out of range
+        NFZ_New.objects.create(patient=patient3, date='2003-01-01', side='left')
+        # inactive
+        NFZ_New.objects.create(patient=patient3, date='2002-01-01', side='left',
+                                        in_progress=False)
+        lower_band = '2000-01-01'
+        upper_band = '2002-01-02'
+        data={'s_nfz_new_date': lower_band, 'e_nfz_new_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+
 
     def test_search_pcpr_estimate_date_both_lower_and_upper_band(self):
         '''both lower and upper band of dates is given, should return only patients
