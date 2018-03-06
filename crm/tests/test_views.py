@@ -658,6 +658,10 @@ class TestEditView(TestCase):
 
 
 class TestStoreView(TestCase):
+    
+    def setUp(self):
+        create_user()
+
     def test_anonymous(self):
         url = reverse('crm:store')
         expected_url = reverse('login') + '?next=/store/'
@@ -668,8 +672,6 @@ class TestStoreView(TestCase):
                              status_code=302, target_status_code=200)
 
     def test_logged_in(self):
-        user_john = create_user()
-        user_john = User.objects.get(id=1)
         self.client.login(username='john', password='glassonion')
         data = {'fname': 'Adam',
                 'lname': 'Atkins',
@@ -704,6 +706,35 @@ class TestStoreView(TestCase):
         self.assertEqual(len(PCPR_Estimate.objects.all()), 2)
         self.assertEqual(len(Hearing_Aid.objects.all()), 2)
         self.assertEqual(len(Reminder.objects.all()),6)
+
+
+    def test_add_other_left_ha(self):
+        ''' should create user with left other ha'''
+        self.client.login(username='john', password='glassonion')
+        data = {'fname': 'Adam',
+                'lname': 'Atkins',
+                'bday': '2000-01-01',
+                'usrtel': 1,
+                'location': 'some_location',
+                'left_other_ha': 'Starkey',
+                'right_other_ha': 'Beltone virte c g90'
+                }
+        url = reverse('crm:store')
+        # id of new patient should be 1
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                     status_code=302, target_status_code=200)
+        self.assertEqual(len(Patient.objects.all()), 1)
+        self.assertEqual(len(Hearing_Aid.objects.all()), 2)
+        patient = Patient.objects.get(id=1)
+        left_ha = Hearing_Aid.objects.filter(patient=patient, ear='left')[0]
+        right_ha = Hearing_Aid.objects.filter(patient=patient, ear='right')[0]
+        self.assertEqual(str(left_ha), 'Starkey inny inny')
+        self.assertEqual(str(right_ha), 'Beltone virte_c_g90 inny')
+
 
 
 class TestUpdatingView(TestCase):

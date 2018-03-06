@@ -239,6 +239,19 @@ def store(request):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
 
+		if request.POST.get(ear + '_other_ha'):
+			ha = request.POST[ear + '_other_ha']
+			if ' ' in ha:
+				ha = ha.split(' ', 1)
+				ha_make, ha_family, ha_model = ha[0], ha[1].replace(' ', '_'), 'inny'
+			else:
+				ha_make, ha_family, ha_model = ha, 'inny', 'inny'
+			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
+			hearing_aid.save()
+			if request.POST.get(ear + '_purchase_date'):
+				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
+				hearing_aid.save()
+
 			# add NFZ_new
 		if request.POST.get(ear + '_NFZ_new'):
 			nfz_new = NFZ_New.objects.create(
