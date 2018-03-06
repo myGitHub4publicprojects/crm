@@ -900,6 +900,32 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(right_ha_all.last().purchase_date), '2001-01-02')
         self.assertFalse(left_ha_all.last().our)
 
+    def test_adding_other_hearing_aids_with_text_input_names(self):
+        '''user inputs name of hearing aid in text field'''
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['left_other_ha'] = 'Starkey'
+        data['right_other_ha'] = 'Beltona iic virto t70'
+        data['left_purchase_date'] = '2001-01-01'
+        data['right_purchase_date'] = '2001-01-02'
+        data['left_ha_other'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        left_ha = Hearing_Aid.objects.filter(patient=patient1, ear='left')[0]
+        right_ha = Hearing_Aid.objects.filter(patient=patient1, ear='right')[0]
+        self.assertEqual(str(left_ha), 'Starkey inny inny')
+        self.assertEqual(str(left_ha), 'Beltona iic_virto_t70 inny')
+        self.assertEqual(str(left_ha.purchase_date), '2001-01-01')
+        self.assertEqual(str(right_ha.purchase_date), '2001-01-02')
+        self.assertFalse(left_ha.our)
+
     def test_adding_NFZ_new(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)

@@ -327,6 +327,27 @@ def updating(request, patient_id):
 			if request.POST.get(ear + '_ha_other'):
 				hearing_aid.our = False
 				hearing_aid.save()
+				
+			# adding hearing aid with a custom name to patient
+		if request.POST.get(ear + '_other_ha'):
+			ha = request.POST[ear + '_other_ha']
+			if ' ' in ha:
+				ha = ha.split(' ', 1)
+				ha_make, ha_family, ha_model = ha[0], ha[1].replace(' ', '_'), 'inny'
+			else:
+				ha_make, ha_family, ha_model = ha, 'inny', 'inny'
+			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
+			hearing_aid.save()
+			new_action.append('Dodano ' + pl_side + ' aparat ' +
+                            hearing_aid.ha_make + ' ' + hearing_aid.ha_family +
+                            ' ' + hearing_aid.ha_model + '.')
+			if request.POST.get(ear + '_purchase_date'):
+				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
+				hearing_aid.save()
+			# notofies that patient has ha bought in another shop
+			if request.POST.get(ear + '_ha_other'):
+				hearing_aid.our = False
+				hearing_aid.save()
 
 			# adding NFZ_new to patient
 			# previous NFZ if present are set to inactive

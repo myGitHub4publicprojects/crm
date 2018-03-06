@@ -5,8 +5,8 @@
         <p class="text-center">
             {{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>
         <small>Data zakupu: {{ left_hearing_aid.purchase_date }}</small></p>
-        <div class="btn btn-secondary" data-toggle="collapse" data-target="#change_ha_left" aria-expanded="false">Zmień</div>
-        <div class="collapse" id="change_ha_left">
+        <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">Zmień</div>
+        <!-- <div class="collapse" id="change_ha_left">
             <div class="panel-group" id="ha_left">
                 {% for make, families in ha_list.items %}
                 <div class="panel panel-default">
@@ -45,7 +45,8 @@
             <input type="date" name="left_purchase_date"></p>
             <p><small>Kupiony w innej firmie:</small>
             <input type="checkbox" name="left_ha_other" value="left_ha_other"></p>
-        </div>
+        </div> -->
+        {% include "crm/left_ha_select.html" %}
         {% if not left_hearing_aid.our %}
             <p class="text-center bg-warning">APARAT KUPIONY U KONKURENCJI</p>
         {% endif %}
@@ -63,8 +64,8 @@
         <p class="text-center">
             {{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>
         <small>Data zakupu: {{ right_hearing_aid.purchase_date }}</small></p>
-        <div class="btn btn-secondary" data-toggle="collapse" data-target="#change_ha_right" aria-expanded="false">Zmień</div>
-        <div class="collapse" id="change_ha_right">
+        <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_right" aria-expanded="false">Zmień</div>
+        <!-- <div class="collapse" id="change_ha_right">
             <div class="panel-group" id="ha_right">
                 {% for make, families in ha_list.items %}
                 <div class="panel panel-default">
@@ -103,7 +104,8 @@
             <input type="date" name="right_purchase_date"></p>
             <p><small>Kupiony w innej firmie:</small>
             <input type="checkbox" name="right_ha_other" value="right_ha_other"></p>
-        </div>
+        </div> -->
+         {% include "crm/right_ha_select.html" %}
         {% if not right_hearing_aid.our %}
             <p class="text-center bg-warning">APARAT KUPIONY U KONKURENCJI</p>
         {% endif %}
