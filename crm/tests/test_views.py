@@ -921,7 +921,7 @@ class TestUpdatingView(TestCase):
         left_ha = Hearing_Aid.objects.filter(patient=patient1, ear='left')[0]
         right_ha = Hearing_Aid.objects.filter(patient=patient1, ear='right')[0]
         self.assertEqual(str(left_ha), 'Starkey inny inny')
-        self.assertEqual(str(left_ha), 'Beltona iic_virto_t70 inny')
+        self.assertEqual(str(right_ha), 'Beltona iic_virto_t70 inny')
         self.assertEqual(str(left_ha.purchase_date), '2001-01-01')
         self.assertEqual(str(right_ha.purchase_date), '2001-01-02')
         self.assertFalse(left_ha.our)
