@@ -41,7 +41,7 @@
         <ul class="list-inline">
             {% for location in locations %}
             <li class="list-inline-item">
-                <input type="radio" name="location" id="{{ location }}" value="{{ location }}" />
+                <input type="radio" name="location" id="{{ location }}" value="{{ location }}" required>
                 <label for="{{ location }}">{{ location }}</label>
                 <br/>
             </li>
