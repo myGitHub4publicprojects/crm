@@ -92,8 +92,8 @@
 			<input type="date" name="bday" value="{{ patient.date_of_birth|date:'Y-m-d' }}">
 			</div>
 			<div class="col-xl">
-			<small class="text-muted">Tel: </small><br>
-			<input id="patient_tel" type="tel" name="usrtel" value="{{ patient.phone_no }}" required>
+			<small class="text-muted">Nr tel (bez spacji): </small><br>
+			<input id="patient_tel" type="tel" pattern="[0-9]{1,}" name="usrtel" value="{{ patient.phone_no }}" required>
 			</div>
 		</div>
 		<hr>
