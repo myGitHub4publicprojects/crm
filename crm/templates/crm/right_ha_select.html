@@ -12,19 +12,14 @@
                         <a data-toggle="collapse" data-parent="#inner_{{ make }}_right" href="#{{ make }}_{{ family|cut:" " }}_right">
                             <div class="btn btn-success">{{ family }}</div>
                         </a>
-                        <div id="{{ make }}_{{ family|cut:" " }}_right" class="panel-collapse collapse in">
+                        <div id="{{ make }}_{{ family|cut:" " }}_right" class="panel-collapse collapse in clearfix">
                             {% for model in models %}
-                            <div class="panel-group" id="inner_{{ make }}_{{ family|cut:" " }}_right">
-                                <div class="panel panel-default">
-                                    <a data-toggle="collapse" data-parent="#inner_{{ make }}_{{ family|cut:" " }}_right" href="#{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_right">
-                                        <div class="btn btn-warning">{{ model }}</div>
-                                    </a>
-                                    <div id="{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_right" class="panel-collapse collapse in">
+                                    <div class="float-left">
+                                        <label class="bg-secondary ml-1 p-1">
                                         <input name="right_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' />
-                                        <label for={{ make }}_{{ family }}_{{ model }}>{{ model }}</label>
+                                        {{ model }}
+                                        </label>
                                     </div>
-                                </div>
-                            </div>
                             {% endfor %}
                         </div>
                     </div>
