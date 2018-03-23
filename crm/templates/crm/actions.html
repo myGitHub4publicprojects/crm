@@ -223,7 +223,9 @@
 					</div>
 					{% endif %}
 				</div>
+				{% if right_PCPR_estimate or left_PCPR_estimate %}
 				<button class="btn" onclick="printDiv()">Drukuj kosztorys</button>
+				{% endif %}
 					{% if left_PCPR_estimate_all %}
 						<h4>Poprzednie lewe:</h4>
 						<ul class="list-unstyled">
