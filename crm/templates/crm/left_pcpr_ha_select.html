@@ -11,18 +11,14 @@
                     <a data-toggle="collapse" data-parent="#inner_pcpr_{{ make }}_left" href="#pcpr_{{ make }}_{{ family|cut:" " }}_left">
                             <div class="btn btn-success">{{ family }}</div>
                     </a>
-                    <div id="pcpr_{{ make }}_{{ family|cut:" " }}_left" class="panel-collapse collapse in">
+                    <div id="pcpr_{{ make }}_{{ family|cut:" " }}_left" class="panel-collapse collapse in clearfix">
                         {% for model in models %}
-                        <div class="panel-group" id="inner_pcpr_{{ make }}_{{ family|cut:" " }}_left">
-                            <div class="panel panel-default">
-                                <a data-toggle="collapse" data-parent="#inner_pcpr_{{ make }}_{{ family|cut:" " }}_left" href="#pcpr_{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_left">
-                                        <div class="btn btn-warning">{{ model }}</div>
-                                </a>
-                                <div id="pcpr_{{ make }}_{{ family|cut:" " }}_{{ model|cut:" " }}_left" class="panel-collapse collapse in">
-                                        <input  name="left_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' id='pcpr_left_{{ make }}_{{ family }}_{{ model }}' /><label for='pcpr_left_{{ make }}_{{ family }}_{{ model }}'>{{ model }}</label>
-                                </div>
+                            <div class="float-left">
+                                <label class="bg-secondary ml-1 p-1">
+                                    <input  name="left_pcpr_ha" type="radio" value='{{ make }}_{{ family }}_{{ model }}' id='pcpr_left_{{ make }}_{{ family }}_{{ model }}' />
+                                     {{ model }}
+                                </label>
                             </div>
-                        </div>
                         {% endfor %}
                     </div>
                 </div>
