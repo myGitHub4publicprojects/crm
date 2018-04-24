@@ -218,8 +218,8 @@ def edit(request, patient_id):
 @login_required
 def store(request):
 	# for adding new patients to database
-	patient = Patient(first_name=request.POST['fname'],
-		last_name=request.POST['lname'],
+	patient = Patient(first_name=request.POST['fname'].capitalize(),
+        last_name=request.POST['lname'].capitalize(),
 		date_of_birth=request.POST['bday'],
 		phone_no=request.POST['usrtel'],
 		audiometrist = request.user,
@@ -286,8 +286,8 @@ def store(request):
 def updating(request, patient_id):
 	# for updating existing patients in database
 	patient = get_object_or_404(Patient, pk=patient_id)
-	patient.first_name=request.POST['fname']
-	patient.last_name=request.POST['lname']
+	patient.first_name = request.POST['fname'].capitalize()
+	patient.last_name = request.POST['lname'].capitalize()
 	patient.phone_no=request.POST['usrtel']
 	patient.location = request.POST['location']
 	patient.notes = request.POST['summary_note']

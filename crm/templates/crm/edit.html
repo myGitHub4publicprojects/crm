@@ -81,11 +81,11 @@
 		<div class="row mt-2">
 			<div class="col-xl">
 			<small class="text-muted">Imię: </small><br>
-			<input type="text" name="fname" value="{{ patient.first_name }}" class="font-weight-bold" required>
+			<input type="text" name="fname" value="{{ patient.first_name|title }}" class="font-weight-bold" required>
 			</div>
 			<div class="col-xl">
 			<small class="text-muted">Nazwisko: </small><br>
-			<input type="text" name="lname" value="{{ patient.last_name }}" class="font-weight-bold" required>
+			<input type="text" name="lname" value="{{ patient.last_name|title }}" class="font-weight-bold" required>
 			</div>
 			<div class="col-xl">
 			<small class="text-muted">Data ur: </small><br>
