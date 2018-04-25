@@ -549,6 +549,29 @@ def delete_patient(request, patient_id):
 	messages.success(request, "Pacjent %s usunięty" % patient.last_name)
 	return redirect('crm:index')
 
+@login_required
+def duplicate_check(request):
+	if request.GET.get('usrtel'):
+		usrtel = request.GET.get('usrtel')
+		patient_tel = Patient.objects.filter(phone_no__contains=int(usrtel))
+		if patient_tel:
+			return HttpResponse('present')
+		return HttpResponse('absent')
+
+	lname = request.GET.get('lname')
+	fname = request.GET.get('fname')
+	bday = request.GET.get('bday')  # string 2018-04-04
+	# transform into datetime obj
+	bday = datetime.date(*[int(i) for i in bday.split('-')])
+	# make fname and lname filter case insensitive by __iexact
+	patient_dob = Patient.objects.filter(	last_name__iexact=lname,
+											first_name__iexact=fname,
+											date_of_birth=bday)
+	if patient_dob:
+		return HttpResponse('present')
+	return HttpResponse('absent')
+
+
 
 @login_required
 def reminders(request):

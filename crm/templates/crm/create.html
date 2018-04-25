@@ -1,4 +1,5 @@
 {% extends "crm/base.html" %}
+{% load static %}
 
 {% block content %}
 <h1>Dodaj nowego pacjenta</h1>
@@ -16,22 +17,22 @@
         <div class="col-xl">
             <small class="text-muted">Imię: </small>
             <br>
-            <input type="text" name="fname" placeholder="Imię" required>
+            <input id="fname" type="text" name="fname" placeholder="Imię" required>
         </div>
         <div class="col-xl">
             <small class="text-muted">Nazwisko: </small>
             <br>
-            <input type="text" name="lname" placeholder="Nazwisko" required>
+            <input id="lname" type="text" name="lname" placeholder="Nazwisko" required>
         </div>
         <div class="col-xl">
             <small class="text-muted">Data ur: </small>
             <br>
-            <input type="date" name="bday" required>
+            <input id="bday" type="date" name="bday" required>
         </div>
         <div class="col-xl">
             <small class="text-muted">Nr tel (bez spacji): </small>
             <br>
-            <input type="tel" pattern="[0-9]{1,}" name="usrtel" required>
+            <input id="usrtel" type="tel" pattern="[0-9]{1,}" name="usrtel" required>
         </div>
     </div>
     <hr>
@@ -160,5 +161,55 @@
     <input class="btn btn-primary btn-lg mb-5" type="submit" value="UTWÓRZ PACJENTA" />
      
 </form>
+
+<script>
+    let bday = document.getElementById('bday'),
+        usrtel = document.getElementById('usrtel');
+
+    bday.addEventListener('focusout', uniqueWithDateOfBirth);
+    usrtel.addEventListener('focusout', uniqueTel)
+
+    function uniqueWithDateOfBirth(){
+        let fname = document.getElementById('fname').value,
+            lname = document.getElementById('lname').value,
+            bday = document.getElementById('bday').value;
+
+        let xhr = new XMLHttpRequest(),
+            mainUrl = "{% url 'crm:duplicate_check' %}",
+            queries = `?fname=${fname}&lname=${lname}&bday=${bday}`,
+            url = mainUrl + queries;
+        
+        xhr.open('get', url, true);
+
+        xhr.onload = function(){
+            console.log('in onload');
+            if (this.status == 200){
+                if (this.responseText=='present'){
+                    alert('Pacjent o takim imieniu, nazwisku i dacie urodzenia JUŻ ISTNIEJE!')
+                }
+            }
+        }
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhr.send()
+    }
+
+    function uniqueTel(e){
+        let xhr = new XMLHttpRequest(),
+            url = "{% url 'crm:duplicate_check' %}?usrtel=" + e.target.value
+        xhr.open('get', url, true)
+        xhr.onload = function(){
+            if (this.status==200){
+                if (this.responseText=='present'){
+                    alert('Pacjent z takim numerem telefonu już istnieje');
+                }
+            }
+        }
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhr.send()
+    }
+
+
+
+</script>
 
 {% endblock content %}

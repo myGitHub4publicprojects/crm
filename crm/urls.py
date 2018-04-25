@@ -9,6 +9,7 @@ urlpatterns = [
 	url(r'^select_noach_file/$', views.select_noach_file, name='select_noach_file'),
 	url(r'^store/$', views.store, name='store'),
 	url(r'^reminders/$', views.reminders, name='reminders'),
+	url(r'^duplicate_check/$', views.duplicate_check, name='duplicate_check'),
 	url(r'^(?P<reminder_id>[0-9]+)/reminder/$', views.reminder, name='reminder'),
 	url(r'^(?P<reminder_id>[0-9]+)/inactivate_reminder/$',
 	    views.inactivate_reminder, name='inactivate_reminder'),
