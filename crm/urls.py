@@ -17,5 +17,13 @@ urlpatterns = [
 	url(r'^(?P<patient_id>[0-9]+)/edit/$', views.edit, name='edit'),
 	url(r'^(?P<patient_id>[0-9]+)/updating/$', views.updating, name='updating'),
 	url(r'^(?P<patient_id>[0-9]+)/deleteconfirm/$', views.deleteconfirm, name='deleteconfirm'),
-	url(r'^(?P<patient_id>[0-9]+)/delete/$', views.delete_patient, name='delete')
+	url(r'^(?P<patient_id>[0-9]+)/delete/$', views.delete_patient, name='delete'),
+    url(r'^invoice_create/$',
+        views.invoice_create, name='invoice_create'),
+    url(r'^invoice_store/$',
+        views.invoice_store, name='invoice_store'),
+	url(r'^(?P<invoice_id>[0-9]+)/invoice_edit/$',
+	    views.invoice_edit, name='invoice_edit'),
+    url(r'^(?P<invoice_id>[0-9]+)/invoice_update/$',
+        views.invoice_update, name='invoice_update'),
 ]

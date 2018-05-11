@@ -571,8 +571,6 @@ def duplicate_check(request):
 		return HttpResponse('present')
 	return HttpResponse('absent')
 
-
-
 @login_required
 def reminders(request):
 	reminders_qs = Reminder.objects.active()
@@ -593,7 +591,7 @@ def reminders(request):
 		elif i.ha:
 			type = ' wydano aparat'
 			patient = i.ha.patient
-		subject = str(patient) + ', w dniu: ' + \
+		subject = patient.first_name + ' ' + patient.last_name + + ', w dniu: ' + \
 			i.timestamp.strftime("%d.%m.%Y") + type
 		reminder = {'id': i.id, 'subject': subject}
 		reminders_list.append(reminder)
@@ -647,6 +645,26 @@ def inactivate_reminder(request, reminder_id):
 def select_noach_file(request):
 	''' enables selecting a noach file from user computer'''
 	return render(request, 'crm/select_noach_file.html')
+
+
+@login_required
+def invoice_create(request):
+    	pass
+
+
+@login_required
+def invoice_store(request):
+    	pass
+
+
+@login_required
+def invoice_edit(request, invoice_id):
+    	pass
+
+
+@login_required
+def invoice_update(request, invoice_id):
+    	pass
 
 
 @login_required
