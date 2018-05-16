@@ -16,6 +16,7 @@ from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
+import json
 today = datetime.date.today()
 ears = ['left', 'right']
 
@@ -645,7 +646,11 @@ def inactivate_reminder(request, reminder_id):
 def invoice_create(request, patient_id):
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
-	context = {	'patient': patient, 'ha_list': ha_list}
+	js_data = json.dumps(ha_list)
+
+	context = {	'patient': patient,
+				'ha_list': ha_list,
+             "my_data": js_data}
 	return render(request, 'crm/create_invoice.html', context)
 
 

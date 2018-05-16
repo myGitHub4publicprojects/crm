@@ -80,6 +80,8 @@
     var ha_models = document.getElementsByClassName('ha_models');
     var table = document.getElementById('currentItems');
     var itemsNum = 0;
+    hearingAids = {{ my_data | safe }};
+    console.log(hearingAids);
 
     for (let i of ha_models){
         i.addEventListener('click', processItem);
