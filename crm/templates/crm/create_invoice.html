@@ -1,0 +1,125 @@
+{% extends "crm/base.html" %} {% load static %} {% block content %}
+<h1>Dodaj nową fakturę dla: {{ patient }}</h1>
+
+{% if error_message %}
+<p>
+    <strong>{{ error_message }}</strong>
+</p>{% endif %}
+
+<form action="{% url 'crm:invoice_store' patient.id %}" method="post" id="new_invoice">
+    {% csrf_token %}
+
+    <!-- name, age, tel -->
+    <div class="row mt-2">
+        <h3>Odbiorca</h3>
+        <p>{{ patient }}</p>
+        <P>{{ patient.street }}</P>
+        <P>{{ patient.home_number }}
+        {% if patient.apartment_number %}
+        /{{ patient.apartment_number }}
+        {% endif %}
+        </P>
+        <P>{{ patient.zip_code }}</P>
+        <P>{{ patient.city }}</P>
+    </div>
+    <hr>
+
+    <!-- current items -->
+    <table id='currentItems' class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Lp</td>
+                <td>Nazwa</td>
+                <td>PKWiU</td>
+                <td>ilość</td>
+                <td>Cena netto</td>
+                <td>VAT [%]</td>
+                <td>wartość brutto</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Aparat słuchowy Bernafon Zerena 9 B105</td>
+                <td>12</td>
+                <td>1</td>
+                <td>100</td>
+                <td>10</td>
+                <td>110</td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- add hearing aid -->
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="btn btn-outline-info w-100">
+                <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">dodaj aparat</div>
+                {% include "crm/left_ha_for_invoice.html" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- <p>New device:
+        type: aparat słuchowy, inne
+        make:
+        family:
+        model:
+    </p> -->
+    <hr>
+
+    <p>Dodaj notatkę:</p>
+    <textarea form="new_invoice" name="note" id="patient_note" placeholder="dodatkowa notatka"></textarea>
+    <hr>
+
+
+    <input class="btn btn-primary btn-lg mb-5" type="submit" value="Zatwierdź" />
+
+</form>
+
+<script>
+    var ha_models = document.getElementsByClassName('ha_models');
+    var table = document.getElementById('currentItems');
+    var itemsNum = 0;
+
+    for (let i of ha_models){
+        i.addEventListener('click', processItem);
+    }
+
+    function processItem() {
+        console.log(this.value);
+        // show the table with items
+        table.style.display = 'table';
+
+        var tbody = table.getElementsByTagName('tbody')[0];
+
+        // increase number of items
+        itemsNum++;
+
+        // add new row
+        var newRow = tbody.insertRow(tbody.rows.lenth);
+
+        // add new cells
+        var cell1 = newRow.insertCell(0);
+        var cell2 = newRow.insertCell(1);
+        var cell3 = newRow.insertCell(2);
+        var cell4 = newRow.insertCell(3);
+        var cell5 = newRow.insertCell(4);
+        var cell6 = newRow.insertCell(5);
+        var cell7 = newRow.insertCell(6);
+
+        // populate cells with data
+        cell1.innerHTML = 'jeden';
+        cell2.innerHTML = `Aparat słuchowy <input type="text" name="${itemsNum}_ha" value="${this.value}" disabled/>`;
+        cell3.innerHTML = 'jeden';
+        cell4.innerHTML = 'jeden';
+        cell5.innerHTML = 'jeden';
+        cell6.innerHTML = 'jeden';
+        cell7.innerHTML = 'jeden';
+
+        // reset form
+
+    }
+        
+</script>
+
+{% endblock content %}

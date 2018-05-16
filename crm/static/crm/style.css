@@ -22,6 +22,10 @@
     overflow: scroll;
 }
 
+#currentItems {
+    display: none;
+}
+
 /* for js print without page title and date */
 @page { 
     size: auto;  margin: 0mm;

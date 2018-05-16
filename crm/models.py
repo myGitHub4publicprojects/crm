@@ -22,8 +22,14 @@ class Patient(models.Model):
 	noachcreatedate = models.DateField(null=True, blank=True)
 	noachID = models.IntegerField(null=True, blank=True)
 	notes = models.TextField(null=True, blank=True)
+	# person who added a patient or a new note about patient
 	audiometrist = models.ForeignKey(settings.AUTH_USER_MODEL)
-	 # person who added a patient or a new note about patient
+	# address
+	street = models.CharField(max_length=120, null=True, blank=True)
+	house_number = models.CharField(max_length=6, null=True, blank=True)
+	apartment_number = models.CharField(max_length=6, null=True, blank=True)
+	city = models.CharField(max_length=120, null=True, blank=True)
+	zip_code = models.CharField(max_length=6, null=True, blank=True)
 
 	def __unicode__(self):
 		return self.first_name + ' ' + self.last_name

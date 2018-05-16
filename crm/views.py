@@ -591,7 +591,7 @@ def reminders(request):
 		elif i.ha:
 			type = ' wydano aparat'
 			patient = i.ha.patient
-		subject = patient.first_name + ' ' + patient.last_name + + ', w dniu: ' + \
+		subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
 			i.timestamp.strftime("%d.%m.%Y") + type
 		reminder = {'id': i.id, 'subject': subject}
 		reminders_list.append(reminder)
@@ -625,7 +625,7 @@ def reminder(request, reminder_id):
 		patient = r.ha.patient
 		side = 'lewy' if r.ha.ear == 'left' else 'prawy'
 		more = str(r.ha) + ' ' + side
-	subject = str(patient) + ', w dniu: ' + \
+	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
 		r.timestamp.strftime("%d.%m.%Y") + type + more
 	
 	context = {'subject': subject, 'patient': patient, 'reminder_id': r.id}
@@ -642,18 +642,16 @@ def inactivate_reminder(request, reminder_id):
 
 
 @login_required
-def select_noach_file(request):
-	''' enables selecting a noach file from user computer'''
-	return render(request, 'crm/select_noach_file.html')
+def invoice_create(request, patient_id):
+	patient = get_object_or_404(Patient, pk=patient_id)
+	ha_list = Hearing_Aid.ha_list
+	context = {	'patient': patient, 'ha_list': ha_list}
+	return render(request, 'crm/create_invoice.html', context)
 
 
 @login_required
-def invoice_create(request):
-    	pass
-
-
-@login_required
-def invoice_store(request):
+def invoice_store(request, patient_id):
+    	patient = get_object_or_404(Patient, pk=patient_id)
     	pass
 
 
@@ -665,6 +663,11 @@ def invoice_edit(request, invoice_id):
 @login_required
 def invoice_update(request, invoice_id):
     	pass
+
+@login_required
+def select_noach_file(request):
+	''' enables selecting a noach file from user computer'''
+	return render(request, 'crm/select_noach_file.html')
 
 
 @login_required

@@ -211,6 +211,10 @@
 	<div class="btn btn-outline-danger">usuń pacjenta</div>
 </a>
 
+<a class="float-right mb-3" href="{% url 'crm:invoice_create' patient.id %}">
+	<div class="btn btn-outline-warning">utwórz nową fakturę</div>
+</a>
+
 <script>
 	var tel_no = document.querySelector('#patient_tel');
 	if (tel_no.value == 0) {
