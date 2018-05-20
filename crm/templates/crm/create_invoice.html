@@ -6,85 +6,124 @@
     <strong>{{ error_message }}</strong>
 </p>{% endif %}
 
+
+
+<!-- name, age, tel -->
+<div class="row mt-2">
+    <h3>Odbiorca</h3>
+    <p>{{ patient }}</p>
+    <P>{{ patient.street }}</P>
+    <P>{{ patient.home_number }}
+    {% if patient.apartment_number %}
+    /{{ patient.apartment_number }}
+    {% endif %}
+    </P>
+    <P>{{ patient.zip_code }}</P>
+    <P>{{ patient.city }}</P>
+</div>
+<hr>
+
 <form action="{% url 'crm:invoice_store' patient.id %}" method="post" id="new_invoice">
     {% csrf_token %}
+<!-- current items -->
+<table id='currentItems' class="table table-bordered">
+    <thead>
+        <tr>
+            <td>Lp</td>
+            <td>Nazwa</td>
+            <td>PKWiU</td>
+            <td>ilość</td>
+            <td>Cena netto</td>
+            <td>VAT [%]</td>
+            <td>wartość brutto</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Aparat słuchowy Bernafon Zerena 9 B105</td>
+            <td>12</td>
+            <td>1</td>
+            <td>100</td>
+            <td>10</td>
+            <td>110</td>
+        </tr>
+    </tbody>
+</table>
 
-    <!-- name, age, tel -->
-    <div class="row mt-2">
-        <h3>Odbiorca</h3>
-        <p>{{ patient }}</p>
-        <P>{{ patient.street }}</P>
-        <P>{{ patient.home_number }}
-        {% if patient.apartment_number %}
-        /{{ patient.apartment_number }}
-        {% endif %}
-        </P>
-        <P>{{ patient.zip_code }}</P>
-        <P>{{ patient.city }}</P>
-    </div>
-    <hr>
+<button type='button' class="btn btn-outline-secondary btn-sm mb-3">Dodaj notatkę</button>
+<textarea form="new_invoice" name="note" id="invoiceNote" placeholder="dodatkowa notatka"></textarea>
 
-    <!-- current items -->
-    <table id='currentItems' class="table table-bordered">
-        <thead>
-            <tr>
-                <td>Lp</td>
-                <td>Nazwa</td>
-                <td>PKWiU</td>
-                <td>ilość</td>
-                <td>Cena netto</td>
-                <td>VAT [%]</td>
-                <td>wartość brutto</td>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>Aparat słuchowy Bernafon Zerena 9 B105</td>
-                <td>12</td>
-                <td>1</td>
-                <td>100</td>
-                <td>10</td>
-                <td>110</td>
-            </tr>
-        </tbody>
-    </table>
-    <!-- add hearing aid -->
-    <div class="row">
-        <div class="col-xl-6">
-            <div class="btn btn-outline-info w-100">
-                <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">dodaj aparat</div>
-                {% include "crm/left_ha_for_invoice.html" %}
-            </div>
-        </div>
-    </div>
-
-    <!-- <p>New device:
-        type: aparat słuchowy, inne
-        make:
-        family:
-        model:
-    </p> -->
-    <hr>
-
-    <p>Dodaj notatkę:</p>
-    <textarea form="new_invoice" name="note" id="patient_note" placeholder="dodatkowa notatka"></textarea>
-    <hr>
-
-
-    <input class="btn btn-primary btn-lg mb-5" type="submit" value="Zatwierdź" />
+<input class="btn btn-primary mb-3 float-right" type="submit" value="Zatwierdam fakturę" />
 
 </form>
+<hr>
+
+<!-- add item -->
+<!-- <div class="row">
+    <div class="col-xl-6">
+        <div class="btn btn-outline-info w-100">
+            <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">dodaj aparat</div>
+            {% include "crm/left_ha_for_invoice.html" %}
+        </div>
+    </div>
+</div> -->
+
+<button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj aparat</button>
+<div id="newItem" class="row mb-3">
+    <div class="col-xl-12">
+        Aparat słuchowy: 
+        <select name="make" id="haSelectMake">
+            <option disabled selected value> -- wybierz -- </option>
+        </select>
+        <select name="family" id="haSelectFamily">
+        </select>
+        <select name="model" id="haSelectModel">
+        </select>
+        <span id="currentItemPrice"> cena brutto: <span id="selectedPrice"></span></span>
+        <input name="quantity" id="haQuantity" type="number" min="1" placeholder="ilość">
+        <select name="side" id="haSelectSide">
+            <option value>Lewy</option>
+            <option value>Prawy</option>
+            <option value>L + P</option>
+        </select>
+        <button id="acceptItem" class="btn btn-secondary" type='button'>Zatwierdzam pozycję</button>
+    </div>
+</div>
 
 <script>
     var ha_models = document.getElementsByClassName('ha_models');
     var table = document.getElementById('currentItems');
     var itemsNum = 0;
-    hearingAids = {{ my_data | safe }};
-    console.log(hearingAids);
+    var hearingAids = {{ my_data | safe }};
+    var currentMake = '';
+    var currentFamily = '';
+    var selectMake = document.getElementById('haSelectMake');
+    var selectFamily = document.getElementById('haSelectFamily');
+    var selectModel = document.getElementById('haSelectModel');
+    var selectedPrice = document.getElementById('selectedPrice');
+    var haQuantity = document.getElementById('haQuantity');
+    var addItem = document.getElementById('addItem');
+    var selectSide = document.getElementById('haSelectSide');
+
+    for (let i in hearingAids){
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.innerHTML = i;
+        // opt.addEventListener('change', selectMake);
+        selectMake.appendChild(opt);
+    }
+    selectMake.addEventListener('change', selectedMake);
+    addItem.addEventListener('click', showForm);
+    haQuantity.addEventListener('change', selectedQuantity);
 
     for (let i of ha_models){
         i.addEventListener('click', processItem);
+    }
+
+    function showForm() {
+        document.getElementById('newItem').style.display = 'block';
+        addItem.style.display = 'none';
     }
 
     function processItem() {
@@ -120,6 +159,66 @@
 
         // reset form
 
+    }
+
+    function selectedMake() {
+        // reset select element - useful when user changed his mind
+        selectFamily.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
+
+        // propagate options
+        for (let i in hearingAids[this.value]){
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i;
+            haSelectFamily.appendChild(opt);
+        }
+        
+        // set current make
+        currentMake = this.value;
+
+        // add event listener for families change
+        selectFamily.addEventListener('change', selectedFamily);
+
+        // display families to select from
+        selectFamily.style.display = 'inline-block';
+    }
+
+    function selectedFamily() {
+        // reset select element - useful when user changed his mind
+        selectModel.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
+
+        // propagate options
+        for (let i in hearingAids[currentMake][this.value]) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i;
+            selectModel.appendChild(opt);
+        }
+
+        // set current family
+        currentFamily = this.value;
+
+        // add event listener for model change
+        selectModel.addEventListener('change', selectedModel);
+
+        // display models to select from
+        selectModel.style.display = 'inline-block';
+    }
+
+    function selectedModel() {
+        selectedPrice.innerText = hearingAids[currentMake][currentFamily][this.value]
+        document.getElementById('currentItemPrice').style.display = 'inline';
+        haQuantity.style.display = 'inline-block';
+    }
+
+    function selectedQuantity() {
+        // if quantity == 2 set sides to both left and right
+
+        // display sides to choose from
+        selectSide.style.display = 'inline-block';
+
+        // display button to accept item and add it to the table
+        document.getElementById('acceptItem').style.display = 'inline-block'
     }
         
 </script>

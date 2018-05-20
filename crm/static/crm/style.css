@@ -22,9 +22,11 @@
     overflow: scroll;
 }
 
-#currentItems {
+#haSelectFamily, #haSelectModel, #currentItemPrice, #haQuantity, #haSelectSide, #newItem,
+#acceptItem, #invoiceNote {
     display: none;
 }
+
 
 /* for js print without page title and date */
 @page { 
