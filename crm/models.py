@@ -44,6 +44,13 @@ class NewInfo(models.Model):
 	def __str__(self):
 		return self.timestamp
 
+class Invoice(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True, auto_now_add=False)
+    type = models.CharField(max_length=8, choices=(
+		('transfer', 'transfer'), ('cash', 'cash')))
+
 class Audiogram(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	time_of_test = models.DateTimeField(null=True, blank=True)
@@ -84,6 +91,8 @@ class Hearing_Aid(Hearing_Aid_Main):
 	# default 0 for adding currenly used hearing aids from other producers
 	# with unknown price
 	vat_rate = models.IntegerField(default=8)
+	invoice = models.ForeignKey(
+		Invoice, on_delete=models.CASCADE, null=True, blank=True)
 
 class NFZ(models.Model):
 	date = models.DateField()
@@ -116,6 +125,7 @@ class PCPR_Estimate(Hearing_Aid_Main):
 	# zmien na FALSE przy odbiorze aparatu
 
 class Other_Item(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     make = models.CharField(max_length=20)
 	 # eg. Bernafon
     family = models.CharField(max_length=120)
@@ -124,6 +134,9 @@ class Other_Item(models.Model):
  	# eg. ROGER CLIP-ON MIC + 2, twarda
     price_gross = models.DecimalField(max_digits=6, decimal_places=2)
     vat_rate = models.IntegerField()
+    invoice = models.ForeignKey(
+		Invoice, on_delete=models.CASCADE, null=True, blank=True)
+	
 	
     def __str__(self):
 		return ' '.join([self.make, self.family, self.model])
@@ -134,13 +147,6 @@ class HA_Invoice(Hearing_Aid_Main):
     date = models.DateField()
     in_progress = models.BooleanField(default=True)
 	# change to False once collected by patient
-
-class Invoice(models.Model):
-	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True, auto_now_add=False)
-	type = models.CharField(max_length=8, choices=(
-		('transfer', 'transfer'), ('cash', 'cash')))
 
 
 class ReminderManager(models.Manager):

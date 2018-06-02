@@ -7,11 +7,12 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.forms.formsets import formset_factory
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import PatientForm
+from .forms import PatientForm, InvoiceForm, InvoiceTypeForm
 from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
-                     NFZ_New, PCPR_Estimate, HA_Invoice, Audiogram, Reminder)
+                     NFZ_New, PCPR_Estimate, HA_Invoice, Audiogram, Reminder, Invoice)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
@@ -644,25 +645,70 @@ def inactivate_reminder(request, reminder_id):
 
 @login_required
 def invoice_create(request, patient_id):
+	print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
 	js_data = json.dumps(ha_list)
+	InvoiceFormSet = formset_factory(InvoiceForm, extra=1)
+	if request.method == 'POST':
+		print(request.POST)
+		form = InvoiceTypeForm(request.POST)
+		formset = InvoiceFormSet(request.POST)
+		if form.is_valid() and formset.is_valid():
+    			
+    		# create invoice instance
+			invoice = form.save(commit=False)
+			invoice.patient = patient
+			invoice.save()
 
+    		# process forms
+			for form in formset:
+				# if hearing aid
+				if form.cleaned_data['device_type'] == 'ha':
+					print('creating aparat')
+					Hearing_Aid.objects.create(
+						patient=patient,
+						ha_make=form.cleaned_data['make'],
+						ha_family=form.cleaned_data['family'],
+						ha_model=form.cleaned_data['model'],
+						purchase_date=today,
+						price_gross=form.cleaned_data['price_gross'],
+						vat_rate=form.cleaned_data['vat_rate'],
+						ear=form.cleaned_data['ear'],
+						invoice=invoice
+					)
+				
+				# if other device
+				# if form.cleaned_data['device_type'] == 'other':
+				
+			# redirect to detail view with a success message
+			messages.success(request, 'Utworzono nową fakturę.')
+			return redirect('crm:invoice_detail', invoice.id)
+		else:
+	    	# redispaly with message
+			messages.warning(request, 'Niepoprawne dane, popraw.')
+    		
+	else:
+		form = InvoiceTypeForm()
+    	
 	context = {	'patient': patient,
 				'ha_list': ha_list,
-             "my_data": js_data}
+				"my_data": js_data,
+				'form': form,
+				'formset': InvoiceFormSet()}
 	return render(request, 'crm/create_invoice.html', context)
 
 
 @login_required
 def invoice_store(request, patient_id):
-    	patient = get_object_or_404(Patient, pk=patient_id)
-    	pass
+	patient = get_object_or_404(Patient, pk=patient_id)
+	pass
 
 
 @login_required
-def invoice_edit(request, invoice_id):
-    	pass
+def invoice_detail(request, invoice_id):
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    return render(request, 'crm/detail_invoice.html', {'invoice': invoice} )
 
 
 @login_required

@@ -22,8 +22,8 @@ urlpatterns = [
         views.invoice_create, name='invoice_create'),
     url(r'^(?P<patient_id>[0-9]+)/invoice_store/$',
         views.invoice_store, name='invoice_store'),
-	url(r'^(?P<invoice_id>[0-9]+)/invoice_edit/$',
-	    views.invoice_edit, name='invoice_edit'),
+	url(r'^(?P<invoice_id>[0-9]+)/invoice_detail/$',
+	    views.invoice_detail, name='invoice_detail'),
     url(r'^(?P<invoice_id>[0-9]+)/invoice_update/$',
         views.invoice_update, name='invoice_update'),
 ]

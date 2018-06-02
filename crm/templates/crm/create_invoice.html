@@ -8,7 +8,7 @@
 
 
 
-<!-- name, age, tel -->
+<!-- patient details -->
 <div class="row mt-2">
     <h3>Odbiorca</h3>
     <p>{{ patient }}</p>
@@ -23,53 +23,69 @@
 </div>
 <hr>
 
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {{ formset.management_form }}
+    {% for form in formset %}
+        {{ form.as_p }}
+    {% endfor %}
+
+
+    
+        {% if form.errors %} {% for field in form %} {% for error in field.errors %}
+    <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+    </div>
+    {% endfor %} {% endfor %} {% for error in form.non_field_errors %}
+    <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+    </div>
+    {% endfor %} {% endif %}
+
+    <input type="submit" value="Submit">
+</form>
+
+
+<!-- 
 <form action="{% url 'crm:invoice_store' patient.id %}" method="post" id="new_invoice">
     {% csrf_token %}
-<!-- current items -->
-<table id='currentItems' class="table table-bordered">
-    <thead>
-        <tr>
-            <td>Lp</td>
-            <td>Nazwa</td>
-            <td>PKWiU</td>
-            <td>ilość</td>
-            <td>Cena netto</td>
-            <td>VAT [%]</td>
-            <td>wartość brutto</td>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>1</td>
-            <td>Aparat słuchowy Bernafon Zerena 9 B105</td>
-            <td>12</td>
-            <td>1</td>
-            <td>100</td>
-            <td>10</td>
-            <td>110</td>
-        </tr>
-    </tbody>
-</table>
+    
+    <table id='currentItems' class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Lp</td>
+                <td>Nazwa</td>
+                <td>PKWiU</td>
+                <td>ilość</td>
+                <td>Cena netto</td>
+                <td>VAT [%]</td>
+                <td>wartość brutto</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Aparat słuchowy Bernafon Zerena 9 B105</td>
+                <td>12</td>
+                <td>1</td>
+                <td>100</td>
+                <td>10</td>
+                <td>110</td>
+            </tr>
+        </tbody>
+    </table>
 
-<button type='button' class="btn btn-outline-secondary btn-sm mb-3">Dodaj notatkę</button>
-<textarea form="new_invoice" name="note" id="invoiceNote" placeholder="dodatkowa notatka"></textarea>
+    <button type='button' class="btn btn-outline-secondary btn-sm mb-3">Dodaj notatkę</button>
+    <textarea form="new_invoice" name="note" id="invoiceNote" placeholder="dodatkowa notatka"></textarea>
 
-<input class="btn btn-primary mb-3 float-right" type="submit" value="Zatwierdam fakturę" />
+    <input class="btn btn-primary mb-3 float-right" type="submit" value="Zatwierdam fakturę" />
 
 </form>
-<hr>
+<hr> -->
 
-<!-- add item -->
-<!-- <div class="row">
-    <div class="col-xl-6">
-        <div class="btn btn-outline-info w-100">
-            <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">dodaj aparat</div>
-            {% include "crm/left_ha_for_invoice.html" %}
-        </div>
-    </div>
-</div> -->
-
-<button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj aparat</button>
+<!-- <button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj aparat</button>
 <div id="newItem" class="row mb-3">
     <div class="col-xl-12">
         Aparat słuchowy: 
@@ -89,8 +105,11 @@
         </select>
         <button id="acceptItem" class="btn btn-secondary" type='button'>Zatwierdzam pozycję</button>
     </div>
-</div>
+</div> -->
 
+
+
+<!-- 
 <script>
     var ha_models = document.getElementsByClassName('ha_models');
     var table = document.getElementById('currentItems');
@@ -221,6 +240,6 @@
         document.getElementById('acceptItem').style.display = 'inline-block'
     }
         
-</script>
+</script> -->
 
 {% endblock content %}

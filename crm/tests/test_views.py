@@ -5,13 +5,14 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from django.contrib import auth
 from django.core.paginator import Paginator
+from django.contrib.messages import get_messages
 
 import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from crm.models import (Patient, Hearing_Aid, NFZ_Confirmed, PCPR_Estimate,
-                        NFZ_New, HA_Invoice, NewInfo, Audiogram, Reminder)
+                        NFZ_New, HA_Invoice, NewInfo, Audiogram, Reminder, Invoice)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -1528,29 +1529,99 @@ class TestInactivateReminderView(TestCase):
 class TestInvoiceCreateView(TestCase):
     def setUp(self):
         user_john = create_user()
-        patient1 = create_patient(user_john)
+        create_patient(user_john)
 
     def test_anonymous(self):
         '''should redirect to login'''
-        url = reverse('crm:invoice_create')
-        expected_url = reverse('login') + '?next=/invoice_create/'
+        url = reverse('crm:invoice_create', args=(1,))
+        expected_url = reverse('login') + '?next=/1/invoice_create/'
         response = self.client.post(url, follow=True)
         # should give code 200 as follow is set to True
         assert response.status_code == 200
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-    def test_logged_in(self):
+    def test_logged_in_with_valid_data_for_ha(self):
+        '''should create:
+        one hearing aid,
+        one invoice instance with one position - hearing aid,
+        for a given patient,
+        should redirect to detail view'''
         self.client.login(username='john', password='glassonion')
-        # nfz = NFZ_Confirmed.objects.create(
-        #     patient=Patient.objects.get(id=1), date=today, side='left')
-        # r = Reminder.objects.create(nfz_confirmed=nfz, activation_date=today)
-        url = reverse('crm:inactivate_reminder', args=(1,))
-        expected_url = reverse('crm:reminders')
-        response = self.client.post(url, follow=True)
+        url = reverse('crm:invoice_create', args=(1,))
+        expected_url = reverse('crm:invoice_detail', args=(1,))
+        data = {
+            # form data
+            'type': 'transfer',
+
+            # formset data
+            # these are needed for formset to work
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
+
+            # formset forms data
+            'form-0-device_type': 'ha',
+            'form-0-make': 'Bernafon',
+            'form-0-family': 'WIN',
+            'form-0-model': '102',
+            'form-0-price_gross': 107,
+            'form-0-vat_rate': 7,
+            'form-0-ear': 'right',
+        }
+        response = self.client.post(url, data, follow=True)
         # should give code 200 as follow is set to True
         assert response.status_code == 200
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
-        r.refresh_from_db()
-        self.assertFalse(r.active)
+        invoice = Invoice.objects.get(pk=1)
+
+        ha = Hearing_Aid.objects.get(pk=1)
+        # should create only one Hearing_Aid obj
+        self.assertEqual(len(Hearing_Aid.objects.all()), 1)
+        # should create only one invoice obj
+        self.assertEqual(len(Invoice.objects.all()), 1)
+        # this invoice should be tied to hearing aid
+        self.assertEqual(ha.invoice, invoice)
+        # hearing aid make should be 'Bernafon'
+        self.assertEqual(ha.ha_make, 'Bernafon')
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+
+    def test_logged_in_with_invalid_form_data(self):
+        '''should redisplay invoice_create page with a warning message'''
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:invoice_create', args=(1,))
+        expected_url = reverse('crm:invoice_create', args=(1,))
+        data = {
+            # form data
+            'type': '', # this should make the form invalid
+
+            # formset data
+            # these are needed for formset to work
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
+
+            # formset forms data
+            'form-0-device_type': 'ha',
+            'form-0-make': 'Bernafon',
+            'form-0-family': 'WIN',
+            'form-0-model': '102',
+            'form-0-price_gross': 107,
+            'form-0-vat_rate': 7,
+            'form-0-ear': 'right',
+        }
+        response = self.client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+
+        # should not create invoice obj
+        self.assertEqual(len(Invoice.objects.all()), 0)
+
+        # should not create Hearing_Aid obj
+        self.assertEqual(len(Hearing_Aid.objects.all()), 0)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
