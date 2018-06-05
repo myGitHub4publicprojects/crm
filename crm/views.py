@@ -12,7 +12,8 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import PatientForm, InvoiceForm, InvoiceTypeForm
 from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
-                     NFZ_New, PCPR_Estimate, HA_Invoice, Audiogram, Reminder, Invoice)
+                     NFZ_New, PCPR_Estimate, HA_Invoice, Audiogram, Reminder,
+                     Invoice, Other_Item)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
@@ -679,7 +680,17 @@ def invoice_create(request, patient_id):
 					)
 				
 				# if other device
-				# if form.cleaned_data['device_type'] == 'other':
+				if form.cleaned_data['device_type'] == 'other':
+					print('creating other item')
+					Other_Item.objects.create(
+						patient=patient,
+						make=form.cleaned_data['make'],
+						family=form.cleaned_data['family'],
+						model=form.cleaned_data['model'],
+						price_gross=form.cleaned_data['price_gross'],
+						vat_rate=form.cleaned_data['vat_rate'],
+						invoice=invoice
+					)
 				
 			# redirect to detail view with a success message
 			messages.success(request, 'Utworzono nową fakturę.')
