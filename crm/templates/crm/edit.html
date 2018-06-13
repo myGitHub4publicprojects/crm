@@ -98,6 +98,49 @@
 		</div>
 		<hr>
 
+
+		<!-- address -->
+		<div class="row mt-2">
+			<div class="col-xl">
+				<small class="text-muted">Ulica: </small>
+				<br>
+				<input type="text" name="street"
+					{% if patient.street %}
+						value="{{ patient.street|title }}"
+					{% endif %}
+				class="font-weight-bold">
+			</div>
+			<div class="col-xl">
+				<small class="text-muted">Numer budynku: </small>
+				<br>
+				<input type="text" name="house_number"
+					{% if patient.house_number %} value="{{ patient.house_number }}" {% endif %}
+				class="font-weight-bold">
+			</div>
+			<div class="col-xl">
+				<small class="text-muted">Numer mieszkania: </small>
+				<br>
+				<input type="text" name="apartment_number"
+					{% if patient.street %} value="{{ patient.apartment_number }}" {% endif %}
+				class="font-weight-bold">
+			</div>
+			<div class="col-xl">
+				<small class="text-muted">Miasto: </small>
+				<br>
+				<input type="text" name="city"
+					{% if patient.city %} value="{{ patient.city|title }}" {% endif %}
+				class="font-weight-bold">
+			</div>
+			<div class="col-xl">
+				<small class="text-muted">Kod pocztowy: </small>
+				<br>
+				<input type="text" name="zip_code"
+					{% if patient.zip_code %} value="{{ patient.zip_code }}" {% endif %}
+				class="font-weight-bold">
+			</div>
+		</div>
+		<hr>
+
 		<!-- patient summary note -->
 		<div class="row mt-2">
 			<div class="col-xl">
