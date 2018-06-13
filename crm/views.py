@@ -294,7 +294,14 @@ def updating(request, patient_id):
 	patient.phone_no=request.POST['usrtel']
 	patient.location = request.POST['location']
 	patient.notes = request.POST['summary_note']
-	update_list = ['first_name', 'last_name', 'phone_no', 'location', 'notes']
+	patient.street = request.POST['street']
+	patient.house_number = request.POST['house_number']
+	patient.apartment_number = request.POST['apartment_number']
+	patient.city = request.POST['city']
+	patient.zip_code = request.POST['zip_code']
+
+	update_list = ['first_name', 'last_name', 'phone_no', 'location', 'notes',
+                'street', 'house_number', 'apartment_number', 'zip_code', 'city']
 	if request.POST.get('bday'):
 		patient.date_of_birth=request.POST['bday']
 		update_list.append('date_of_birth')
