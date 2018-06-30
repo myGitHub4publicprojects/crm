@@ -1,4 +1,25 @@
-{{ invoice.patient }}
+
+<!-- patient details -->
+<div class="row mt-2">
+    <div class="col-6">
+        <h3>Odbiorca:</h3>
+        <p>{{ invoice.patient }}</p>
+        <p>
+            <span>
+                {% if invoice.patient.street %} {{ invoice.patient.street }} {% else %} {{ invoice.patient.city }} {% endif %} {{ invoice.patient.home_number }} {% if invoice.patient.apartment_number
+                %} /{{ invoice.patient.apartment_number }} {% endif %}
+            </span>
+        </P>
+        </p>
+        <P>
+            <span>{{ invoice.patient.zip_code }} {{ invoice.patient.city }}</span>
+        </P>
+    </div>
+    <div class="col-6">
+        <h3>Wystawiający:</h3>
+    </div>
+</div>
+<hr>
 <br>
 {{ invoice.timestamp }}
 <br>

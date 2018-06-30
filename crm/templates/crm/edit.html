@@ -254,15 +254,30 @@
 	<div class="btn btn-outline-danger">usuń pacjenta</div>
 </a>
 
-<a class="float-right mb-3" href="{% url 'crm:invoice_create' patient.id %}">
-	<div class="btn btn-outline-warning">utwórz nową fakturę</div>
-</a>
+
+<div id='invoiceCreate' class="btn btn-outline-warning float-right mb-3">Utwórz nową fakturę</div>
+
 
 <script>
 	var tel_no = document.querySelector('#patient_tel');
 	if (tel_no.value == 0) {
 		tel_no.className += 'bg-danger';
 		alert('Podaj prawidłowy numer telefonu');
+	}
+
+	var invoiceCreate = document.getElementById('invoiceCreate');
+	invoiceCreate.addEventListener('click', validAddress)
+	function validAddress(){
+		let zip_code = '{{ patient.zip_code }}';
+		let city = '{{ patient.city }}';
+		let house_number = '{{ patient.house_number }}';
+
+		if (zip_code != 'None' && city != 'None' && house_number != 'None'){
+			window.location.href = "{% url 'crm:invoice_create' patient.id %}";
+		}
+		else {
+			alert('Najpierw uzupełnij adres i zaktualizuj dane pacjenta');
+		}
 	}
 </script>
 

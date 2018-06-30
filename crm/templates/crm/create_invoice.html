@@ -1,5 +1,6 @@
 {% extends "crm/base.html" %} {% load static %} {% block content %}
-<h1>Dodaj nową fakturę dla: {{ patient }}</h1>
+<h3 class="text-muted text-center">Faktura dla:</h3>
+<h1 class="text-center">{{ patient }}</h1>
 
 {% if error_message %}
 <p>
@@ -10,16 +11,18 @@
 
 <!-- patient details -->
 <div class="row mt-2">
-    <h3>Odbiorca</h3>
-    <p>{{ patient }}</p>
-    <P>{{ patient.street }}</P>
-    <P>{{ patient.home_number }}
+    <p>
+    Adres: 
+    {% if patient.street %}
+        ul. {{ patient.street }}
+    {% else %}
+        {{ patient.city }}
+    {% endif %}
+    {{ patient.house_number }}
     {% if patient.apartment_number %}
     /{{ patient.apartment_number }}
-    {% endif %}
-    </P>
-    <P>{{ patient.zip_code }}</P>
-    <P>{{ patient.city }}</P>
+    {% endif %},
+    {{ patient.zip_code }} {{ patient.city }}</P>
 </div>
 <hr>
 
