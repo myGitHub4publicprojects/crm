@@ -78,7 +78,7 @@
 <div class="row mt-1">
 	<div class="col-lg-9">
 		<!-- name, age, tel -->
-		<div class="row mt-2">
+		<div class="row">
 			<div class="col-xl">
 			<small class="text-muted">Imię: </small><br>
 			<input type="text" name="fname" value="{{ patient.first_name|title }}" class="font-weight-bold" required>
@@ -96,11 +96,10 @@
 			<input id="patient_tel" type="tel" pattern="[0-9]{1,}" name="usrtel" value="{{ patient.phone_no }}" required>
 			</div>
 		</div>
-		<hr>
 
 
 		<!-- address -->
-		<div class="row mt-2">
+		<div class="row">
 			<div class="col-xl">
 				<small class="text-muted">Ulica: </small>
 				<br>
@@ -111,18 +110,15 @@
 				class="font-weight-bold">
 			</div>
 			<div class="col-xl">
-				<small class="text-muted">Numer budynku: </small>
+				<small class="text-muted">Numer budynku/lokalu: </small>
 				<br>
 				<input type="text" name="house_number"
 					{% if patient.house_number %} value="{{ patient.house_number }}" {% endif %}
-				class="font-weight-bold">
-			</div>
-			<div class="col-xl">
-				<small class="text-muted">Numer mieszkania: </small>
-				<br>
+				class="font-weight-bold w-25">
+				/
 				<input type="text" name="apartment_number"
 					{% if patient.street %} value="{{ patient.apartment_number }}" {% endif %}
-				class="font-weight-bold">
+				class="font-weight-bold w-25">
 			</div>
 			<div class="col-xl">
 				<small class="text-muted">Miasto: </small>
