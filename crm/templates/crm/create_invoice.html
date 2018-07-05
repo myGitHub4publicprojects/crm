@@ -26,17 +26,13 @@
 </div>
 <hr>
 
-<form method="post" action="">
+<!-- <form method="post" action="">
     {% csrf_token %}
     {{ form.as_p }}
-
     {{ formset.management_form }}
     {% for form in formset %}
         {{ form.as_p }}
     {% endfor %}
-
-
-    
         {% if form.errors %} {% for field in form %} {% for error in field.errors %}
     <div class="alert alert-danger">
         <strong>{{ error|escape }}</strong>
@@ -46,15 +42,29 @@
         <strong>{{ error|escape }}</strong>
     </div>
     {% endfor %} {% endif %}
-
     <input type="submit" value="Submit">
-</form>
+</form> -->
 
 
-<!-- 
-<form action="{% url 'crm:invoice_store' patient.id %}" method="post" id="new_invoice">
+<form action="{% url 'crm:invoice_store' patient.id %}" method="post" id="newInvoice">
     {% csrf_token %}
+    <!-- required code for formsets -->
+    <input id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" type="hidden" value="0" />
+        <!-- total forms setto 0 as they are increased when item is added -->
+    <input id="id_form-INITIAL_FORMS" name="form-INITIAL_FORMS" type="hidden" value="0" />
+    <input id="id_form-MIN_NUM_FORMS" name="form-MIN_NUM_FORMS" type="hidden" value="0" />
+    <input id="id_form-MAX_NUM_FORMS" name="form-MAX_NUM_FORMS" type="hidden" value="1000" />
     
+    <!-- invoice type -->
+    <p>
+        <label for="id_type">Rodzaj faktury:</label>
+        <select id="id_type" name="type" required>
+            <option value="" selected="selected" disabled>---------</option>
+            <option value="transfer">przelew</option>
+            <option value="cash">gotówka</option>
+        </select>
+    </p>
+
     <table id='currentItems' class="table table-bordered">
         <thead>
             <tr>
@@ -62,21 +72,15 @@
                 <td>Nazwa</td>
                 <td>PKWiU</td>
                 <td>ilość</td>
+                <td>Cena brutto</td>
                 <td>Cena netto</td>
-                <td>VAT [%]</td>
+                <td>Wartość netto</td>
+                <td>Stawka VAT [%]</td>
+                <td>Kwota VAT</td>
                 <td>wartość brutto</td>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>1</td>
-                <td>Aparat słuchowy Bernafon Zerena 9 B105</td>
-                <td>12</td>
-                <td>1</td>
-                <td>100</td>
-                <td>10</td>
-                <td>110</td>
-            </tr>
         </tbody>
     </table>
 
@@ -86,9 +90,8 @@
     <input class="btn btn-primary mb-3 float-right" type="submit" value="Zatwierdam fakturę" />
 
 </form>
-<hr> -->
-
-<!-- <button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj aparat</button>
+<hr>
+<button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj pozycję</button>
 <div id="newItem" class="row mb-3">
     <div class="col-xl-12">
         Aparat słuchowy: 
@@ -102,19 +105,18 @@
         <span id="currentItemPrice"> cena brutto: <span id="selectedPrice"></span></span>
         <input name="quantity" id="haQuantity" type="number" min="1" placeholder="ilość">
         <select name="side" id="haSelectSide">
-            <option value>Lewy</option>
-            <option value>Prawy</option>
-            <option value>L + P</option>
+            <option value = 'left'>Lewy</option>
+            <option value = 'right'>Prawy</option>
+            <option value = 'both'>L + P</option>
         </select>
         <button id="acceptItem" class="btn btn-secondary" type='button'>Zatwierdzam pozycję</button>
     </div>
-</div> -->
+</div>
 
 
-
-<!-- 
 <script>
-    var ha_models = document.getElementsByClassName('ha_models');
+    // var ha_models = document.getElementsByClassName('ha_models');
+    var form = document.getElementById('newInvoice');
     var table = document.getElementById('currentItems');
     var itemsNum = 0;
     var hearingAids = {{ my_data | safe }};
@@ -123,10 +125,13 @@
     var selectMake = document.getElementById('haSelectMake');
     var selectFamily = document.getElementById('haSelectFamily');
     var selectModel = document.getElementById('haSelectModel');
+    var currentItemPrice = document.getElementById('currentItemPrice');
     var selectedPrice = document.getElementById('selectedPrice');
     var haQuantity = document.getElementById('haQuantity');
     var addItem = document.getElementById('addItem');
     var selectSide = document.getElementById('haSelectSide');
+    var acceptItem = document.getElementById('acceptItem');
+    var totalForms = document.getElementById('id_form-TOTAL_FORMS');
 
     for (let i in hearingAids){
         var opt = document.createElement('option');
@@ -138,25 +143,27 @@
     selectMake.addEventListener('change', selectedMake);
     addItem.addEventListener('click', showForm);
     haQuantity.addEventListener('change', selectedQuantity);
-
-    for (let i of ha_models){
-        i.addEventListener('click', processItem);
-    }
-
+    acceptItem.addEventListener('click', processItem);
+    
     function showForm() {
         document.getElementById('newItem').style.display = 'block';
         addItem.style.display = 'none';
     }
 
     function processItem() {
-        console.log(this.value);
+        console.log(selectModel.value);
         // show the table with items
-        table.style.display = 'table';
-
+        form.style.display = 'block';
         var tbody = table.getElementsByTagName('tbody')[0];
 
         // increase number of items
         itemsNum++;
+
+        // set values
+        var pkwiuCode = '26.60.14.0';
+        var vatRate = 8;
+        var grossPrice = hearingAids[selectMake.value][selectFamily.value][selectModel.value];
+        var netPrice = ((grossPrice*100)/(100 + vatRate)).toFixed(2);
 
         // add new row
         var newRow = tbody.insertRow(tbody.rows.lenth);
@@ -169,18 +176,93 @@
         var cell5 = newRow.insertCell(4);
         var cell6 = newRow.insertCell(5);
         var cell7 = newRow.insertCell(6);
+        var cell8 = newRow.insertCell(7);
+        var cell9 = newRow.insertCell(8);
+        var cell10 = newRow.insertCell(9);
 
         // populate cells with data
-        cell1.innerHTML = 'jeden';
-        cell2.innerHTML = `Aparat słuchowy <input type="text" name="${itemsNum}_ha" value="${this.value}" disabled/>`;
-        cell3.innerHTML = 'jeden';
-        cell4.innerHTML = 'jeden';
-        cell5.innerHTML = 'jeden';
-        cell6.innerHTML = 'jeden';
-        cell7.innerHTML = 'jeden';
+        // item number
+        cell1.innerHTML = itemsNum;
+        // item name
+        cell2.innerHTML = `Aparat słuchowy ${selectMake.value} ${selectFamily.value} ${selectModel.value}`;
+        // PKWiU code
+        cell3.innerHTML = pkwiuCode;
+        // quantity
+        cell4.innerHTML = haQuantity.value;
+        // gross price
+        cell5.innerHTML = grossPrice;
+        // net price
+        cell6.innerHTML = netPrice;
+        // net value (quantity * net price)
+        cell7.innerHTML = haQuantity.value*netPrice;
+        // VAT rate
+        cell8.innerHTML = vatRate;
+        // VAT amount
+        cell9.innerHTML = ((haQuantity.value * netPrice)*(vatRate/100)).toFixed(2);
+        // gross value (gross price*quantity)
+        cell10.innerHTML = haQuantity.value * grossPrice;
+
+        // add inputs to the form (hidden)
+        var device_type = document.createElement("input");
+        device_type.type = "hidden";
+        device_type.name = `form-${totalForms.value}-device_type`;
+        device_type.value = "ha";
+        form.appendChild(device_type);
+
+        var make = document.createElement("input");
+        make.type = "hidden";
+        make.name = `form-${totalForms.value}-make`;
+        make.value = `${selectMake.value}`;
+        form.appendChild(make);
+
+        var family = document.createElement("input");
+        family.type = "hidden";
+        family.name = `form-${totalForms.value}-family`;
+        family.value = `${selectFamily.value}`;
+        form.appendChild(family);
+
+        var model = document.createElement("input");
+        model.type = "hidden";
+        model.name = `form-${totalForms.value}-model`;
+        model.value = `${selectModel.value}`;
+        form.appendChild(model);
+
+        var price_gross = document.createElement("input");
+        price_gross.type = 'hidden';
+        price_gross.name = `form-${totalForms.value}-price_gross`;
+        price_gross.value = grossPrice;
+        form.appendChild(price_gross);
+
+        var vat_rate = document.createElement("input");
+        vat_rate.type = 'hidden';
+        vat_rate.name = `form-${totalForms.value}-vat_rate`;
+        vat_rate.value = vatRate;
+        form.appendChild(vat_rate);
+
+        var ear = document.createElement("input");
+        ear.type = 'hidden';
+        ear.name = `form-${totalForms.value}-ear`;
+        ear.value = selectSide.value;
+        form.appendChild(ear);
+        
+
+        // increase total number of forms in a formset
+        totalForms.value++;
 
         // reset form
-
+        selectFamily.style.display = 'none';
+        selectModel.style.display = 'none';
+        selectedPrice.style.display = 'none';
+        haQuantity.style.display = 'none';
+        haQuantity.value = '';
+        selectSide.style.display = 'none';
+        currentItemPrice.style.display = 'none';
+        var currentMake = '';
+        var currentFamily = '';
+        selectMake.value = '';
+        document.getElementById('newItem').style.display = 'none';
+        addItem.style.display = 'inline-block';
+        acceptItem.style.display = 'none'
     }
 
     function selectedMake() {
@@ -228,21 +310,24 @@
     }
 
     function selectedModel() {
-        selectedPrice.innerText = hearingAids[currentMake][currentFamily][this.value]
-        document.getElementById('currentItemPrice').style.display = 'inline';
+        console.log(this.value);
+        console.log(hearingAids[currentMake][currentFamily]);
+        selectedPrice.innerText = hearingAids[currentMake][currentFamily][this.value];
+        selectedPrice.style.display = 'inline';
+        currentItemPrice.style.display = 'inline';
         haQuantity.style.display = 'inline-block';
     }
 
     function selectedQuantity() {
-        // if quantity == 2 set sides to both left and right
+        // if quantity == 2 and type == hearing aid - set sides to both left and right
 
         // display sides to choose from
         selectSide.style.display = 'inline-block';
 
         // display button to accept item and add it to the table
-        document.getElementById('acceptItem').style.display = 'inline-block'
+        acceptItem.style.display = 'inline-block'
     }
         
-</script> -->
+</script>
 
 {% endblock content %}
