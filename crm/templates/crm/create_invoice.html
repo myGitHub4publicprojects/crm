@@ -119,7 +119,8 @@
     var form = document.getElementById('newInvoice');
     var table = document.getElementById('currentItems');
     var itemsNum = 0;
-    var hearingAids = {{ my_data | safe }};
+    var hearingAids = {{ json_ha_list | safe }};
+    var json_other_devices = {{ json_other_devices | safe }};
     var currentMake = '';
     var currentFamily = '';
     var selectMake = document.getElementById('haSelectMake');

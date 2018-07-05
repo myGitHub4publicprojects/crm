@@ -18,6 +18,7 @@ from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
+from .other_devices import other_devices
 import json
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -656,7 +657,8 @@ def invoice_create(request, patient_id):
 	print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
-	js_data = json.dumps(ha_list)
+	json_ha_list = json.dumps(ha_list)
+	json_other_devices = json.dumps(other_devices)
 	InvoiceFormSet = formset_factory(InvoiceForm, extra=1)
 	if request.method == 'POST':
 		print(request.POST)
@@ -711,7 +713,8 @@ def invoice_create(request, patient_id):
     	
 	context = {	'patient': patient,
 				'ha_list': ha_list,
-				"my_data": js_data,
+				"json_ha_list": json_ha_list,
+            	'json_other_devices': json_other_devices,
 				'form': form,
 				'formset': InvoiceFormSet()}
 	return render(request, 'crm/create_invoice.html', context)
