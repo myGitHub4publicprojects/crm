@@ -22,7 +22,7 @@
     overflow: scroll;
 }
 
-#newInvoice, #haSelectFamily, #haSelectModel, #currentItemPrice, #haQuantity, #haSelectSide, #newItem,
+#newInvoice, #haSelectMake, #haSelectFamily, #haSelectModel, #currentItemPrice, #haQuantity, #haSelectSide, #newItem,
 #acceptItem, #invoiceNote {
     display: none;
 }

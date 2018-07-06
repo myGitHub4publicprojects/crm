@@ -94,7 +94,11 @@
 <button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj pozycję</button>
 <div id="newItem" class="row mb-3">
     <div class="col-xl-12">
-        Aparat słuchowy: 
+        <select name="device_type" id="selectDeviceType">
+            <option disabled selected value> -- wybierz -- </option>
+            <option value='ha'>Aparat słuchowy</option>
+            <option value='other'>Inne</option>
+        </select>
         <select name="make" id="haSelectMake">
             <option disabled selected value> -- wybierz -- </option>
         </select>
@@ -120,9 +124,12 @@
     var table = document.getElementById('currentItems');
     var itemsNum = 0;
     var hearingAids = {{ json_ha_list | safe }};
-    var json_other_devices = {{ json_other_devices | safe }};
+    var other_devices = {{ json_other_devices | safe }};
+    var devices = {};
+    // var currentDeviceType = '';
     var currentMake = '';
     var currentFamily = '';
+    var selectDeviceType = document.getElementById('selectDeviceType');
     var selectMake = document.getElementById('haSelectMake');
     var selectFamily = document.getElementById('haSelectFamily');
     var selectModel = document.getElementById('haSelectModel');
@@ -134,13 +141,7 @@
     var acceptItem = document.getElementById('acceptItem');
     var totalForms = document.getElementById('id_form-TOTAL_FORMS');
 
-    for (let i in hearingAids){
-        var opt = document.createElement('option');
-        opt.value = i;
-        opt.innerHTML = i;
-        // opt.addEventListener('change', selectMake);
-        selectMake.appendChild(opt);
-    }
+    selectDeviceType.addEventListener('change', processDeviceType);
     selectMake.addEventListener('change', selectedMake);
     addItem.addEventListener('click', showForm);
     haQuantity.addEventListener('change', selectedQuantity);
@@ -163,7 +164,7 @@
         // set values
         var pkwiuCode = '26.60.14.0';
         var vatRate = 8;
-        var grossPrice = hearingAids[selectMake.value][selectFamily.value][selectModel.value];
+        var grossPrice = devices[selectMake.value][selectFamily.value][selectModel.value];
         var netPrice = ((grossPrice*100)/(100 + vatRate)).toFixed(2);
 
         // add new row
@@ -185,7 +186,10 @@
         // item number
         cell1.innerHTML = itemsNum;
         // item name
-        cell2.innerHTML = `Aparat słuchowy ${selectMake.value} ${selectFamily.value} ${selectModel.value}`;
+        cell2.innerHTML = `${selectMake.value} ${selectFamily.value} ${selectModel.value}`;
+        if (selectDeviceType.value=='ha'){
+            cell2.innerHTML = 'Aparat słuchowy ' + cell2.innerHTML
+        }
         // PKWiU code
         cell3.innerHTML = pkwiuCode;
         // quantity
@@ -207,7 +211,7 @@
         var device_type = document.createElement("input");
         device_type.type = "hidden";
         device_type.name = `form-${totalForms.value}-device_type`;
-        device_type.value = "ha";
+        device_type.value = selectDeviceType.value;
         form.appendChild(device_type);
 
         var make = document.createElement("input");
@@ -251,6 +255,7 @@
         totalForms.value++;
 
         // reset form
+        selectMake.style.display = 'none';
         selectFamily.style.display = 'none';
         selectModel.style.display = 'none';
         selectedPrice.style.display = 'none';
@@ -260,18 +265,59 @@
         currentItemPrice.style.display = 'none';
         var currentMake = '';
         var currentFamily = '';
+        selectDeviceType.value = '';
         selectMake.value = '';
         document.getElementById('newItem').style.display = 'none';
         addItem.style.display = 'inline-block';
         acceptItem.style.display = 'none'
     }
 
+    function processDeviceType() {
+        console.log(this.value);
+        selectMake.style.display = 'inline-block';
+        
+        // reset select element - useful when user changed his mind
+        selectMake.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
+        currentDeviceType = '';
+        // process hearing aid
+        if (selectDeviceType.value == 'ha'){
+            for (let i in hearingAids) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i;
+                // opt.addEventListener('change', selectMake);
+                selectMake.appendChild(opt);
+            }
+            // currentDeviceType = 'ha'
+        }
+
+        // process other devices
+        if (selectDeviceType.value == 'other') {
+            console.log('others');
+            for (let i in other_devices) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i;
+                // opt.addEventListener('change', selectMake);
+                selectMake.appendChild(opt);
+            }
+            // currentDeviceType = 'other'
+        }
+        
+    }
     function selectedMake() {
         // reset select element - useful when user changed his mind
         selectFamily.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
 
         // propagate options
-        for (let i in hearingAids[this.value]){
+        if (selectDeviceType.value == 'ha'){
+            devices = hearingAids;
+        }
+        else if (selectDeviceType.value == 'other') {
+            devices = other_devices;
+        }
+
+        for (let i in devices[this.value]){
             var opt = document.createElement('option');
             opt.value = i;
             opt.innerHTML = i;
@@ -289,11 +335,13 @@
     }
 
     function selectedFamily() {
+        console.log('family: ', this.value);
+        console.log('devices: ', devices);
         // reset select element - useful when user changed his mind
         selectModel.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
 
         // propagate options
-        for (let i in hearingAids[currentMake][this.value]) {
+        for (let i in devices[currentMake][this.value]) {
             var opt = document.createElement('option');
             opt.value = i;
             opt.innerHTML = i;
@@ -312,8 +360,8 @@
 
     function selectedModel() {
         console.log(this.value);
-        console.log(hearingAids[currentMake][currentFamily]);
-        selectedPrice.innerText = hearingAids[currentMake][currentFamily][this.value];
+        console.log(devices[currentMake][currentFamily]);
+        selectedPrice.innerText = devices[currentMake][currentFamily][this.value];
         selectedPrice.style.display = 'inline';
         currentItemPrice.style.display = 'inline';
         haQuantity.style.display = 'inline-block';
