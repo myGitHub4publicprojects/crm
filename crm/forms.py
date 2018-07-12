@@ -28,5 +28,6 @@ class InvoiceForm(forms.Form):
  	# eg. ROGER CLIP-ON MIC + 2, twarda, 102
 	price_gross = forms.DecimalField(max_digits=6, decimal_places=2)
 	vat_rate = forms.IntegerField()
+	pkwiu_code = forms.CharField(max_length=20)
 	ear = forms.ChoiceField(choices=(
 		('left', 'left'), ('right', 'right')))

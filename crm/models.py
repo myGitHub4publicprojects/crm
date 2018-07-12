@@ -91,6 +91,7 @@ class Hearing_Aid(Hearing_Aid_Main):
 	# default 0 for adding currenly used hearing aids from other producers
 	# with unknown price
 	vat_rate = models.IntegerField(default=8)
+	pkwiu_code = models.CharField(max_length=20, null=True, blank=True)
 	invoice = models.ForeignKey(
 		Invoice, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -134,9 +135,9 @@ class Other_Item(models.Model):
  	# eg. ROGER CLIP-ON MIC + 2, twarda
     price_gross = models.DecimalField(max_digits=6, decimal_places=2)
     vat_rate = models.IntegerField()
+    pkwiu_code = models.CharField(max_length=20, null=True, blank=True)
     invoice = models.ForeignKey(
 		Invoice, on_delete=models.CASCADE, null=True, blank=True)
-	
 	
     def __str__(self):
 		return ' '.join([self.make, self.family, self.model])

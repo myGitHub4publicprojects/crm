@@ -676,6 +676,9 @@ def invoice_create(request, patient_id):
 				# if hearing aid
 				if form.cleaned_data['device_type'] == 'ha':
 					print('creating aparat')
+
+					# how many to create: 'quantity'
+
 					Hearing_Aid.objects.create(
 						patient=patient,
 						ha_make=form.cleaned_data['make'],
@@ -684,6 +687,7 @@ def invoice_create(request, patient_id):
 						purchase_date=today,
 						price_gross=form.cleaned_data['price_gross'],
 						vat_rate=form.cleaned_data['vat_rate'],
+					  	pkwiu_code = form.cleaned_data['pkwiu_code'],
 						ear=form.cleaned_data['ear'],
 						invoice=invoice
 					)
@@ -691,6 +695,9 @@ def invoice_create(request, patient_id):
 				# if other device
 				if form.cleaned_data['device_type'] == 'other':
 					print('creating other item')
+
+					# how many to create: 'quantity'
+
 					Other_Item.objects.create(
 						patient=patient,
 						make=form.cleaned_data['make'],
@@ -698,6 +705,7 @@ def invoice_create(request, patient_id):
 						model=form.cleaned_data['model'],
 						price_gross=form.cleaned_data['price_gross'],
 						vat_rate=form.cleaned_data['vat_rate'],
+					  	pkwiu_code = form.cleaned_data['pkwiu_code'],
 						invoice=invoice
 					)
 				

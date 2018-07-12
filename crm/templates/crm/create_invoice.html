@@ -1,11 +1,14 @@
-{% extends "crm/base.html" %} {% load static %} {% block content %}
+{% extends "crm/base.html" %}
+{% load static %}
+{% block content %}
 <h3 class="text-muted text-center">Faktura dla:</h3>
 <h1 class="text-center">{{ patient }}</h1>
 
 {% if error_message %}
 <p>
     <strong>{{ error_message }}</strong>
-</p>{% endif %}
+</p>
+{% endif %}
 
 
 
@@ -46,15 +49,15 @@
 </form> -->
 
 
-<form action="{% url 'crm:invoice_store' patient.id %}" method="post" id="newInvoice">
+<form action="{% url 'crm:invoice_create' patient.id %}" method="post" id="newInvoice">
     {% csrf_token %}
     <!-- required code for formsets -->
     <input id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" type="hidden" value="0" />
-        <!-- total forms setto 0 as they are increased when item is added -->
+    <!-- total forms setto 0 as they are increased when item is added -->
     <input id="id_form-INITIAL_FORMS" name="form-INITIAL_FORMS" type="hidden" value="0" />
     <input id="id_form-MIN_NUM_FORMS" name="form-MIN_NUM_FORMS" type="hidden" value="0" />
     <input id="id_form-MAX_NUM_FORMS" name="form-MAX_NUM_FORMS" type="hidden" value="1000" />
-    
+
     <!-- invoice type -->
     <p>
         <label for="id_type">Rodzaj faktury:</label>
@@ -91,6 +94,8 @@
 
 </form>
 <hr>
+
+
 <button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj pozycję</button>
 <div id="newItem" class="row mb-3">
     <div class="col-xl-12">
@@ -162,8 +167,18 @@
         itemsNum++;
 
         // set values
-        var pkwiuCode = '26.60.14.0';
-        var vatRate = 8;
+        var pkwiuCode = '';
+        if (selectDeviceType.value == 'ha'){
+            pkwiuCode = '26.60.14.0';
+        }
+        else if (selectMake.value == 'WKŁADKA USZNA'){
+            pkwiuCode = '32.50.23.0';
+        }
+        var vatRate = 23;
+        if (selectDeviceType.value == 'ha' || selectMake.value == 'WKŁADKA USZNA') {
+            vatRate = 8;
+        }
+
         var grossPrice = devices[selectMake.value][selectFamily.value][selectModel.value];
         var netPrice = ((grossPrice*100)/(100 + vatRate)).toFixed(2);
 
@@ -243,6 +258,12 @@
         vat_rate.name = `form-${totalForms.value}-vat_rate`;
         vat_rate.value = vatRate;
         form.appendChild(vat_rate);
+
+        var pkwiu_code = document.createElement("input");
+        pkwiu_code.type = 'hidden';
+        pkwiu_code.name = `form-${totalForms.value}-pkwiu_code`;
+        pkwiu_code.value = pkwiuCode;
+        form.appendChild(pkwiu_code);
 
         var ear = document.createElement("input");
         ear.type = 'hidden';
