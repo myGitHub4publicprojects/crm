@@ -114,9 +114,6 @@
         <span id="currentItemPrice"> cena brutto: <span id="selectedPrice"></span></span>
         <input name="quantity" id="haQuantity" type="number" min="1" placeholder="ilość">
         <select name="side" id="haSelectSide">
-            <option value = 'left'>Lewy</option>
-            <option value = 'right'>Prawy</option>
-            <option value = 'both'>L + P</option>
         </select>
         <button id="acceptItem" class="btn btn-secondary" type='button'>Zatwierdzam pozycję</button>
     </div>
@@ -265,6 +262,13 @@
         pkwiu_code.value = pkwiuCode;
         form.appendChild(pkwiu_code);
 
+        var quantity = document.createElement("input");
+        quantity.type = 'hidden';
+        quantity.name = `form-${totalForms.value}-quantity`;
+        quantity.value = haQuantity.value;
+        form.appendChild(quantity);
+
+
         var ear = document.createElement("input");
         ear.type = 'hidden';
         ear.name = `form-${totalForms.value}-ear`;
@@ -389,7 +393,28 @@
     }
 
     function selectedQuantity() {
+        // reset values
+        selectSide.innerHTML = '';
+        for (let i of ['left', 'right']){
+            var side = document.createElement("option");
+            side.value = i;
+            if (i=='left'){
+                side.innerHTML = 'Lewy';
+            }
+            else {
+                side.innerHTML = 'Prawy';
+            }
+            selectSide.appendChild(side);
+        }
+        
         // if quantity == 2 and type == hearing aid - set sides to both left and right
+        console.log(this.value)
+        if (this.value==2 && selectDeviceType.value == 'ha'){
+            var both = document.createElement("option");
+            both.value = 'both';
+            both.innerHTML = 'L+P';
+            selectSide.appendChild(both);
+        }
 
         // display sides to choose from
         selectSide.style.display = 'inline-block';

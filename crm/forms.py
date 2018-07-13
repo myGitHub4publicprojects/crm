@@ -29,5 +29,6 @@ class InvoiceForm(forms.Form):
 	price_gross = forms.DecimalField(max_digits=6, decimal_places=2)
 	vat_rate = forms.IntegerField()
 	pkwiu_code = forms.CharField(max_length=20)
+	quantity = forms.IntegerField()
 	ear = forms.ChoiceField(choices=(
-		('left', 'left'), ('right', 'right')))
+		('left', 'left'), ('right', 'right'), ('both', 'both')))

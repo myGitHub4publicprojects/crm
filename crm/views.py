@@ -654,7 +654,7 @@ def inactivate_reminder(request, reminder_id):
 
 @login_required
 def invoice_create(request, patient_id):
-	print('in create view:')
+	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
 	ha_list = Hearing_Aid.ha_list
 	json_ha_list = json.dumps(ha_list)
@@ -676,26 +676,57 @@ def invoice_create(request, patient_id):
 				# if hearing aid
 				if form.cleaned_data['device_type'] == 'ha':
 					print('creating aparat')
+					# print(form)
+					quantity = int(form.cleaned_data['quantity'])
+					ear = form.cleaned_data['ear']
+					if quantity==1:
+    						print('jeden')
+						Hearing_Aid.objects.create(
+							patient=patient,
+							ha_make=form.cleaned_data['make'],
+							ha_family=form.cleaned_data['family'],
+							ha_model=form.cleaned_data['model'],
+							purchase_date=today,
+							price_gross=form.cleaned_data['price_gross'],
+							vat_rate=form.cleaned_data['vat_rate'],
+							pkwiu_code = form.cleaned_data['pkwiu_code'],
+							ear = ear,
+							invoice=invoice
+						)
+					elif quantity==2 and ear=='both':
+    						for i in ['left', 'right']:
+    							Hearing_Aid.objects.create(
+									patient=patient,
+									ha_make=form.cleaned_data['make'],
+									ha_family=form.cleaned_data['family'],
+									ha_model=form.cleaned_data['model'],
+									purchase_date=today,
+									price_gross=form.cleaned_data['price_gross'],
+									vat_rate=form.cleaned_data['vat_rate'],
+									pkwiu_code = form.cleaned_data['pkwiu_code'],
+									ear = i,
+									invoice=invoice
+								)
 
-					# how many to create: 'quantity'
-
-					Hearing_Aid.objects.create(
-						patient=patient,
-						ha_make=form.cleaned_data['make'],
-						ha_family=form.cleaned_data['family'],
-						ha_model=form.cleaned_data['model'],
-						purchase_date=today,
-						price_gross=form.cleaned_data['price_gross'],
-						vat_rate=form.cleaned_data['vat_rate'],
-					  	pkwiu_code = form.cleaned_data['pkwiu_code'],
-						ear=form.cleaned_data['ear'],
-						invoice=invoice
-					)
+					elif quantity > 1:
+    						for i in range(quantity):
+    							Hearing_Aid.objects.create(
+									patient=patient,
+									ha_make=form.cleaned_data['make'],
+									ha_family=form.cleaned_data['family'],
+									ha_model=form.cleaned_data['model'],
+									purchase_date=today,
+									price_gross=form.cleaned_data['price_gross'],
+									vat_rate=form.cleaned_data['vat_rate'],
+									pkwiu_code = form.cleaned_data['pkwiu_code'],
+									ear = ear,
+									invoice=invoice
+								)
 				
 				# if other device
 				if form.cleaned_data['device_type'] == 'other':
 					print('creating other item')
-
+					print('Quant: ', form.cleaned_data['quantity'],)
 					# how many to create: 'quantity'
 
 					Other_Item.objects.create(
