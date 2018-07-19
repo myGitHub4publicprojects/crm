@@ -19,7 +19,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-import json
+import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
 
@@ -768,7 +768,31 @@ def invoice_store(request, patient_id):
 @login_required
 def invoice_detail(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
-    return render(request, 'crm/detail_invoice.html', {'invoice': invoice} )
+    ha_objects = invoice.hearing_aid_set.all()
+    ha_list = {}
+    for i in ha_objects:
+    	if str(i) not in ha_list:
+			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+			ha_list[str(i)] = {
+				# 'name': str(i),
+				'pkwiu_code': i.pkwiu_code,
+				'quantity': 1,
+				'price_gross': i.price_gross,
+				'net_price': net_price,
+				'net_value': net_price,
+				'vat_rate': i.vat_rate,
+				'vat_amount': i.price_gross - decimal.Decimal(net_price),
+				'gross_value': i.price_gross
+			 }
+        else:
+    		ha_list[str(i)]['quantity'] += 1
+    		current_quantity = ha_list[str(i)]['quantity']
+    		ha_list[str(i)]['net_value'] *= current_quantity
+    		ha_list[str(i)]['vat_amount'] *= current_quantity
+    		ha_list[str(i)]['gross_value'] *= current_quantity
+
+	context = {'ha_list': ha_list, 'invoice': invoice}
+    return render(request, 'crm/detail_invoice.html', context)
 
 
 @login_required

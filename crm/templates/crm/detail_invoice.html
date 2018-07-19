@@ -22,6 +22,45 @@
 </div>
 <hr>
 <br>
-{{ invoice.timestamp }}
+Wystawiona: {{ invoice.timestamp }}
 <br>
-{{ invoice.type }}
+Typ faktury: {{ invoice.type }}
+<br>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa pozycji</th>
+            <th>PKWiU</th>
+            <th>ilość</th>
+            <th>Cena brutto</th>
+            <th>Cena netto</th>
+            <th>Wartość netto</th>
+            <th>Stawka VAT [%]</th>
+            <th>Kwota VAT</th>
+            <th>wartość brutto</th>
+        </tr>
+    </thead>
+
+{% if invoice.hearing_aid_set.all %}   
+    <tbody>
+        {% for ha in invoice.hearing_aid_set.all %}
+        <tr>
+            <td>Aparat słuchowy {{ ha }}</td>
+            <td>{{ ha.pkwiu_code }}</td>
+            <td>1</td>
+            <td>{{ ha.price_gross }}</td>
+            <td>netto</td>
+            <td>w netto</td>
+            <td>{{ ha.vat_rate }}</td>
+            <td>kwota vat</td>
+            <td>{{ ha.price_gross }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+{% endif %}
+
+{% for ha in ha_list %}
+    {{ ha }}
+{% endfor %}
