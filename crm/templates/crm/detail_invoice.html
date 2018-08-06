@@ -1,4 +1,11 @@
+{% extends "crm/base.html" %}
 {% load static %}
+{% block content %}
+
+<h1 class="text-center">Faktura VAT</h1>
+<p>Wystawiona: {{ invoice.timestamp }}</p>
+<p>Typ faktury: {{ invoice.type }}</p>
+<hr>
 
 <!-- patient details -->
 <div class="row mt-2">
@@ -18,14 +25,14 @@
     </div>
     <div class="col-6">
         <h3>Wystawiający:</h3>
+        <p>Sonovox Aparaty Słuchowe Barbara Golon-Szczepaniak</p>
+        <P>ul. Wagi 6/1</P>
+        <p>61-244 Poznań</p>
+        <p>NIP: 7821377519</p>
     </div>
 </div>
 <hr>
-<br>
-Wystawiona: {{ invoice.timestamp }}
-<br>
-Typ faktury: {{ invoice.type }}
-<br>
+
 <table class="table">
     <thead>
         <tr>
@@ -41,7 +48,7 @@ Typ faktury: {{ invoice.type }}
         </tr>
     </thead>
 
-{% if invoice.hearing_aid_set.all %}   
+<!-- {% if invoice.hearing_aid_set.all %}   
     <tbody>
         {% for ha in invoice.hearing_aid_set.all %}
         <tr>
@@ -59,8 +66,27 @@ Typ faktury: {{ invoice.type }}
     </tbody>
 
 </table>
+{% endif %} -->
+
+
+{% if ha_list %}
+<tbody>
+    {% for key, value in ha_list.items %}
+    <tr>
+        <td>Aparat słuchowy {{ key }}</td>
+        <td>{{ value.pkwiu_code }}</td>
+        <td>{{ value.quantity }}</td>
+        <td>{{ value.price_gross }}</td>
+        <td>{{ value.net_price }}</td>
+        <td>{{ value.net_value }}</td>
+        <td>{{ value.vat_rate }}</td>
+        <td>{{ value.vat_amount }}</td>
+        <td>{{ value.gross_value }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+</table>
 {% endif %}
 
-{% for ha in ha_list %}
-    {{ ha }}
-{% endfor %}
+{% endblock content %}

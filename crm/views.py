@@ -781,7 +781,7 @@ def invoice_detail(request, invoice_id):
 				'net_price': net_price,
 				'net_value': net_price,
 				'vat_rate': i.vat_rate,
-				'vat_amount': i.price_gross - decimal.Decimal(net_price),
+				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
 				'gross_value': i.price_gross
 			 }
         else:
@@ -792,6 +792,7 @@ def invoice_detail(request, invoice_id):
     		ha_list[str(i)]['gross_value'] *= current_quantity
 
 	context = {'ha_list': ha_list, 'invoice': invoice}
+	# print(ha_list)
     return render(request, 'crm/detail_invoice.html', context)
 
 
