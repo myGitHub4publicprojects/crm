@@ -792,6 +792,10 @@ def invoice_detail(request, invoice_id):
     		ha_list[str(i)]['gross_value'] *= current_quantity
 
 	context = {'ha_list': ha_list, 'invoice': invoice}
+	# if this ivnvoice is the last one in the system enable its removal
+	if Invoice.objects.all().last() == invoice:
+		print('this is last invoice')
+		context['removable'] = 'removable'
 	# print(ha_list)
     return render(request, 'crm/detail_invoice.html', context)
 
