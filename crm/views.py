@@ -396,6 +396,17 @@ def updating(request, patient_id):
 				patient=patient, side=ear, date=request.POST['NFZ_' + ear])
 			new_action.append('Dodano potwierdzony ' + pl_side + ' wniosek ' +
                             'z datą ' + request.POST['NFZ_' + ear] + '.')
+
+			# Reminders
+			# inactivate Reminder.nfz_new if any:
+			nfz_new = NFZ_New.objects.filter(
+					patient=patient, side=ear, in_progress=True)
+			reminder_nfz_new = Reminder.objects.filter(nfz_new=nfz_new)
+			if reminder_nfz_new:
+				reminder_nfz_new[0].active = False
+				reminder_nfz_new[0].save()
+
+			# add Reminder.nfz_confirmed
 			Reminder.objects.create(nfz_confirmed=new_nfz_confirmed)
 
 
@@ -427,7 +438,25 @@ def updating(request, patient_id):
 				pcpr_estimate.ha_make + ' ' + pcpr_estimate.ha_family + ' ' +
                 pcpr_estimate.ha_model + ', ' +
 				'z datą ' + date + '.')
+			
+			# Reminders
+			# add new			
 			Reminder.objects.create(pcpr=pcpr_estimate)
+
+			# inactivate Reminder.nfz_new and Reminder.nfz_confirmed if any:
+			nfz_new = NFZ_New.objects.filter(
+                patient=patient, side=ear, in_progress=True)
+			reminder_nfz_new = Reminder.objects.filter(nfz_new=nfz_new)
+			if reminder_nfz_new:
+				reminder_nfz_new[0].active = False
+				reminder_nfz_new[0].save()
+
+			nfz_confirmed = NFZ_Confirmed.objects.filter(
+                patient=patient, side=ear, in_progress=True)
+			reminder_nfz_confirmed = Reminder.objects.filter(nfz_confirmed=nfz_confirmed)
+			if reminder_nfz_confirmed:
+				reminder_nfz_confirmed[0].active = False
+				reminder_nfz_confirmed[0].save()
 
 			# remove PCPR_Estimate from currently active
 		if request.POST.get('pcpr_' + ear + '_remove'):

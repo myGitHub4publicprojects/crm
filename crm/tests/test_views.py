@@ -693,7 +693,13 @@ class TestStoreView(TestCase):
                 'left_PCPR_date': '2003-01-01',
                 'right_PCPR_date': '2004-01-01',
                 'note': 'p1_note',
+                'street': 'some_street',
+                'house_number': '1',
+                'apartment_number': '2',
+                'city': 'some_city',
+                'zip_code': 'zip_c'
                 }
+
         url = reverse('crm:store')
         # id of new patient should be 1
         expected_url = reverse('crm:edit', args=(1,))
@@ -719,7 +725,12 @@ class TestStoreView(TestCase):
                 'usrtel': 1,
                 'location': 'some_location',
                 'left_other_ha': 'Starkey',
-                'right_other_ha': 'Beltone virte c g90'
+                'right_other_ha': 'Beltone virte c g90',
+                'street': 'some_street',
+                'house_number': '1',
+                'apartment_number': '2',
+                'city': 'some_city',
+                'zip_code': 'zip_c'
                 }
         url = reverse('crm:store')
         # id of new patient should be 1
@@ -741,11 +752,16 @@ class TestStoreView(TestCase):
 
 class TestUpdatingView(TestCase):
     data = {'fname': 'Adam',
-                    'lname': 'Atkins',
-                    'usrtel': 1,
-                    'location': 'some_location',
-                    'summary_note': 'some note'
-                    }
+            'lname': 'Atkins',
+            'usrtel': 1,
+            'location': 'some_location',
+            'summary_note': 'some note',
+            'street': 'some_street',
+            'house_number': '1',
+            'apartment_number': '2',
+            'city': 'some_city',
+            'zip_code': 'zip_c'
+            }
     def setUp(self):
         user_john = create_user()
         patient1 = create_patient(user_john)
@@ -989,7 +1005,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
         self.assertEqual(response.context['reminders'], 2)
 
-    def test_remove_NFZ(self):
+    def test_remove_NFZ_New(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         n1 = NFZ_New.objects.create(patient=patient1,
@@ -1025,7 +1041,27 @@ class TestUpdatingView(TestCase):
 
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-    def test_adding_NFZ_confirmed(self):
+        # should inactivate 2 Reminder.nfz_new
+        left_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        left_new_nfz = left_nfz_new_all[0]
+        right_new_nfz = right_nfz_new_all[0]
+        left_new_reminders = Reminder.objects.filter(
+            nfz_new=left_new_nfz)
+        self.assertEqual(len(left_new_reminders), 1)
+        right_new_reminders = Reminder.objects.filter(
+            nfz_new=right_new_nfz)
+        self.assertEqual(len(right_new_reminders), 1)
+        self.assertFalse(left_new_reminders.last().active)
+        self.assertFalse(right_new_reminders.last().active)
+
+        # there should be 2 Reminders in total (2 inactive)
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 2)
+
+    def test_adding_NFZ_confirmed_no_NFZ_New(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
@@ -1048,9 +1084,80 @@ class TestUpdatingView(TestCase):
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Dodano potwierdzony lewy wniosek z datą 2001-01-01. ' + \
                         'Dodano potwierdzony prawy wniosek z datą 2001-01-02.'
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+        # should create 2 reminders (Reminder.nfz_confirmed)
+        left_nfz = left_nfz_all[0]
+        right_nfz = right_nfz_all[0]
+        left_reminder = Reminder.objects.filter(nfz_confirmed=left_nfz)
+        self.assertEqual(len(left_reminder), 1)
+        right_reminder = Reminder.objects.filter(nfz_confirmed=right_nfz)
+        self.assertEqual(len(right_reminder), 1)
         reminders = Reminder.objects.all()
         self.assertEqual(len(reminders), 2)
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        
+
+    def test_adding_NFZ_confirmed_previous_NFZ_New(self):
+        '''confirmed NFZ are added where NFZ_New instances already exists,
+        reminders about NFZ_New should be deactivated'''
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        n1 = NFZ_New.objects.create(patient=patient1,
+                                   side='left',
+                                   date='2000-01-01')
+        n2 = NFZ_New.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        Reminder.objects.create(nfz_new=n1, activation_date=today)
+        Reminder.objects.create(nfz_new=n2, activation_date=today)
+        data = self.data.copy()
+        data['NFZ_left'] = '2001-01-01'
+        data['NFZ_right'] = '2001-01-02'
+        url = reverse('crm:updating', args=(patient1.id,))
+        response = self.client.post(url, data, follow=True)
+       
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(len(left_nfz_confirmed_all), 1)
+        self.assertEqual(len(right_nfz_confirmed_all), 1)
+        self.assertEqual(str(left_nfz_confirmed_all.last().date), '2001-01-01')
+        self.assertEqual(str(right_nfz_confirmed_all.last().date), '2001-01-02')
+
+        # should inactivate 2 Reminder.nfz_new
+        left_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        left_new_nfz = left_nfz_new_all[0]
+        right_new_nfz = right_nfz_new_all[0]
+        left_new_reminders = Reminder.objects.filter(
+            nfz_new=left_new_nfz)
+        self.assertEqual(len(left_new_reminders), 1)
+        right_new_reminders = Reminder.objects.filter(
+            nfz_new=right_new_nfz)
+        self.assertEqual(len(right_new_reminders), 1)
+        self.assertFalse(left_new_reminders.last().active)
+        self.assertFalse(right_new_reminders.last().active)
+
+        # and create 2 Reminder.nfz_confirmed (active)
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertTrue(left_confirmed_reminders.last().active)
+        self.assertTrue(right_confirmed_reminders.last().active)
+
+
+        # there should be 4 Reminders in total (2 active and 2 inactive)
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 4)
+
 
     def test_adding_another_NFZ_confirmed(self):
         self.client.login(username='john', password='glassonion')
@@ -1074,7 +1181,6 @@ class TestUpdatingView(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-
         left_nfz_all = NFZ_Confirmed.objects.filter(patient=patient1, side='left')
         right_nfz_all = NFZ_Confirmed.objects.filter(
             patient=patient1, side='right')
@@ -1085,7 +1191,7 @@ class TestUpdatingView(TestCase):
         self.assertEqual(response.context['reminders'],2)
 
 
-    def test_remove_NFZ(self):
+    def test_remove_NFZ_Confirmed(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         n1 = NFZ_Confirmed.objects.create(patient=patient1,
@@ -1107,24 +1213,63 @@ class TestUpdatingView(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-        left_nfz_all = NFZ_Confirmed.objects.filter(
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
             patient=patient1, side='left')
-        right_nfz_all = NFZ_Confirmed.objects.filter(
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
             patient=patient1, side='right')
-        self.assertEqual(len(left_nfz_all), 1)
-        self.assertEqual(len(right_nfz_all), 1)
-        self.assertFalse(left_nfz_all.last().in_progress)
-        self.assertFalse(right_nfz_all.last().in_progress)
+        self.assertEqual(len(left_nfz_confirmed_all), 1)
+        self.assertEqual(len(right_nfz_confirmed_all), 1)
+        self.assertFalse(left_nfz_confirmed_all.last().in_progress)
+        self.assertFalse(right_nfz_confirmed_all.last().in_progress)
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Usunięto lewy wniosek z datą 2000-01-01. ' + \
                         'Usunięto prawy wniosek z datą 2000-01-02.'
 
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
+        # should inactivate 2 Reminder.nfz_confirmed
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
+        # there should be 2 Reminders in total (2 inactive)
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 2)
+
 
     def test_adding_pcpr_estimates(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
+        n1 = NFZ_New.objects.create(patient=patient1,
+                                    side='left',
+                                    date='2000-01-01')
+        n2 = NFZ_New.objects.create(patient=patient1,
+                                    side='right',
+                                    date='2000-01-02')
+        Reminder.objects.create(nfz_new=n1, activation_date=today)
+        Reminder.objects.create(nfz_new=n2, activation_date=today)
+
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='left',
+                                     date='2000-01-01')
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        Reminder.objects.create(nfz_confirmed=n1)
+        Reminder.objects.create(nfz_confirmed=n2)
+
+
         data = self.data.copy()
         data['left_pcpr_ha'] = 'b1_family1_model1'
         data['right_pcpr_ha'] = 'b2_family2_model2'
@@ -1152,6 +1297,42 @@ class TestUpdatingView(TestCase):
 
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
+        # reminders
+        # should inactivate Reminder.nfz_new and Reminder.nfz_confirmed if any
+        left_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        left_new_nfz = left_nfz_new_all[0]
+        right_new_nfz = right_nfz_new_all[0]
+        left_new_reminders = Reminder.objects.filter(
+            nfz_new=left_new_nfz)
+        self.assertEqual(len(left_new_reminders), 1)
+        right_new_reminders = Reminder.objects.filter(
+            nfz_new=right_new_nfz)
+        self.assertEqual(len(right_new_reminders), 1)
+        self.assertFalse(left_new_reminders.last().active)
+        self.assertFalse(right_new_reminders.last().active)
+
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
+        # there should be 6 Reminders in total (4 inactive and 2 active Reminder.pcpr)
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 6)
+
     def test_remove_pcpr_estimates(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
@@ -1164,6 +1345,7 @@ class TestUpdatingView(TestCase):
         data = self.data.copy()
         data['pcpr_left_remove'] = True
         data['pcpr_right_remove'] = True
+
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1184,6 +1366,22 @@ class TestUpdatingView(TestCase):
                         'Usunięto prawy kosztorys na m1 f1 m1, z datą 2000-01-02.'
 
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+        # reminders
+        # should inactivate 2 Reminder.pcpr
+        left_pcpr = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='left')[0]
+        right_pcpr = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='right')[0]
+
+        left_reminders = Reminder.objects.filter(
+            pcpr=left_pcpr)
+        self.assertEqual(len(left_reminders), 1)
+        right_reminders = Reminder.objects.filter(
+            pcpr=right_pcpr)
+        self.assertEqual(len(right_reminders), 1)
+        self.assertFalse(left_reminders.last().active)
+        self.assertFalse(right_reminders.last().active)
 
     def test_adding_invoice(self):
         self.client.login(username='john', password='glassonion')
@@ -1229,6 +1427,7 @@ class TestUpdatingView(TestCase):
         data = self.data.copy()
         data['left_invoice_remove'] = True
         data['right_invoice_remove'] = True
+
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1283,6 +1482,7 @@ class TestUpdatingView(TestCase):
         data['right_collection_confirm'] = True
         data['left_collection_date'] = '2001-01-01'
         data['right_collection_date'] = '2001-01-02'
+
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1344,6 +1544,7 @@ class TestUpdatingView(TestCase):
         
         data = self.data.copy()
         data['remove_audiogram'] = 'remove'
+
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1527,151 +1728,151 @@ class TestInactivateReminderView(TestCase):
         self.assertFalse(r.active)
 
 
-class TestInvoiceCreateView(TestCase):
-    def setUp(self):
-        user_john = create_user()
-        create_patient(user_john)
+# class TestInvoiceCreateView(TestCase):
+#     def setUp(self):
+#         user_john = create_user()
+#         create_patient(user_john)
 
-    def test_anonymous(self):
-        '''should redirect to login'''
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('login') + '?next=/1/invoice_create/'
-        response = self.client.post(url, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
+#     def test_anonymous(self):
+#         '''should redirect to login'''
+#         url = reverse('crm:invoice_create', args=(1,))
+#         expected_url = reverse('login') + '?next=/1/invoice_create/'
+#         response = self.client.post(url, follow=True)
+#         # should give code 200 as follow is set to True
+#         assert response.status_code == 200
+#         self.assertRedirects(response, expected_url,
+#                              status_code=302, target_status_code=200)
 
-    def test_logged_in_with_valid_data_for_ha(self):
-        '''should create:
-        one hearing aid,
-        one invoice instance with one position - hearing aid,
-        for a given patient,
-        should redirect to detail view'''
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_detail', args=(1,))
-        data = {
-            # form data
-            'type': 'transfer',
+#     def test_logged_in_with_valid_data_for_ha(self):
+#         '''should create:
+#         one hearing aid,
+#         one invoice instance with one position - hearing aid,
+#         for a given patient,
+#         should redirect to detail view'''
+#         self.client.login(username='john', password='glassonion')
+#         url = reverse('crm:invoice_create', args=(1,))
+#         expected_url = reverse('crm:invoice_detail', args=(1,))
+#         data = {
+#             # form data
+#             'type': 'transfer',
 
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
+#             # formset data
+#             # these are needed for formset to work
+#             'form-TOTAL_FORMS': 1,
+#             'form-INITIAL_FORMS': 0,
 
-            # formset forms data
-            'form-0-device_type': 'ha',
-            'form-0-make': 'Bernafon',
-            'form-0-family': 'WIN',
-            'form-0-model': '102',
-            'form-0-price_gross': 107,
-            'form-0-vat_rate': 7,
-            'form-0-ear': 'right',
-        }
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-        invoice = Invoice.objects.get(pk=1)
+#             # formset forms data
+#             'form-0-device_type': 'ha',
+#             'form-0-make': 'Bernafon',
+#             'form-0-family': 'WIN',
+#             'form-0-model': '102',
+#             'form-0-price_gross': 107,
+#             'form-0-vat_rate': 7,
+#             'form-0-ear': 'right',
+#         }
+#         response = self.client.post(url, data, follow=True)
+#         # should give code 200 as follow is set to True
+#         assert response.status_code == 200
+#         self.assertRedirects(response, expected_url,
+#                              status_code=302, target_status_code=200)
+#         invoice = Invoice.objects.get(pk=1)
 
-        ha = Hearing_Aid.objects.get(pk=1)
-        # should create only one Hearing_Aid obj
-        self.assertEqual(len(Hearing_Aid.objects.all()), 1)
-        # should create only one invoice obj
-        self.assertEqual(len(Invoice.objects.all()), 1)
-        # this invoice should be tied to hearing aid
-        self.assertEqual(ha.invoice, invoice)
-        # hearing aid make should be 'Bernafon'
-        self.assertEqual(ha.ha_make, 'Bernafon')
+#         ha = Hearing_Aid.objects.get(pk=1)
+#         # should create only one Hearing_Aid obj
+#         self.assertEqual(len(Hearing_Aid.objects.all()), 1)
+#         # should create only one invoice obj
+#         self.assertEqual(len(Invoice.objects.all()), 1)
+#         # this invoice should be tied to hearing aid
+#         self.assertEqual(ha.invoice, invoice)
+#         # hearing aid make should be 'Bernafon'
+#         self.assertEqual(ha.ha_make, 'Bernafon')
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+#         messages = list(get_messages(response.wsgi_request))
+#         self.assertEqual(len(messages), 1)
+#         self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
 
-    def test_logged_in_with_invalid_form_data(self):
-        '''should redisplay invoice_create page with a warning message'''
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_create', args=(1,))
-        data = {
-            # form data
-            'type': '', # this should make the form invalid
+#     def test_logged_in_with_invalid_form_data(self):
+#         '''should redisplay invoice_create page with a warning message'''
+#         self.client.login(username='john', password='glassonion')
+#         url = reverse('crm:invoice_create', args=(1,))
+#         expected_url = reverse('crm:invoice_create', args=(1,))
+#         data = {
+#             # form data
+#             'type': '', # this should make the form invalid
 
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
+#             # formset data
+#             # these are needed for formset to work
+#             'form-TOTAL_FORMS': 1,
+#             'form-INITIAL_FORMS': 0,
 
-            # formset forms data
-            'form-0-device_type': 'ha',
-            'form-0-make': 'Bernafon',
-            'form-0-family': 'WIN',
-            'form-0-model': '102',
-            'form-0-price_gross': 107,
-            'form-0-vat_rate': 7,
-            'form-0-ear': 'right',
-        }
-        response = self.client.post(url, data, follow=True)
+#             # formset forms data
+#             'form-0-device_type': 'ha',
+#             'form-0-make': 'Bernafon',
+#             'form-0-family': 'WIN',
+#             'form-0-model': '102',
+#             'form-0-price_gross': 107,
+#             'form-0-vat_rate': 7,
+#             'form-0-ear': 'right',
+#         }
+#         response = self.client.post(url, data, follow=True)
 
-        assert response.status_code == 200
+#         assert response.status_code == 200
 
-        # should not create invoice obj
-        self.assertEqual(len(Invoice.objects.all()), 0)
+#         # should not create invoice obj
+#         self.assertEqual(len(Invoice.objects.all()), 0)
 
-        # should not create Hearing_Aid obj
-        self.assertEqual(len(Hearing_Aid.objects.all()), 0)
+#         # should not create Hearing_Aid obj
+#         self.assertEqual(len(Hearing_Aid.objects.all()), 0)
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
+#         messages = list(get_messages(response.wsgi_request))
+#         self.assertEqual(len(messages), 1)
+#         self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
 
-    def test_logged_in_with_valid_data_for_other_device(self):
-        '''should create:
-        one instance of other device,
-        one invoice instance with one position - wkładka uszna,
-        for a given patient,
-        should redirect to detail view'''
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_detail', args=(1,))
-        data = {
-            # form data
-            'type': 'transfer',
+#     def test_logged_in_with_valid_data_for_other_device(self):
+#         '''should create:
+#         one instance of other device,
+#         one invoice instance with one position - wkładka uszna,
+#         for a given patient,
+#         should redirect to detail view'''
+#         self.client.login(username='john', password='glassonion')
+#         url = reverse('crm:invoice_create', args=(1,))
+#         expected_url = reverse('crm:invoice_detail', args=(1,))
+#         data = {
+#             # form data
+#             'type': 'transfer',
 
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
+#             # formset data
+#             # these are needed for formset to work
+#             'form-TOTAL_FORMS': 1,
+#             'form-INITIAL_FORMS': 0,
 
-            # formset forms data
-            'form-0-device_type': 'other',
-            'form-0-make': 'Audioservice',
-            'form-0-family': 'wkładka uszna',
-            'form-0-model': 'twarda',
-            'form-0-price_gross': 17,
-            'form-0-vat_rate': 7,
-            'form-0-ear': 'right',  # this will not be saved anywhere, but requred
-                                    # for the form to be valid
-        }
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-        invoice = Invoice.objects.get(pk=1)
+#             # formset forms data
+#             'form-0-device_type': 'other',
+#             'form-0-make': 'Audioservice',
+#             'form-0-family': 'wkładka uszna',
+#             'form-0-model': 'twarda',
+#             'form-0-price_gross': 17,
+#             'form-0-vat_rate': 7,
+#             'form-0-ear': 'right',  # this will not be saved anywhere, but requred
+#                                     # for the form to be valid
+#         }
+#         response = self.client.post(url, data, follow=True)
+#         # should give code 200 as follow is set to True
+#         assert response.status_code == 200
+#         self.assertRedirects(response, expected_url,
+#                              status_code=302, target_status_code=200)
+#         invoice = Invoice.objects.get(pk=1)
 
-        other = Other_Item.objects.get(pk=1)
-        # should create only one Other_Item obj
-        self.assertEqual(len(Other_Item.objects.all()), 1)
-        # should create only one invoice obj
-        self.assertEqual(len(Invoice.objects.all()), 1)
-        # this invoice should be tied to hearing aid
-        self.assertEqual(other.invoice, invoice)
-        # other item make should be 'Audioservice'
-        self.assertEqual(other.make, 'Audioservice')
+#         other = Other_Item.objects.get(pk=1)
+#         # should create only one Other_Item obj
+#         self.assertEqual(len(Other_Item.objects.all()), 1)
+#         # should create only one invoice obj
+#         self.assertEqual(len(Invoice.objects.all()), 1)
+#         # this invoice should be tied to hearing aid
+#         self.assertEqual(other.invoice, invoice)
+#         # other item make should be 'Audioservice'
+#         self.assertEqual(other.make, 'Audioservice')
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+#         messages = list(get_messages(response.wsgi_request))
+#         self.assertEqual(len(messages), 1)
+#         self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')

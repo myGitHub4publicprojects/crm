@@ -43,12 +43,16 @@ ha_list = {
 		['ITE D', 'ITE PD', 'ITC', 'ITC D', 'ITC PD', 'CIC', 'CIC P', 'CICX', 'Nano RITE', 'Compact Power', 'Compact Power Plus'], 
 	'Acriva 7': 
 		['ITE D', 'ITC', 'ITC D', 'ITC PD', 'CIC', 'CIC P', 'Nano', 'Nano RITE', 'Compact Power', 'Compact Power Plus'],
-	'Zerena 5':
-		['BTE 105', 'miniRITE T', 'miniRITE'],
+	'Zerena 1':
+		['IIC', 'CIC', 'ITC', 'ITE HS 312', 'ITE FS 312', 'ITE HS 13', 'ITE FS 13', 'MINIRITE T', 'MINIRITE', 'B 105'],
+	'Zerena 3':
+		['IIC', 'CIC', 'ITC', 'ITE HS 312', 'ITE FS 312', 'ITE HS 13', 'ITE FS 13', 'MINIRITE T', 'MINIRITE', 'B 105'],
+	'Zerena 5':	
+		['IIC', 'CIC', 'ITC', 'ITE HS 312', 'ITE FS 312', 'ITE HS 13', 'ITE FS 13', 'MINIRITE T', 'MINIRITE', 'B 105'],
 	'Zerena 7':
-		['BTE 105', 'miniRITE T', 'miniRITE'],
+		['IIC', 'CIC', 'ITC', 'ITE HS 312', 'ITE FS 312', 'ITE HS 13', 'ITE FS 13', 'MINIRITE T', 'MINIRITE', 'B 105'],
 	'Zerena 9':
-		['BTE 105', 'miniRITE T', 'miniRITE'],
+		['IIC', 'CIC', 'ITC', 'ITE HS 312', 'ITE FS 312', 'ITE HS 13', 'ITE FS 13', 'MINIRITE T', 'MINIRITE', 'B 105'],
 	'Inny': ['Inny']
 		},
 
