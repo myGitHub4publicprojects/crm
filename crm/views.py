@@ -491,7 +491,35 @@ def updating(request, patient_id):
                             invoice.ha_make + ' ' + invoice.ha_family + ' ' +
                             invoice.ha_model + ', ' +
 							'z datą ' + date + '.')
+
+			# Reminders
+			# add new
 			Reminder.objects.create(invoice=invoice)
+
+			# inactivate Reminder.nfz_new, Reminder.nfz_confirmed and Reminder.pcpr if any:
+			nfz_new = NFZ_New.objects.filter(
+                            patient=patient, side=ear, in_progress=True)
+			reminder_nfz_new = Reminder.objects.filter(nfz_new=nfz_new)
+			if reminder_nfz_new:
+				reminder_nfz_new[0].active = False
+				reminder_nfz_new[0].save()
+
+			nfz_confirmed = NFZ_Confirmed.objects.filter(
+                            patient=patient, side=ear, in_progress=True)
+			reminder_nfz_confirmed = Reminder.objects.filter(
+				nfz_confirmed=nfz_confirmed)
+			if reminder_nfz_confirmed:
+				reminder_nfz_confirmed[0].active = False
+				reminder_nfz_confirmed[0].save()
+
+			pcpr = PCPR_Estimate.objects.filter(
+				patient=patient, ear=ear, in_progress=True)
+			reminder_pcpr = Reminder.objects.filter(
+				pcpr=pcpr)
+			if reminder_pcpr:
+				reminder_pcpr[0].active = False
+				reminder_pcpr[0].save()
+			
 
 		# remove invoice
 		if request.POST.get(ear + '_invoice_remove'):

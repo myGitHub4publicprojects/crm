@@ -1386,6 +1386,30 @@ class TestUpdatingView(TestCase):
     def test_adding_invoice(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
+        n1 = NFZ_New.objects.create(patient=patient1,
+                                    side='left',
+                                    date='2000-01-01')
+        n2 = NFZ_New.objects.create(patient=patient1,
+                                    side='right',
+                                    date='2000-01-02')
+        Reminder.objects.create(nfz_new=n1, activation_date=today)
+        Reminder.objects.create(nfz_new=n2, activation_date=today)
+
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
+                                          side='left',
+                                          date='2000-01-01')
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
+                                          side='right',
+                                          date='2000-01-02')
+        Reminder.objects.create(nfz_confirmed=n1, activation_date=today)
+        Reminder.objects.create(nfz_confirmed=n2, activation_date=today)
+
+        p1 = PCPR_Estimate.objects.create(patient=patient1,
+                ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
+        p2 = PCPR_Estimate.objects.create(patient=patient1,
+                ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-02')
+        Reminder.objects.create(pcpr=p1, activation_date=today)
+        Reminder.objects.create(pcpr=p2, activation_date=today)
         data = self.data.copy()
         data['left_invoice_ha'] = 'b1_family1_model1'
         data['right_invoice_ha'] = 'b1_family1_model2'
@@ -1414,6 +1438,56 @@ class TestUpdatingView(TestCase):
 
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
+        # remiders
+        # remove Reminder.nfz_new, Reminder.nfz_confirmed and Reminder.pcpr
+        left_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        left_new_nfz = left_nfz_new_all[0]
+        right_new_nfz = right_nfz_new_all[0]
+        left_new_reminders = Reminder.objects.filter(
+            nfz_new=left_new_nfz)
+        self.assertEqual(len(left_new_reminders), 1)
+        right_new_reminders = Reminder.objects.filter(
+            nfz_new=right_new_nfz)
+        self.assertEqual(len(right_new_reminders), 1)
+        self.assertFalse(left_new_reminders.last().active)
+        self.assertFalse(right_new_reminders.last().active)
+
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
+        left_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='left')
+        right_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='right')
+        left_pcpr = left_pcpr_all[0]
+        right_pcpr = right_pcpr_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            pcpr=left_pcpr)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            pcpr=right_pcpr)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
+        # there should be 8 Reminders in total (6 inactive and 2 active Reminder.invoice)
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 8)
 
     def test_remove_invoice(self):
         self.client.login(username='john', password='glassonion')
@@ -1449,19 +1523,36 @@ class TestUpdatingView(TestCase):
                         'Usunięto prawą fakturę na m1 f1 m1, z datą 2000-01-01.'
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
+        # reminders
+        # should inactivate 2 Reminder.invoice
+        left_invoice = HA_Invoice.objects.filter(
+            patient=patient1, ear='left')[0]
+        right_invoice = HA_Invoice.objects.filter(
+            patient=patient1, ear='right')[0]
+        left_reminders = Reminder.objects.filter(
+            invoice=left_invoice)
+        self.assertEqual(len(left_reminders), 1)
+        right_reminders = Reminder.objects.filter(
+            invoice=right_invoice)
+        self.assertEqual(len(right_reminders), 1)
+        self.assertFalse(left_reminders.last().active)
+        self.assertFalse(right_reminders.last().active)
+
     def test_collection_procedure(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        patient2 = Patient.objects.get(id=1)
+        new1 = NFZ_New.objects.create(patient=patient1,
+                                    side='left',
+                                    date='2000-01-01')
+        new2 = NFZ_New.objects.create(patient=patient1,
+                                    side='right',
+                                    date='2000-01-02')
         n1 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='left',
                                      date='2000-01-01')
         n2 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='right',
                                      date='2000-01-02')
-        n3 = NFZ_Confirmed.objects.create(patient=patient2,
-                                            side='right',
-                                            date='2000-01-02')
         p1 = PCPR_Estimate.objects.create(patient=patient1,
             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
         p2 = PCPR_Estimate.objects.create(patient=patient1,
@@ -1470,9 +1561,11 @@ class TestUpdatingView(TestCase):
                                   ear='left', ha_make='m', ha_family='f', ha_model='m1', date='2000-01-01')
         i2 = HA_Invoice.objects.create(patient=patient1,
                                   ear='right', ha_make='m', ha_family='f', ha_model='m2', date='2000-01-01')
+        Reminder.objects.create(nfz_new=new1, activation_date=today)
+        Reminder.objects.create(nfz_new=new2, activation_date=today)
         Reminder.objects.create(nfz_confirmed=n1, activation_date=today)
         Reminder.objects.create(nfz_confirmed=n2, activation_date=today)
-        Reminder.objects.create(nfz_confirmed=n3, activation_date=today)
+        # Reminder.objects.create(nfz_confirmed=n3, activation_date=today)
         Reminder.objects.create(pcpr=p1, activation_date=today)
         Reminder.objects.create(pcpr=p2, activation_date=today)
         Reminder.objects.create(invoice=i1, activation_date=today)
@@ -1531,11 +1624,74 @@ class TestUpdatingView(TestCase):
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
         # reminders
-        # 6 reminders from nfz, pcpr and invoices should be set to incative,
+        # 8 reminders from nfz_new, nfz_confirmed, pcpr and invoices should be set to incative,
         # additional 2 are to be created in collection, additional one should
         # be left as active
-        self.assertEqual(len(Reminder.objects.all()), 9)
-        self.assertEqual(len(Reminder.objects.active()), 1)
+        # remiders
+        # inactivate Reminder.nfz_new, Reminder.nfz_confirmed, Reminder.pcpr, Reminder.invoice
+        left_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        left_new_nfz = left_nfz_new_all[0]
+        right_new_nfz = right_nfz_new_all[0]
+        left_new_reminders = Reminder.objects.filter(
+            nfz_new=left_new_nfz)
+        self.assertEqual(len(left_new_reminders), 1)
+        right_new_reminders = Reminder.objects.filter(
+            nfz_new=right_new_nfz)
+        self.assertEqual(len(right_new_reminders), 1)
+        self.assertFalse(left_new_reminders.last().active)
+        self.assertFalse(right_new_reminders.last().active)
+
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
+        left_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='left')
+        right_pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1, ear='right')
+        left_pcpr = left_pcpr_all[0]
+        right_pcpr = right_pcpr_all[0]
+        left_confirmed_reminders = Reminder.objects.filter(
+            pcpr=left_pcpr)
+        self.assertEqual(len(left_confirmed_reminders), 1)
+        right_confirmed_reminders = Reminder.objects.filter(
+            pcpr=right_pcpr)
+        self.assertEqual(len(right_confirmed_reminders), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
+        left_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='left')
+        right_invoice_all = HA_Invoice.objects.filter(
+            patient=patient1, ear='right')
+        left_invoice = left_invoice_all[0]
+        right_invoice = right_invoice_all[0]
+        left_invoice_reminders = Reminder.objects.filter(
+            invoice=left_invoice)
+        self.assertEqual(len(left_invoice_reminders), 1)
+        right_invoice_reminders = Reminder.objects.filter(
+            invoice=right_invoice)
+        self.assertEqual(len(right_invoice_reminders), 1)
+        self.assertFalse(left_invoice_reminders.last().active)
+        self.assertFalse(right_invoice_reminders.last().active)
+
+        # there should be 10 Reminders in total (8 inactive and 2 active Reminder.ha)
+        reminders = Reminder.objects.all()
+        self.assertEqual(len(reminders), 10)
 
     def test_remove_audiogram(self):
         self.client.login(username='john', password='glassonion')
