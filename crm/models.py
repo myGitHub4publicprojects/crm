@@ -68,6 +68,22 @@ class Audiogram(models.Model):
 	b4kHz = models.IntegerField(null=True, blank=True)
 	b8kHz = models.IntegerField(null=True, blank=True)
 
+# class Device(models.Model):
+# użyj tego jako master class dla Hearing_Aid and Other_Item
+#     type = models.CharField(
+#     	max_length=5, choices=(('ha', 'ha'), ('other', 'other')))
+
+
+# 	make = models.CharField(max_length=20)
+# 	family = models.CharField(max_length=20)
+# 	model = models.CharField(max_length=20)
+# 	price_gross = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+# 	vat_rate = models.IntegerField(default=8)
+# 	pkwiu_code = models.CharField(max_length=20)
+# 	def __str__(self):
+# 		return self.make.encode('utf-8') + ' ' + self.family + ' ' + self.model
+	
+
 class Hearing_Aid_Main(models.Model):
 	ha_make = models.CharField(max_length=20)
 	 # eg. Bernafon
@@ -80,9 +96,17 @@ class Hearing_Aid_Main(models.Model):
 	current = models.BooleanField(default=True)
 		# this hearing aid currently is being used by a patient
 	def __str__(self):
-		return self.ha_make + ' ' + self.ha_family + ' ' + self.ha_model
+		return (self.ha_make.encode('utf-8') + ' ' + self.ha_family.encode('utf-8')
+                    + ' ' + self.ha_model.encode('utf-8'))
 
 class Hearing_Aid(Hearing_Aid_Main):
+    # type = models.CharField(default='ha')
+	# ear = models.CharField(max_length=5, choices=(
+	# 	('left', 'left'), ('right', 'right')))
+	# current = models.BooleanField(default=True)
+	# 	# this hearing aid currently is being used by a patient
+
+
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	purchase_date = models.DateField(null=True, blank=True)
 	our = models.BooleanField(default=True)
@@ -126,21 +150,22 @@ class PCPR_Estimate(Hearing_Aid_Main):
 	# zmien na FALSE przy odbiorze aparatu
 
 class Other_Item(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    make = models.CharField(max_length=20)
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	make = models.CharField(max_length=20)
 	 # eg. Bernafon
-    family = models.CharField(max_length=120)
+	family = models.CharField(max_length=120)
 	# eg. systemy wspomagające słyszenie, wkładka uszna
-    model = models.CharField(max_length=120)
- 	# eg. ROGER CLIP-ON MIC + 2, twarda
-    price_gross = models.DecimalField(max_digits=6, decimal_places=2)
-    vat_rate = models.IntegerField()
-    pkwiu_code = models.CharField(max_length=20, null=True, blank=True)
-    invoice = models.ForeignKey(
+	model = models.CharField(max_length=120)
+	# eg. ROGER CLIP-ON MIC + 2, twarda
+	price_gross = models.DecimalField(max_digits=6, decimal_places=2)
+	vat_rate = models.IntegerField()
+	pkwiu_code = models.CharField(max_length=20, null=True, blank=True)
+	invoice = models.ForeignKey(
 		Invoice, on_delete=models.CASCADE, null=True, blank=True)
 	
-    def __str__(self):
-		return ' '.join([self.make, self.family, self.model])
+	def __str__(self):
+		return ' '.join([self.make.encode('utf-8'), self.family.encode('utf-8'),
+		self.model.encode('utf-8')])
 
 class HA_Invoice(Hearing_Aid_Main):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)

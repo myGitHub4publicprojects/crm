@@ -824,13 +824,15 @@ def invoice_store(request, patient_id):
 
 @login_required
 def invoice_detail(request, invoice_id):
-    invoice = get_object_or_404(Invoice, pk=invoice_id)
-    ha_objects = invoice.hearing_aid_set.all()
-    ha_list = {}
-    for i in ha_objects:
-    	if str(i) not in ha_list:
+	invoice = get_object_or_404(Invoice, pk=invoice_id)
+	ha = invoice.hearing_aid_set.all()
+	other_devices = invoice.other_item_set.all()
+	all_devices = list(ha) + list(other_devices)
+	items = {}
+	for i in all_devices:
+		if str(i) not in items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			ha_list[str(i)] = {
+			items[str(i)] = {
 				# 'name': str(i),
 				'pkwiu_code': i.pkwiu_code,
 				'quantity': 1,
@@ -841,20 +843,20 @@ def invoice_detail(request, invoice_id):
 				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
 				'gross_value': i.price_gross
 			 }
-        else:
-    		ha_list[str(i)]['quantity'] += 1
-    		current_quantity = ha_list[str(i)]['quantity']
-    		ha_list[str(i)]['net_value'] *= current_quantity
-    		ha_list[str(i)]['vat_amount'] *= current_quantity
-    		ha_list[str(i)]['gross_value'] *= current_quantity
+		else:
+			items[str(i)]['quantity'] += 1
+    		current_quantity = items[str(i)]['quantity']
+    		items[str(i)]['net_value'] *= current_quantity
+    		items[str(i)]['vat_amount'] *= current_quantity
+    		items[str(i)]['gross_value'] *= current_quantity
 
-	context = {'ha_list': ha_list, 'invoice': invoice}
+	context = {'ha_list': items, 'invoice': invoice}
 	# if this ivnvoice is the last one in the system enable its removal
 	if Invoice.objects.all().last() == invoice:
 		print('this is last invoice')
 		context['removable'] = 'removable'
 	# print(ha_list)
-    return render(request, 'crm/detail_invoice.html', context)
+	return render(request, 'crm/detail_invoice.html', context)
 
 
 @login_required

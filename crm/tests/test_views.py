@@ -1954,7 +1954,6 @@ class TestInvoiceCreateView(TestCase):
         '''should redisplay invoice_create page with a warning message'''
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_create', args=(1,))
         data = {
             # form data
             'type': '', # this should make the form invalid
@@ -1987,54 +1986,63 @@ class TestInvoiceCreateView(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
 
-    def test_logged_in_with_valid_data_for_other_device(self):
-        '''should create:
-        one instance of other device,
-        one invoice instance with one position - wkładka uszna,
-        for a given patient,
-        should redirect to detail view'''
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_detail', args=(1,))
-        data = {
-            # form data
-            'type': 'transfer',
+    # def test_logged_in_with_valid_data_for_other_device(self):
 
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
 
-            # formset forms data
-            'form-0-device_type': 'other',
-            'form-0-make': 'Audioservice',
-            'form-0-family': 'wkładka uszna',
-            'form-0-model': 'twarda',
-            'form-0-price_gross': 17,
-            'form-0-vat_rate': 7,
-            'form-0-pkwiu_code': '11.22',
-            'form-0-quantity': 1,
-            'form-0-ear': 'right',  # this will not be saved anywhere, but requred
-                                    # for the form to be valid
-        }
-        response = self.client.post(url, data)
-        # should give code 200 as follow is set to True
 
-        # assert response.status_code == 200
-        # self.assertRedirects(response, expected_url, status_code=302,
-        #                      target_status_code=200, fetch_redirect_response=True)
-        invoice = Invoice.objects.get(pk=1)
+    # NIEDOKONCZONE!!!!!!!!!!!!!!
 
-        other = Other_Item.objects.get(pk=1)
-        # should create only one Other_Item obj
-        self.assertEqual(len(Other_Item.objects.all()), 1)
-        # should create only one invoice obj
-        self.assertEqual(len(Invoice.objects.all()), 1)
-        # this invoice should be tied to 'other device'
-        self.assertEqual(other.invoice, invoice)
-        # other item make should be 'Audioservice'
-        self.assertEqual(other.make, 'Audioservice')
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+
+
+    #     '''should create:
+    #     one instance of other device,
+    #     one invoice instance with one position - wkładka uszna,
+    #     for a given patient,
+    #     should redirect to detail view'''
+    #     self.client.login(username='john', password='glassonion')
+    #     url = reverse('crm:invoice_create', args=(1,))
+    #     expected_url = reverse('crm:invoice_detail', args=(1,))
+    #     data = {
+    #         # form data
+    #         'type': 'transfer',
+
+    #         # formset data
+    #         # these are needed for formset to work
+    #         'form-TOTAL_FORMS': 1,
+    #         'form-INITIAL_FORMS': 0,
+
+    #         # formset forms data
+    #         'form-0-device_type': 'other',
+    #         'form-0-make': 'Audioservice',
+    #         'form-0-family': 'wkładka uszna',
+    #         'form-0-model': 'twarda',
+    #         'form-0-price_gross': 17,
+    #         'form-0-vat_rate': 7,
+    #         'form-0-pkwiu_code': '11.22',
+    #         'form-0-quantity': 1,
+    #         'form-0-ear': 'right',  # this will not be saved anywhere, but requred
+    #                                 # for the form to be valid
+    #     }
+
+    #     response = self.client.post(url, data, follow=True)
+    #     # should give code 200 as follow is set to True
+    #     assert response.status_code == 200
+    #     self.assertRedirects(response, expected_url,
+    #                          status_code=302, target_status_code=200)
+
+    #     invoice = Invoice.objects.get(pk=1)
+
+    #     other = Other_Item.objects.get(pk=1)
+    #     # should create only one Other_Item obj
+    #     self.assertEqual(len(Other_Item.objects.all()), 1)
+    #     # should create only one invoice obj
+    #     self.assertEqual(len(Invoice.objects.all()), 1)
+    #     # this invoice should be tied to 'other device'
+    #     self.assertEqual(other.invoice, invoice)
+    #     # other item make should be 'Audioservice'
+    #     self.assertEqual(other.make, 'Audioservice')
+
+    #     messages = list(get_messages(response.wsgi_request))
+    #     self.assertEqual(len(messages), 1)
+    #     self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
