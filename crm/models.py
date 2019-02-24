@@ -70,8 +70,6 @@ class Audiogram(models.Model):
 
 # class Device(models.Model):
 # użyj tego jako master class dla Hearing_Aid and Other_Item
-#     type = models.CharField(
-#     	max_length=5, choices=(('ha', 'ha'), ('other', 'other')))
 
 
 # 	make = models.CharField(max_length=20)
@@ -80,8 +78,11 @@ class Audiogram(models.Model):
 # 	price_gross = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 # 	vat_rate = models.IntegerField(default=8)
 # 	pkwiu_code = models.CharField(max_length=20)
-# 	def __str__(self):
-# 		return self.make.encode('utf-8') + ' ' + self.family + ' ' + self.model
+
+
+	# def __str__(self):
+    # 	return ' '.join([self.make.encode('utf-8'), self.family.encode('utf-8'),
+	# 	self.model.encode('utf-8')])
 	
 
 class Hearing_Aid_Main(models.Model):
@@ -100,12 +101,10 @@ class Hearing_Aid_Main(models.Model):
                     + ' ' + self.ha_model.encode('utf-8'))
 
 class Hearing_Aid(Hearing_Aid_Main):
-    # type = models.CharField(default='ha')
 	# ear = models.CharField(max_length=5, choices=(
 	# 	('left', 'left'), ('right', 'right')))
 	# current = models.BooleanField(default=True)
 	# 	# this hearing aid currently is being used by a patient
-
 
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	purchase_date = models.DateField(null=True, blank=True)
