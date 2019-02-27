@@ -19,9 +19,20 @@ def get_hearing_aids():
                             }
         if i.invoice:
             hearing_aid[i.id]['invoice_id'] =  i.invoice.id
+    print(len(hearing_aid))
     return hearing_aid
 
 
+def get_invoice():
+    inv = {}
+    for i in Invoice.objects.all():
+        inv[i.id] = {'patient_id': i.patient.id,
+                    'timestamp': i.timestamp,
+                    'updated': i.updated,
+                    'type': i.type,
+                    }
+    print(len(inv))
+    return inv
 
 def get_pcpr_estimates():
     pcpr = {}
@@ -30,6 +41,7 @@ def get_pcpr_estimates():
                     'date': i.date,
                     'in_progress': i.in_progress}
 
+    print(len(pcpr))
     return pcpr
 
 def get_other_item():
@@ -45,6 +57,7 @@ def get_other_item():
                        }
         if i.invoice:
             items[i.id]['invoice_id'] = i.invoice.id
+    print(len(items))
     return items
 
 def get_ha_invoice():
@@ -53,6 +66,7 @@ def get_ha_invoice():
         inv[i.id] = {'patient_id': i.patient.id,
                   'date': i.date,
                   'in_progress': i.in_progress }
+    print(len(inv))
     return inv
 
 
@@ -78,6 +92,7 @@ def get_reminder():
         if i.ha:
             rem[i.id]['ha_id'] = i.ha.id
 
+    print(len(rem))
     return rem
 
 
