@@ -10,10 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import PatientForm, InvoiceForm, InvoiceTypeForm
-from .models import (Patient, Audiogram, NewInfo, Hearing_Aid, NFZ_Confirmed,
-                     NFZ_New, PCPR_Estimate, HA_Invoice, Audiogram, Reminder,
-                     Invoice, Other_Item)
+from .forms import PatientForm
+from .models import (Patient, Audiogram, NewInfo)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
