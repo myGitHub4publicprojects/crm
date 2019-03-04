@@ -93,9 +93,9 @@ class Audiogram(models.Model):
 
 class Device(models.Model):
     '''Master class for all devices. Not to be used directly'''
-    make = models.CharField(max_length=20)
-    family = models.CharField(max_length=20)
-    model = models.CharField(max_length=20)
+    make = models.CharField(max_length=50)
+    family = models.CharField(max_length=50)
+    model = models.CharField(max_length=50)
     price_gross = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     vat_rate = models.IntegerField(default=8)
     pkwiu_code = models.CharField(max_length=20)
