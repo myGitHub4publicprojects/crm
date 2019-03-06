@@ -11,12 +11,16 @@ from django.forms.formsets import formset_factory
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import PatientForm
-from .models import (Patient, Audiogram, NewInfo)
+from .models import (Patient, Audiogram, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
+                     Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
+                     NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
+                     Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New)
 from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
+from .utils import get_ha_list
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -71,19 +75,19 @@ def advancedsearch(request):
     # search by ha make
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
-		all_ha_make = Hearing_Aid.objects.filter(ha_make=ha_make)
+		all_ha_make = Hearing_Aid.objects.filter(make=ha_make)
 		patient_list = patient_list & patients_from_ha(all_ha_make)
 
 	# search by ha make family and model
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
 		ha_make, ha_family, ha_model = ha_make_family_model.split('_')
-		all_such_has = Hearing_Aid.objects.filter(ha_make=ha_make, ha_model=ha_model, ha_family=ha_family)
+		all_such_has = Hearing_Aid.objects.filter(make=ha_make, model=ha_model, family=ha_family)
 		patient_list = patient_list & patients_from_ha(all_such_has)
 
 	# search by dates of purchase
 	if request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
-    		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
+		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
 		ha_purchase_end = request.GET.get('e_purch_date') or str(datetime.datetime.today().date())
 		all_such_has = Hearing_Aid.objects.filter(
 			purchase_date__range=[ha_purchase_start,ha_purchase_end])
@@ -111,20 +115,30 @@ def advancedsearch(request):
 	if request.GET.get('s_pcpr_date') or request.GET.get('e_pcpr_date'):
 		pcpr_start = request.GET.get('s_pcpr_date') or '1990-01-01'
 		pcpr_end = request.GET.get(
-			'e_pcpr_date') or str(datetime.datetime.today().date())
+			'e_pcpr_date') or str(datetime.datetime.now())
 		all_such_pcpr = PCPR_Estimate.objects.filter(
-			date__range=[pcpr_start, pcpr_end], in_progress=True)
-		patient_list = patient_list & patients_from_ha(all_such_pcpr)
+			timestamp__range=[pcpr_start, pcpr_end], current=True)
+		patient_ids = []
+		for p in all_such_pcpr:
+			if p.patient.id not in patient_ids:
+				patient_ids.append(p.patient.id)
+		patients = Patient.objects.filter(id__in=patient_ids)
+		patient_list = patient_list & patients
+
 
 	# search by dates of invoice - only active not prevoius
 	if request.GET.get('s_invoice_date') or request.GET.get('e_invoice_date'):
 		invoice_start = request.GET.get('s_invoice_date') or '1990-01-01'
 		invoice_end = request.GET.get(
-			'e_invoice_date') or str(datetime.datetime.today().date())
-		all_such_invoice = HA_Invoice.objects.filter(
-			date__range=[invoice_start, invoice_end], in_progress=True)
-		patient_list = patient_list & patients_from_ha(all_such_invoice)
-
+			'e_invoice_date') or str(datetime.datetime.now())
+		all_such_invoice = Invoice.objects.filter(
+			timestamp__range=[invoice_start, invoice_end], current=True)
+		patient_ids = []
+		for p in all_such_invoice:
+			if p.patient.id not in patient_ids:
+				patient_ids.append(p.patient.id)
+		patients = Patient.objects.filter(id__in=patient_ids)
+		patient_list = patient_list & patients
 
 	paginator = Paginator(patient_list, 50)  # Show X patients per page
 
@@ -140,16 +154,15 @@ def advancedsearch(request):
 
 	context = {	'patient_list': patient_list,
 				'locations': Patient.locations,
-				'ha_list': Hearing_Aid.ha_list}
+				'ha_list': get_ha_list()}
 	return render(request, 'crm/advanced_search.html', context)
 
 
 @login_required
 def create(request):
-	ha_list = Hearing_Aid.ha_list
 	locations = Patient.locations
 	audiometrists = User.objects.all()
-	context = {	'ha_list': ha_list, 'ears': ears, 'locations': locations}
+	context = {	'ha_list': get_ha_list(), 'ears': ears, 'locations': locations}
 	return render(request, 'crm/create.html', context)
 
 
