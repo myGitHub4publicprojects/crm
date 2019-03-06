@@ -176,10 +176,19 @@ def edit(request, patient_id):
 	nfz_new_right_qs = patient.nfz_new_set.filter(side='right')
 	nfz_confirmed_left_qs = patient.nfz_confirmed_set.filter(side='left')
 	nfz_confirmed_right_qs = patient.nfz_confirmed_set.filter(side='right')
-	left_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='left')
-	right_PCPR_qs = PCPR_Estimate.objects.filter(patient=patient, ear='right')
-	left_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='left')
-	right_invoice_qs = HA_Invoice.objects.filter(patient=patient, ear='right')
+
+	PCPR_estimate_all = PCPR_Estimate.objects.filter(
+		patient=patient).order_by('timestamp')
+	PCPR_estimate_last = PCPR_estimate_all.last()
+	if PCPR_estimate_last and PCPR_estimate_last.current != False:
+		PCPR_estimate_all = PCPR_estimate_all.exclude(id=PCPR_estimate_last.id)
+
+	Invoice_all = Invoice.objects.filter(
+		patient=patient).order_by('timestamp')
+	Invoice_last = Invoice_all.last()
+	if Invoice_last and Invoice_last.current != False:
+		Invoice_all = Invoice_all.exclude(id=Invoice_last.id)
+
 	audiometrists = User.objects.all()
 
 	def last_and_previous(queryset):
@@ -196,7 +205,7 @@ def edit(request, patient_id):
 
 	context = {
 			'patient': patient,
-			'ha_list': Hearing_Aid.ha_list,
+			'ha_list': get_ha_list(),
 			'ears': ears,
             'audiometrists': audiometrists,
 			'patient_notes': patient.newinfo_set.order_by('-timestamp'),
@@ -210,14 +219,12 @@ def edit(request, patient_id):
 			'left_NFZ_confirmed': last_and_previous(nfz_confirmed_left_qs)['last'],
 			'right_NFZ_confirmed_all': last_and_previous(nfz_confirmed_right_qs)['previous'],
 			'right_NFZ_confirmed': last_and_previous(nfz_confirmed_right_qs)['last'],
-			'left_PCPR_estimate_all': last_and_previous(left_PCPR_qs)['previous'],
-			'left_PCPR_estimate': last_and_previous(left_PCPR_qs)['last'],
-			'right_PCPR_estimate_all': last_and_previous(right_PCPR_qs)['previous'],
-			'right_PCPR_estimate': last_and_previous(right_PCPR_qs)['last'],
-			'left_invoice_all': last_and_previous(left_invoice_qs)['previous'],
-			'left_invoice': last_and_previous(left_invoice_qs)['last'],
-			'right_invoice_all': last_and_previous(right_invoice_qs)['previous'],
-			'right_invoice': last_and_previous(right_invoice_qs)['last']
+			
+			'PCPR_estimate_all': PCPR_estimate_all,
+			'PCPR_estimate': PCPR_estimate_last,
+
+			'invoice_all': Invoice_all,
+			'invoice': Invoice_last,
 			}
 
 	if patient.audiogram_set.filter(ear="left"):
@@ -248,7 +255,13 @@ def store(request):
 		if request.POST.get(ear + '_ha'):
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
-			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
+			hearing_aid = Hearing_Aid(
+				patient=patient,
+				make=ha_make,
+				family=ha_family,
+				model=ha_model,
+				ear=ear,
+				pkwiu_code='26.60.14')
 			hearing_aid.save()
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
@@ -261,7 +274,13 @@ def store(request):
 				ha_make, ha_family, ha_model = ha[0], ha[1].replace(' ', '_'), 'inny'
 			else:
 				ha_make, ha_family, ha_model = ha, 'inny', 'inny'
-			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
+			hearing_aid = Hearing_Aid(
+				patient=patient,
+				make=ha_make,
+				family=ha_family,
+				model=ha_model,
+				ear=ear,
+				pkwiu_code='26.60.14')
 			hearing_aid.save()
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
@@ -271,27 +290,13 @@ def store(request):
 		if request.POST.get(ear + '_NFZ_new'):
 			nfz_new = NFZ_New.objects.create(
 				patient=patient, date=request.POST[ear + '_NFZ_new'], side=ear)
-			Reminder.objects.create(nfz_new=nfz_new)
+			Reminder_NFZ_New.objects.create(nfz_new=nfz_new)
 
 			# add NFZ_confirmed
 		if request.POST.get(ear + '_NFZ_confirmed_date'):
 			nfz_confirmed = NFZ_Confirmed(patient=patient, date=request.POST[ear + '_NFZ_confirmed_date'], side=ear)
 			nfz_confirmed.save()
-			Reminder.objects.create(nfz_confirmed=nfz_confirmed)
-
-			# add PCPR_Estimate
-		if request.POST.get(ear + '_pcpr_ha'):
-			ha = request.POST[ear + '_pcpr_ha']
-			ha_make, ha_family, ha_model = ha.split('_')
-			pcpr_estimate = PCPR_Estimate(
-				patient=patient,
-				ha_make=ha_make,
-				ha_family=ha_family,
-				ha_model=ha_model,
-				ear=ear,
-				date=request.POST[ear + '_PCPR_date'])
-			pcpr_estimate.save()
-			Reminder.objects.create(pcpr=pcpr_estimate)
+			Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=nfz_confirmed)
 
 	messages.success(request, "Pomyślnie utworzono")
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient.id,)))
@@ -333,15 +338,16 @@ def updating(request, patient_id):
 		if request.POST.get(ear + '_ha'):
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
-			hearing_aid = Hearing_Aid(patient=patient,
-									ha_make=ha_make,
-									ha_family=ha_family,
-									ha_model=ha_model,
-									ear=ear)
-			hearing_aid.save()
+			hearing_aid = Hearing_Aid.objects.create(patient=patient,
+									make=ha_make,
+									family=ha_family,
+									model=ha_model,
+									ear=ear,
+									pkwiu_code='26.60.14')
+
 			new_action.append('Dodano ' + pl_side + ' aparat ' + 
-							hearing_aid.ha_make + ' ' + hearing_aid.ha_family + 
-							' ' + hearing_aid.ha_model + '.')
+							hearing_aid.make + ' ' + hearing_aid.family + 
+							' ' + hearing_aid.model + '.')
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
@@ -358,11 +364,15 @@ def updating(request, patient_id):
 				ha_make, ha_family, ha_model = ha[0], ha[1].replace(' ', '_'), 'inny'
 			else:
 				ha_make, ha_family, ha_model = ha, 'inny', 'inny'
-			hearing_aid = Hearing_Aid(patient=patient, ha_make=ha_make, ha_family=ha_family, ha_model=ha_model, ear=ear)
-			hearing_aid.save()
+			hearing_aid = Hearing_Aid.objects.create(patient=patient,
+											make=ha_make, 
+											family=ha_family,
+											model=ha_model,
+											ear=ear,
+                                    		pkwiu_code='26.60.14')
 			new_action.append('Dodano ' + pl_side + ' aparat ' +
-                            hearing_aid.ha_make + ' ' + hearing_aid.ha_family +
-                            ' ' + hearing_aid.ha_model + '.')
+                            hearing_aid.make + ' ' + hearing_aid.family +
+                            ' ' + hearing_aid.model + '.')
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
 				hearing_aid.save()
@@ -382,7 +392,7 @@ def updating(request, patient_id):
 				patient=patient, side=ear, date=request.POST['new_NFZ_' + ear])
 			new_action.append('Dodano niepotwierdzony ' + pl_side + ' wniosek ' +
                             'z datą ' + request.POST['new_NFZ_' + ear] + '.')
-			Reminder.objects.create(nfz_new=new_nfz_new)
+			Reminder_NFZ_New.objects.create(nfz_new=new_nfz_new)
 
 			# remove NFZ_new from currently active
 		if request.POST.get('nfz_new_' + ear + '_remove'):
@@ -392,7 +402,7 @@ def updating(request, patient_id):
 			last_in_progress.save()
 			new_action.append('Usunięto ' + pl_side + ' niepotwierdzony wniosek ' +
                             'z datą ' + str(last_in_progress.date) + '.')
-			reminder = Reminder.objects.get(nfz_new=last_in_progress)
+			reminder = Reminder_NFZ_New.objects.get(nfz_new=last_in_progress)
 			reminder.active = False
 			reminder.save()
 
@@ -412,13 +422,13 @@ def updating(request, patient_id):
 			# inactivate Reminder.nfz_new if any:
 			nfz_new = NFZ_New.objects.filter(
 					patient=patient, side=ear, in_progress=True)
-			reminder_nfz_new = Reminder.objects.filter(nfz_new=nfz_new)
+			reminder_nfz_new = Reminder_NFZ_New.objects.filter(nfz_new=nfz_new)
 			if reminder_nfz_new:
 				reminder_nfz_new[0].active = False
 				reminder_nfz_new[0].save()
 
 			# add Reminder.nfz_confirmed
-			Reminder.objects.create(nfz_confirmed=new_nfz_confirmed)
+			Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=new_nfz_confirmed)
 
 
 			# remove NFZ_confirmed from currently active
@@ -428,126 +438,13 @@ def updating(request, patient_id):
 			last_in_progress.save()
 			new_action.append('Usunięto ' + pl_side + ' wniosek ' +
 							'z datą ' + str(last_in_progress.date) + '.')
-			reminder = Reminder.objects.get(nfz_confirmed=last_in_progress)
+			reminder = Reminder_NFZ_Confirmed.objects.get(nfz_confirmed=last_in_progress)
 			reminder.active = False
 			reminder.save()
 
-			# adding PCPR_Estimate
-		if request.POST.get(ear + '_pcpr_ha'):
-			ha = request.POST[ear + '_pcpr_ha']
-			ha_make, ha_family, ha_model = ha.split('_')
-			date = request.POST.get(ear + '_PCPR_date') or str(today)
-			pcpr_estimate = PCPR_Estimate(
-				patient=patient,
-				ha_make=ha_make,
-				ha_family=ha_family,
-				ha_model=ha_model,
-				ear=ear,
-				date=date)
-			pcpr_estimate.save()
-			new_action.append('Dodano ' + pl_side + ' kosztorys ' + 'na ' +
-				pcpr_estimate.ha_make + ' ' + pcpr_estimate.ha_family + ' ' +
-                pcpr_estimate.ha_model + ', ' +
-				'z datą ' + date + '.')
-			
-			# Reminders
-			# add new			
-			Reminder.objects.create(pcpr=pcpr_estimate)
 
-			# inactivate Reminder.nfz_new and Reminder.nfz_confirmed if any:
-			nfz_new = NFZ_New.objects.filter(
-                patient=patient, side=ear, in_progress=True)
-			reminder_nfz_new = Reminder.objects.filter(nfz_new=nfz_new)
-			if reminder_nfz_new:
-				reminder_nfz_new[0].active = False
-				reminder_nfz_new[0].save()
 
-			nfz_confirmed = NFZ_Confirmed.objects.filter(
-                patient=patient, side=ear, in_progress=True)
-			reminder_nfz_confirmed = Reminder.objects.filter(nfz_confirmed=nfz_confirmed)
-			if reminder_nfz_confirmed:
-				reminder_nfz_confirmed[0].active = False
-				reminder_nfz_confirmed[0].save()
-
-			# remove PCPR_Estimate from currently active
-		if request.POST.get('pcpr_' + ear + '_remove'):
-			last_pcpr_in_progress = PCPR_Estimate.objects.filter(
-				patient=patient, ear=ear, in_progress=True).last()
-			last_pcpr_in_progress.in_progress = False
-			last_pcpr_in_progress.save()
-			new_action.append('Usunięto ' + pl_side + ' kosztorys na ' +
-				last_pcpr_in_progress.ha_make + ' ' + 
-				last_pcpr_in_progress.ha_family + ' ' +
-				last_pcpr_in_progress.ha_model + ', ' +
-                'z datą ' + str(last_pcpr_in_progress.date) + '.')
-			reminder = Reminder.objects.get(pcpr=last_pcpr_in_progress)
-			reminder.active = False
-			reminder.save()
-
-		# invoice procedure
-		if request.POST.get(ear + '_invoice_ha'):
-			ha = request.POST[ear + '_invoice_ha']
-			ha_make, ha_family, ha_model = ha.split('_')
-			date = request.POST.get(ear + '_invoice_date') or str(today)
-			invoice = HA_Invoice(
-				patient=patient,
-				ha_make=ha_make,
-				ha_family=ha_family,
-				ha_model=ha_model,
-				ear=ear,
-				date=date,)
-			invoice.save()
-			pl_side2 = 'lewą' if ear=='left' else 'prawą'
-			new_action.append('Dodano ' + pl_side2 + ' fakturę ' + 'na ' +
-                            invoice.ha_make + ' ' + invoice.ha_family + ' ' +
-                            invoice.ha_model + ', ' +
-							'z datą ' + date + '.')
-
-			# Reminders
-			# add new
-			Reminder.objects.create(invoice=invoice)
-
-			# inactivate Reminder.nfz_new, Reminder.nfz_confirmed and Reminder.pcpr if any:
-			nfz_new = NFZ_New.objects.filter(
-                            patient=patient, side=ear, in_progress=True)
-			reminder_nfz_new = Reminder.objects.filter(nfz_new=nfz_new)
-			if reminder_nfz_new:
-				reminder_nfz_new[0].active = False
-				reminder_nfz_new[0].save()
-
-			nfz_confirmed = NFZ_Confirmed.objects.filter(
-                            patient=patient, side=ear, in_progress=True)
-			reminder_nfz_confirmed = Reminder.objects.filter(
-				nfz_confirmed=nfz_confirmed)
-			if reminder_nfz_confirmed:
-				reminder_nfz_confirmed[0].active = False
-				reminder_nfz_confirmed[0].save()
-
-			pcpr = PCPR_Estimate.objects.filter(
-				patient=patient, ear=ear, in_progress=True)
-			reminder_pcpr = Reminder.objects.filter(
-				pcpr=pcpr)
-			if reminder_pcpr:
-				reminder_pcpr[0].active = False
-				reminder_pcpr[0].save()
-			
-
-		# remove invoice
-		if request.POST.get(ear + '_invoice_remove'):
-			last_invoice_in_progress = HA_Invoice.objects.filter(
-				patient=patient, ear=ear, in_progress=True).last()
-			last_invoice_in_progress.in_progress = False
-			last_invoice_in_progress.save()
-			pl_side2 = 'lewą' if ear == 'left' else 'prawą'
-			new_action.append('Usunięto ' + pl_side2 + ' fakturę na ' +
-                            last_invoice_in_progress.ha_make + ' ' +
-                            last_invoice_in_progress.ha_family + ' ' +
-                            last_invoice_in_progress.ha_model + ', ' +
-                            'z datą ' + str(last_invoice_in_progress.date) + '.')
-			reminder = Reminder.objects.get(invoice=last_invoice_in_progress)
-			reminder.active = False
-			reminder.save()
-
+		
 		# collection procedure
 		if request.POST.get(ear + '_collection_confirm'):
 			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
@@ -598,6 +495,34 @@ def updating(request, patient_id):
 			# add reminder
 			Reminder.objects.create(
 				ha=new_ha, activation_date=today+datetime.timedelta(days=365))
+			
+			
+		
+
+		
+		# remove PCPR_Estimate from currently active
+	if request.POST.get('pcpr_inactivate'):
+		last_pcpr = PCPR_Estimate.objects.filter(
+			patient=patient).last()
+		last_pcpr.current = False
+		last_pcpr.save()
+		new_action.append('Zdezaktywowano kosztorys datą ' +
+		                  str(last_pcpr.date) + '.')
+		reminder = Reminder_PCPR.objects.get(pcpr=last_pcpr)
+		reminder.active = False
+		reminder.save()
+
+
+		# remove invoice from currently active
+	if request.POST.get('invoice_inactivate'):
+		last_invoice = Invoice.objects.filter(
+			patient=patient).last()
+		last_invoice.current = False
+		last_invoice.save()
+		new_action.append('Zdezaktywowano fakturę z datą ' + str(last_invoice_in_progress.date) + '.')
+		reminder = Reminder_Invoice.objects.get(invoice=last_invoice)
+		reminder.active = False
+		reminder.save()
 
 			
 	if request.POST.get('remove_audiogram') == 'remove':
