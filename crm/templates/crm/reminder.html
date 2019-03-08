@@ -8,7 +8,15 @@
     <button class="btn btn-lg btn-primary btn-info float-left">Cofnij</button>
 </a>
 
-<a href="{% url 'crm:inactivate_reminder' reminder_id %}">
-    <button class="btn btn-lg btn-primary btn-danger float-right">Usuń przypomnienie</button>
-</a>
+
+<form action="{{ url_address }}" method="post">
+    {% csrf_token %}
+
+    <div class="btn btn-sm btn-secondary float-right">
+        Zaznacz aby usunąć przypomnienie:
+        <input type="checkbox" name="remove_audiogram" value="remove" />
+    </div>
+
+<input class="btn btn-primary btn-lg" type="submit" value="Usuń" />
+</form>
 {% endblock %}

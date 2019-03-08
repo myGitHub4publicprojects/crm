@@ -445,60 +445,64 @@ def updating(request, patient_id):
 
 
 		
-		# collection procedure
-		if request.POST.get(ear + '_collection_confirm'):
-			invoiced_ha = HA_Invoice.objects.filter(patient=patient, ear=ear).last()
-			date = request.POST.get(ear + '_collection_date') or str(today)
-			new_ha = Hearing_Aid.objects.create(
-				patient=patient,
-				ha_make = invoiced_ha.ha_make,
-				ha_family = invoiced_ha.ha_family,
-				ha_model = invoiced_ha.ha_model,
-				purchase_date=date,
-				ear=ear)
-
-			# clear Invoice, PCPR_Estimate and NFZ_Confirmed and NFZ_New for this HA
-			invoiced_ha.in_progress = False
-			invoiced_ha.save()
-			reminder = Reminder.objects.get(invoice=invoiced_ha)
-			reminder.active = False
-			reminder.save()
-			pcpr_estimate = PCPR_Estimate.objects.filter(patient=patient, ear=ear).last()
-			if pcpr_estimate:
-				pcpr_estimate.in_progress = False
-				pcpr_estimate.save()
-				reminder = Reminder.objects.get(pcpr=pcpr_estimate)
-				reminder.active = False
-				reminder.save()
-			nfz_new = NFZ_New.objects.filter(patient=patient, side=ear).last()
-			if nfz_new:
-				nfz_new.in_progress = False
-				nfz_new.save()
-				reminder = Reminder.objects.get(nfz_new=nfz_new)
-				reminder.active = False
-				reminder.save()
-			nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, side=ear).last()
-			if nfz_confirmed:
-				nfz_confirmed.in_progress = False
-				nfz_confirmed.save()
-				reminder = Reminder.objects.get(nfz_confirmed=nfz_confirmed)
-				reminder.active = False
-				reminder.save()
-
+	# collection procedure
+	if request.POST.get('collection_confirm'):
+		current_invoice = Invoice.objects.get(patient=patient, current=True)
+		invoiced_ha = Hearing_Aid.objects.filter(invoice=current_invoice)
+		date = request.POST.get('collection_date') or str(today)
+		for ha in invoiced_ha:
+			ha.purchase_date=date
+			ha.current = True
+			ha.our = True
+			ha.save()
+			
 			# create new info instance to show in history of actions
+			pl_side = 'lewy' if ha.ear == 'left' else 'prawy'
 			new_action.append('Odebrano ' + pl_side + ' aparat ' +
-                            invoiced_ha.ha_make + ' ' +
-                            invoiced_ha.ha_family + ' ' +
-                            invoiced_ha.ha_model + ', ' +
-				'z datą ' + str(invoiced_ha.date) + '.')
+                    str(ha) + ', z datą ' + str(date) + '.')
 
 			# add reminder
-			Reminder.objects.create(
-				ha=new_ha, activation_date=today+datetime.timedelta(days=365))
-			
-			
-		
+			Reminder_Collection.objects.create(
+			ha=ha, activation_date=today+datetime.timedelta(days=365))
 
+		# inactivate Invoice and its reminder
+		current_invoice.current = False
+		current_invoice.save()
+		reminder = Reminder_Invoice.objects.get(invoice=current_invoice)
+		reminder.active = False
+		reminder.save()
+
+		# inactivate PCPR_Estimate and its reminder 
+		pcpr_estimate = PCPR_Estimate.objects.filter(patient=patient, current=True).last()
+		if pcpr_estimate:
+			pcpr_estimate.current = False
+			pcpr_estimate.save()
+			reminder = Reminder_PCPR.objects.get(pcpr=pcpr_estimate)
+			reminder.active = False
+			reminder.save()
+
+
+		# inactivate NFZ_Confirmed and its reminder
+		nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, in_progress=True)
+		if nfz_confirmed:
+			for n in nfz_confirmed:
+				n.in_progress = False
+				n.save()
+				reminder = Reminder_NFZ_Confirmed.objects.get(nfz_confirmed=n)
+				reminder.active = False
+				reminder.save()
+
+		# inactivate NFZ_New and its reminder
+		nfz_new = NFZ_New.objects.filter(
+			patient=patient, in_progress=True)
+		if nfz_new:
+			for n in nfz_new:
+				n.in_progress = False
+				n.save()
+				reminder = Reminder_NFZ_New.objects.get(nfz_new=n)
+				reminder.active = False
+				reminder.save()
+			
 		
 		# remove PCPR_Estimate from currently active
 	if request.POST.get('pcpr_inactivate'):
@@ -506,8 +510,8 @@ def updating(request, patient_id):
 			patient=patient).last()
 		last_pcpr.current = False
 		last_pcpr.save()
-		new_action.append('Zdezaktywowano kosztorys datą ' +
-		                  str(last_pcpr.date) + '.')
+		new_action.append('Zdezaktywowano kosztorys z datą ' +
+		                  str(last_pcpr.timestamp.date()) + '.')
 		reminder = Reminder_PCPR.objects.get(pcpr=last_pcpr)
 		reminder.active = False
 		reminder.save()
@@ -519,7 +523,7 @@ def updating(request, patient_id):
 			patient=patient).last()
 		last_invoice.current = False
 		last_invoice.save()
-		new_action.append('Zdezaktywowano fakturę z datą ' + str(last_invoice_in_progress.date) + '.')
+		new_action.append('Zdezaktywowano fakturę z datą ' + str(last_invoice.timestamp.date()) + '.')
 		reminder = Reminder_Invoice.objects.get(invoice=last_invoice)
 		reminder.active = False
 		reminder.save()
@@ -577,72 +581,141 @@ def duplicate_check(request):
 
 @login_required
 def reminders(request):
-	reminders_qs = Reminder.objects.active()
+	all_reminders = [Reminder_NFZ_New.objects.active(),
+					Reminder_NFZ_Confirmed.objects.active(),
+					Reminder_PCPR.objects.active(),
+					Reminder_Invoice.objects.active(),
+					Reminder_Collection.objects.active()]
+	
 	reminders_list = []
-	for i in reminders_qs:
-		if i.nfz_new:
-			type = ' otrzymano NOWY wniosek NFZ'
-			patient = i.nfz_new.patient
-		elif i.nfz_confirmed:
-			type = ' Otrzymano POTWIERDZONY wniosek NFZ'
-			patient = i.nfz_confirmed.patient
-		elif i.pcpr:
-			type = ' wystawiono kosztorys'
-			patient = i.pcpr.patient
-		elif i.invoice:
-			type = ' wystawiono fakturę'
-			patient = i.invoice.patient
-		elif i.ha:
-			type = ' wydano aparat'
-			patient = i.ha.patient
-		subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
-			i.timestamp.strftime("%d.%m.%Y") + type
-		reminder = {'id': i.id, 'subject': subject}
-		reminders_list.append(reminder)
+	a = []
+	for active_reminders in all_reminders:
+		for i in active_reminders:
+			if i.__class__.__name__ == 'Reminder_NFZ_New':
+				msg = ' otrzymano NOWY wniosek NFZ'
+				patient = i.nfz_new.patient
+				url_address = reverse('crm:reminder_nfz_new', args=(i.id,))
+			elif i.__class__.__name__ == 'Reminder_NFZ_Confirmed':
+				msg = ' Otrzymano POTWIERDZONY wniosek NFZ'
+				patient = i.nfz_confirmed.patient
+				url_address = reverse('crm:reminder_nfz_confirmed', args=(i.id,))
+			elif i.__class__.__name__ == 'Reminder_PCPR':
+				msg = ' wystawiono kosztorys'
+				patient = i.pcpr.patient
+				url_address = reverse('crm:reminder_pcpr', args=(i.id,))
+			elif i.__class__.__name__ == 'Reminder_Invoice':
+				msg = ' wystawiono fakturę'
+				patient = i.invoice.patient
+				url_address = reverse('crm:reminder_invoice', args=(i.id,))
+			elif i.__class__.__name__ == 'Reminder_Collection':
+				msg = ' wydano aparat'
+				patient = i.ha.patient
+				url_address = reverse('crm:reminder_collection', args=(i.id,))
+			subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
+				i.timestamp.strftime("%d.%m.%Y") + msg
+			reminder = {'url_address': url_address, 'subject': subject}
+			reminders_list.append(reminder)
 
 	return render(request, 'crm/reminders.html', {'reminders_list': reminders_list})
 
-
 @login_required
-def reminder(request, reminder_id):
-	r = get_object_or_404(Reminder, pk=reminder_id)
-	if r.nfz_new:
-		type = ' otrzymano NOWY wniosek NFZ'
-		patient = r.nfz_new.patient
-		more = ' lewy' if r.nfz_new.side == 'left' else ' prawy'
-	elif r.nfz_confirmed:
-		type = ' otrzymano POTWIERDZONY wniosek NFZ'
-		patient = r.nfz_confirmed.patient
-		more = ' lewy' if r.nfz_confirmed.side == 'left' else ' prawy'
-	elif r.pcpr:
-		type = ' wystawiono kosztorys'
-		patient = r.pcpr.patient
-		side = 'lewy' if r.pcpr.ear=='left' else 'prawy'
-		more = ' na: ' + str(r.pcpr) + ' ' + side
-	elif r.invoice:
-		type = ' wystawiono fakturę'
-		patient = r.invoice.patient
-		side = 'lewy' if r.invoice.ear == 'left' else 'prawy'
-		more = ' na: ' + str(r.invoice) + ' ' + side
-	elif r.ha:
-		type = ' wydano aparat '
-		patient = r.ha.patient
-		side = 'lewy' if r.ha.ear == 'left' else 'prawy'
-		more = str(r.ha) + ' ' + side
+def reminder_nfz_new(request, reminder_id):
+	r = get_object_or_404(Reminder_NFZ_New, pk=reminder_id)
+	if request.method == 'POST':
+		if request.POST.get('inactivate_reminder') == 'inactivate':
+			r.active = False
+			r.save()
+			messages.success(request, "Przypomnienie usunięte")
+			return redirect('crm:reminders')
+	msg = ' otrzymano NOWY wniosek NFZ'
+	patient = r.nfz_new.patient
+	more = ' lewy' if r.nfz_new.side == 'left' else ' prawy'
 	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
-		r.timestamp.strftime("%d.%m.%Y") + type + more
-	
-	context = {'subject': subject, 'patient': patient, 'reminder_id': r.id}
+		r.timestamp.strftime("%d.%m.%Y") + msg + more
+	context = {'subject': subject,
+				'patient': patient,
+				'reminder_id': r.id,
+            	'url_address': reverse('crm:reminder_nfz_new', args=(r.id,))}
 	return render(request, 'crm/reminder.html', context)
 
+@login_required
+def reminder_nfz_confirmed(request, reminder_id):
+	r = get_object_or_404(Reminder_NFZ_Confirmed, pk=reminder_id)
+	if request.method == 'POST':
+		if request.POST.get('inactivate_reminder') == 'inactivate':
+			r.active = False
+			r.save()
+			messages.success(request, "Przypomnienie usunięte")
+			return redirect('crm:reminders')
+	msg = ' otrzymano POTWIERDZONY wniosek NFZ'
+	patient = r.nfz_confirmed.patient
+	more = ' lewy' if r.nfz_confirmed.side == 'left' else ' prawy'
+	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
+		r.timestamp.strftime("%d.%m.%Y") + msg + more
+	context = {'subject': subject,
+			'patient': patient,
+			'reminder_id': r.id,
+            'url_address': reverse('crm:reminder_nfz_confirmed', args=(r.id,))}
+	return render(request, 'crm/reminder.html', context)
 
 @login_required
-def inactivate_reminder(request, reminder_id):
-	r = get_object_or_404(Reminder, pk=reminder_id)
-	r.active = False
-	r.save()
-	messages.success(request, "Przypomnienie usunięte")
-	return redirect('crm:reminders')
+def reminder_pcpr(request, reminder_id):
+	r = get_object_or_404(Reminder_PCPR, pk=reminder_id)
+	if request.method == 'POST':
+		if request.POST.get('inactivate_reminder') == 'inactivate':
+			r.active = False
+			r.save()
+			messages.success(request, "Przypomnienie usunięte")
+			return redirect('crm:reminders')
+	msg = ' wystawiono kosztorys'
+	patient = r.pcpr.patient
+	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
+		r.timestamp.strftime("%d.%m.%Y") + msg
+	context = {'subject': subject,
+            'patient': patient,
+            'reminder_id': r.id,
+            'url_address': reverse('crm:reminder_pcpr', args=(r.id,))}
+	return render(request, 'crm/reminder.html', context)
+
+@login_required
+def reminder_invoice(request, reminder_id):
+	r = get_object_or_404(Reminder_Invoice, pk=reminder_id)
+	if request.method == 'POST':
+		if request.POST.get('inactivate_reminder') == 'inactivate':
+			r.active = False
+			r.save()
+			messages.success(request, "Przypomnienie usunięte")
+			return redirect('crm:reminders')
+	msg = ' wystawiono fakture'
+	patient = r.invoice.patient
+	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
+		r.timestamp.strftime("%d.%m.%Y") + msg
+	context = {'subject': subject,
+            'patient': patient,
+            'reminder_id': r.id,
+            'url_address': reverse('crm:reminder_invoice', args=(r.id,))}
+	return render(request, 'crm/reminder.html', context)
+
+@login_required
+def reminder_collection(request, reminder_id):
+	r = get_object_or_404(Reminder_Collection, pk=reminder_id)
+	if request.method == 'POST':
+		if request.POST.get('inactivate_reminder') == 'inactivate':
+			r.active = False
+			r.save()
+			messages.success(request, "Przypomnienie usunięte")
+			return redirect('crm:reminders')
+	msg = ' wydano aparat '
+	patient = r.ha.patient
+	side = 'lewy' if r.ha.ear == 'left' else 'prawy'
+	more = str(r.ha) + ' ' + side
+	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
+		r.timestamp.strftime("%d.%m.%Y") + msg + more
+	context = {'subject': subject,
+            'patient': patient,
+            'reminder_id': r.id,
+            'url_address': reverse('crm:reminder_collection', args=(r.id,))}
+	return render(request, 'crm/reminder.html', context)
 
 
 @login_required

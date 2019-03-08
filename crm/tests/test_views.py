@@ -1138,61 +1138,61 @@ class TestUpdatingView(TestCase):
         self.assertEqual(response.context['reminders'],2)
 
 
-#     def test_remove_NFZ_Confirmed(self):
-#         self.client.login(username='john', password='glassonion')
-#         patient1 = Patient.objects.get(id=1)
-#         n1 = NFZ_Confirmed.objects.create(patient=patient1,
-#                                      side='left',
-#                                      date='2000-01-01')
-#         n2 = NFZ_Confirmed.objects.create(patient=patient1,
-#                                      side='right',
-#                                      date='2000-01-02')
-#         Reminder.objects.create(nfz_confirmed=n1)
-#         Reminder.objects.create(nfz_confirmed=n2)
-#         data = self.data.copy()
-#         data['nfz_left_remove'] = True
-#         data['nfz_right_remove'] = True
-#         url = reverse('crm:updating', args=(patient1.id,))
-#         expected_url = reverse('crm:edit', args=(1,))
-#         response = self.client.post(url, data, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+    def test_remove_NFZ_Confirmed(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='left',
+                                     date='2000-01-01')
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n1)
+        Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n2)
+        data = self.data.copy()
+        data['nfz_left_remove'] = True
+        data['nfz_right_remove'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='left')
-#         right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='right')
-#         self.assertEqual(len(left_nfz_confirmed_all), 1)
-#         self.assertEqual(len(right_nfz_confirmed_all), 1)
-#         self.assertFalse(left_nfz_confirmed_all.last().in_progress)
-#         self.assertFalse(right_nfz_confirmed_all.last().in_progress)
-#         new_info = NewInfo.objects.get(id=1)
-#         expected_note = 'Usunięto lewy wniosek z datą 2000-01-01. ' + \
-#                         'Usunięto prawy wniosek z datą 2000-01-02.'
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertEqual(left_nfz_confirmed_all.count(), 1)
+        self.assertEqual(right_nfz_confirmed_all.count(), 1)
+        self.assertFalse(left_nfz_confirmed_all.last().in_progress)
+        self.assertFalse(right_nfz_confirmed_all.last().in_progress)
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Usunięto lewy wniosek z datą 2000-01-01. ' + \
+                        'Usunięto prawy wniosek z datą 2000-01-02.'
 
-#         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-#         # should inactivate 2 Reminder.nfz_confirmed
-#         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='left')
-#         right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='right')
-#         left_confirmed_nfz = left_nfz_confirmed_all[0]
-#         right_confirmed_nfz = right_nfz_confirmed_all[0]
-#         left_confirmed_reminders = Reminder.objects.filter(
-#             nfz_confirmed=left_confirmed_nfz)
-#         self.assertEqual(len(left_confirmed_reminders), 1)
-#         right_confirmed_reminders = Reminder.objects.filter(
-#             nfz_confirmed=right_confirmed_nfz)
-#         self.assertEqual(len(right_confirmed_reminders), 1)
-#         self.assertFalse(left_confirmed_reminders.last().active)
-#         self.assertFalse(right_confirmed_reminders.last().active)
+        # should inactivate 2 Reminder.nfz_confirmed
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(left_confirmed_reminders.count(), 1)
+        right_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(right_confirmed_reminders.count(), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
 
-#         # there should be 2 Reminders in total (2 inactive)
-#         reminders = Reminder.objects.all()
-#         self.assertEqual(len(reminders), 2)
+        # there should be 2 Reminders in total (2 inactive)
+        reminders = Reminder_NFZ_Confirmed.objects.all()
+        self.assertEqual(reminders.count(), 2)
 
 
 #     def test_adding_pcpr_estimates(self):
@@ -1280,55 +1280,50 @@ class TestUpdatingView(TestCase):
 #         reminders = Reminder.objects.all()
 #         self.assertEqual(len(reminders), 6)
 
-#     def test_remove_pcpr_estimates(self):
-#         self.client.login(username='john', password='glassonion')
-#         patient1 = Patient.objects.get(id=1)
-#         p1 = PCPR_Estimate.objects.create(patient=patient1,
-#             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-#         p2 = PCPR_Estimate.objects.create(patient=patient1,
-#             ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-02')
-#         Reminder.objects.create(pcpr=p1)
-#         Reminder.objects.create(pcpr=p2)
-#         data = self.data.copy()
-#         data['pcpr_left_remove'] = True
-#         data['pcpr_right_remove'] = True
+    def test_remove_pcpr_estimates(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        p1 = PCPR_Estimate.objects.create(
+            patient=patient1,
+            current=False)
+        p1.timestamp = '2000-01-01'
+        p1.save()
+        p2 = PCPR_Estimate.objects.create(
+            patient=patient1,
+            current=True)
+        p2.timestamp = '2000-01-02'
+        p2.save()
+        Reminder_PCPR.objects.create(pcpr=p1)
+        Reminder_PCPR.objects.create(pcpr=p2)
+        data = self.data.copy()
+        data['pcpr_inactivate'] = True
 
-#         url = reverse('crm:updating', args=(patient1.id,))
-#         expected_url = reverse('crm:edit', args=(1,))
-#         response = self.client.post(url, data, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#         left_pcpr_all = PCPR_Estimate.objects.filter(patient=patient1, ear='left')
-#         right_pcpr_all = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='right')
-#         self.assertEqual(len(left_pcpr_all), 1)
-#         self.assertEqual(len(right_pcpr_all), 1)
-#         self.assertFalse(left_pcpr_all.last().in_progress)
-#         self.assertFalse(right_pcpr_all.last().in_progress)
-#         new_info = NewInfo.objects.get(id=1)
-#         expected_note = 'Usunięto lewy kosztorys na m f m, z datą 2000-01-01. ' + \
-#                         'Usunięto prawy kosztorys na m1 f1 m1, z datą 2000-01-02.'
+        pcpr_all = PCPR_Estimate.objects.filter(patient=patient1)
+        self.assertEqual(pcpr_all.count(), 2)
+        self.assertFalse(pcpr_all.last().current)
 
-#         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Zdezaktywowano kosztorys z datą 2000-01-02.'
 
-#         # reminders
-#         # should inactivate 2 Reminder.pcpr
-#         left_pcpr = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='left')[0]
-#         right_pcpr = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='right')[0]
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-#         left_reminders = Reminder.objects.filter(
-#             pcpr=left_pcpr)
-#         self.assertEqual(len(left_reminders), 1)
-#         right_reminders = Reminder.objects.filter(
-#             pcpr=right_pcpr)
-#         self.assertEqual(len(right_reminders), 1)
-#         self.assertFalse(left_reminders.last().active)
-#         self.assertFalse(right_reminders.last().active)
+        # reminders
+        # should inactivate Reminder.pcpr
+        pcpr2 = PCPR_Estimate.objects.filter(
+            patient=patient1, id=2)
+
+        reminders = Reminder_PCPR.objects.filter(
+            pcpr=pcpr2)
+        self.assertEqual(reminders.count(), 1)
+        self.assertFalse(reminders.last().active)
 
 #     def test_adding_invoice(self):
 #         self.client.login(username='john', password='glassonion')
@@ -1436,400 +1431,473 @@ class TestUpdatingView(TestCase):
 #         reminders = Reminder.objects.all()
 #         self.assertEqual(len(reminders), 8)
 
-#     def test_remove_invoice(self):
-#         self.client.login(username='john', password='glassonion')
-#         patient1 = Patient.objects.get(id=1)
-#         i1 = HA_Invoice.objects.create(patient=patient1,
-#                                      ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-#         i2 = HA_Invoice.objects.create(patient=patient1,
-#                                      ear='right', ha_make='m1', ha_family='f1', ha_model='m1', date='2000-01-01')
-#         Reminder.objects.create(invoice=i1)
-#         Reminder.objects.create(invoice=i2)
-#         data = self.data.copy()
-#         data['left_invoice_remove'] = True
-#         data['right_invoice_remove'] = True
+    def test_remove_invoice(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        i1 = Invoice.objects.create(patient=patient1,
+                                     payed=True,
+                                     type='cash',
+                                     current=False)
+        i2= Invoice.objects.create(patient=patient1,
+                                     payed=True,
+                                     type='cash',
+                                     current=True)
+        i2.timestamp = '2000-01-01'
+        i2.save()
+        Reminder_Invoice.objects.create(invoice=i1)
+        Reminder_Invoice.objects.create(invoice=i2)
+        data = self.data.copy()
+        data['invoice_inactivate'] = True
 
-#         url = reverse('crm:updating', args=(patient1.id,))
-#         expected_url = reverse('crm:edit', args=(1,))
-#         response = self.client.post(url, data, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#         left_invoice_all = HA_Invoice.objects.filter(
-#             patient=patient1, ear='left')
-#         right_invoice_all = HA_Invoice.objects.filter(
-#             patient=patient1, ear='right')
-#         self.assertEqual(len(left_invoice_all), 1)
-#         self.assertEqual(len(right_invoice_all), 1)
-#         self.assertFalse(left_invoice_all.last().in_progress)
-#         self.assertFalse(right_invoice_all.last().in_progress)
-#         new_info = NewInfo.objects.get(id=1)
-#         expected_note = 'Usunięto lewą fakturę na m f m, z datą 2000-01-01. ' + \
-#                         'Usunięto prawą fakturę na m1 f1 m1, z datą 2000-01-01.'
-#         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        invoice_all = Invoice.objects.filter(
+            patient=patient1)
+        self.assertEqual(invoice_all.count(), 2)
+        self.assertFalse(invoice_all.last().current)
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Zdezaktywowano fakturę z datą 2000-01-01.'
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-#         # reminders
-#         # should inactivate 2 Reminder.invoice
-#         left_invoice = HA_Invoice.objects.filter(
-#             patient=patient1, ear='left')[0]
-#         right_invoice = HA_Invoice.objects.filter(
-#             patient=patient1, ear='right')[0]
-#         left_reminders = Reminder.objects.filter(
-#             invoice=left_invoice)
-#         self.assertEqual(len(left_reminders), 1)
-#         right_reminders = Reminder.objects.filter(
-#             invoice=right_invoice)
-#         self.assertEqual(len(right_reminders), 1)
-#         self.assertFalse(left_reminders.last().active)
-#         self.assertFalse(right_reminders.last().active)
+        # reminders
+        # should inactivate Reminder.invoice
+        invoice = invoice_all.last()
+        reminders = Reminder_Invoice.objects.filter(
+            invoice=invoice)
+        self.assertEqual(reminders.count(), 1)
+        self.assertFalse(reminders.last().active)
 
-#     def test_collection_procedure(self):
-#         self.client.login(username='john', password='glassonion')
-#         patient1 = Patient.objects.get(id=1)
-#         new1 = NFZ_New.objects.create(patient=patient1,
-#                                     side='left',
-#                                     date='2000-01-01')
-#         new2 = NFZ_New.objects.create(patient=patient1,
-#                                     side='right',
-#                                     date='2000-01-02')
-#         n1 = NFZ_Confirmed.objects.create(patient=patient1,
-#                                      side='left',
-#                                      date='2000-01-01')
-#         n2 = NFZ_Confirmed.objects.create(patient=patient1,
-#                                      side='right',
-#                                      date='2000-01-02')
-#         p1 = PCPR_Estimate.objects.create(patient=patient1,
-#             ear='left', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-#         p2 = PCPR_Estimate.objects.create(patient=patient1,
-#             ear='right', ha_make='m', ha_family='f', ha_model='m', date='2000-01-01')
-#         i1 = HA_Invoice.objects.create(patient=patient1,
-#                                   ear='left', ha_make='m', ha_family='f', ha_model='m1', date='2000-01-01')
-#         i2 = HA_Invoice.objects.create(patient=patient1,
-#                                   ear='right', ha_make='m', ha_family='f', ha_model='m2', date='2000-01-01')
-#         Reminder.objects.create(nfz_new=new1, activation_date=today)
-#         Reminder.objects.create(nfz_new=new2, activation_date=today)
-#         Reminder.objects.create(nfz_confirmed=n1, activation_date=today)
-#         Reminder.objects.create(nfz_confirmed=n2, activation_date=today)
-#         # Reminder.objects.create(nfz_confirmed=n3, activation_date=today)
-#         Reminder.objects.create(pcpr=p1, activation_date=today)
-#         Reminder.objects.create(pcpr=p2, activation_date=today)
-#         Reminder.objects.create(invoice=i1, activation_date=today)
-#         Reminder.objects.create(invoice=i2, activation_date=today)
-#         data = self.data.copy()
-#         data['left_collection_confirm'] = True
-#         data['right_collection_confirm'] = True
-#         data['left_collection_date'] = '2001-01-01'
-#         data['right_collection_date'] = '2001-01-02'
+    def test_collection_procedure(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        new1 = NFZ_New.objects.create(patient=patient1,
+                                    side='left',
+                                    date='2000-01-01')
+        new2 = NFZ_New.objects.create(patient=patient1,
+                                    side='right',
+                                    date='2000-01-02')
+        n1 = NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='left',
+                                     date='2000-01-01')
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
+                                     side='right',
+                                     date='2000-01-02')
+        p1 = PCPR_Estimate.objects.create(
+            patient=patient1,
+            current=True)
+        i1 = Invoice.objects.create(
+            patient=patient1,
+            current=True)
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='left',
+                                    make='m',
+                                    family='f',
+                                    model='m1',
+                                   pkwiu_code='26.60.14',
+                                   estimate=p1,
+                                   invoice=i1,
+                                    purchase_date='2000-01-02',
+                                    our=False,
+                                    current=False)
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='right',
+                                    make='m',
+                                    family='f',
+                                    model='m2',
+                                   pkwiu_code='26.60.14',
+                                   estimate=p1,
+                                    invoice=i1,
+                                    purchase_date='2000-01-02',
+                                    our=False,
+                                    current=False)
+       
+        Reminder_NFZ_New.objects.create(nfz_new=new1, activation_date=today)
+        Reminder_NFZ_New.objects.create(nfz_new=new2, activation_date=today)
+        Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n1, activation_date=today)
+        Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n2, activation_date=today)
+        Reminder_PCPR.objects.create(pcpr=p1, activation_date=today)
+        Reminder_Invoice.objects.create(invoice=i1, activation_date=today)
+        data = self.data.copy()
+        data['collection_confirm'] = True
+        data['collection_date'] = '2000-01-02'
 
-#         url = reverse('crm:updating', args=(patient1.id,))
-#         expected_url = reverse('crm:edit', args=(1,))
-#         response = self.client.post(url, data, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#         # should create left and right Hearing_Aid instance
-#         left_ha = Hearing_Aid.objects.filter(patient=patient1, ear='left').first()
-#         self.assertEqual(left_ha.ha_model, 'm1')
-#         self.assertEqual(str(left_ha.purchase_date), '2001-01-01')
+        # should modify left and right Hearing_Aid instance that were on the invoice
+        left_ha = Hearing_Aid.objects.filter(patient=patient1, ear='left').first()
+        self.assertEqual(left_ha.model, 'm1')
+        self.assertEqual(str(left_ha.purchase_date), '2000-01-02')
+        self.assertTrue(left_ha.our)
+        self.assertTrue(left_ha.current)
 
-#         right_ha = Hearing_Aid.objects.filter(patient=patient1, ear='right').first()
-#         self.assertEqual(right_ha.ha_model, 'm2')
-#         self.assertEqual(str(right_ha.purchase_date), '2001-01-02')
+        right_ha = Hearing_Aid.objects.filter(patient=patient1, ear='right').first()
+        self.assertEqual(right_ha.model, 'm2')
+        self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
+        self.assertTrue(right_ha.our)
+        self.assertTrue(right_ha.current)
 
-#         # should set NFZ confirmed to inactive
-#         left_nfz_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='left')
-#         right_nfz_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='right')
-#         self.assertFalse(left_nfz_all.last().in_progress)
-#         self.assertFalse(right_nfz_all.last().in_progress)
+        # should set NFZ New if any to inactive
+        left_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        self.assertFalse(left_nfz_all.last().in_progress)
+        self.assertFalse(right_nfz_all.last().in_progress)
 
-#         # should set PCPR estimates to inactive
-#         left_pcpr_all = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='left')
-#         right_pcpr_all = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='right')
-#         self.assertFalse(left_pcpr_all.last().in_progress)
-#         self.assertFalse(right_pcpr_all.last().in_progress)
+        # should set NFZ confirmed to inactive
+        left_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertFalse(left_nfz_all.last().in_progress)
+        self.assertFalse(right_nfz_all.last().in_progress)
 
-#         # should set invoices to inactive
-#         left_invoice_all = HA_Invoice.objects.filter(
-#             patient=patient1, ear='left')
-#         right_invoice_all = HA_Invoice.objects.filter(
-#             patient=patient1, ear='right')
-#         self.assertFalse(left_invoice_all.last().in_progress)
-#         self.assertFalse(right_invoice_all.last().in_progress)
+        # should set last PCPR estimate to inactive
+        pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1)
+        self.assertFalse(pcpr_all.last().current)
 
-#         # should create a new info to show in history of actions
-#         new_info = NewInfo.objects.get(id=1)
-#         expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-01. ' + \
-#                         'Odebrano prawy aparat m f m2, z datą 2000-01-01.'
-#         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        # should set invoices to inactive
+        invoice_all = Invoice.objects.filter(
+            patient=patient1)
+        self.assertFalse(invoice_all.last().current)
 
-#         # reminders
-#         # 8 reminders from nfz_new, nfz_confirmed, pcpr and invoices should be set to incative,
-#         # additional 2 are to be created in collection, additional one should
-#         # be left as active
-#         # remiders
-#         # inactivate Reminder.nfz_new, Reminder.nfz_confirmed, Reminder.pcpr, Reminder.invoice
-#         left_nfz_new_all = NFZ_New.objects.filter(
-#             patient=patient1, side='left')
-#         right_nfz_new_all = NFZ_New.objects.filter(
-#             patient=patient1, side='right')
-#         left_new_nfz = left_nfz_new_all[0]
-#         right_new_nfz = right_nfz_new_all[0]
-#         left_new_reminders = Reminder.objects.filter(
-#             nfz_new=left_new_nfz)
-#         self.assertEqual(len(left_new_reminders), 1)
-#         right_new_reminders = Reminder.objects.filter(
-#             nfz_new=right_new_nfz)
-#         self.assertEqual(len(right_new_reminders), 1)
-#         self.assertFalse(left_new_reminders.last().active)
-#         self.assertFalse(right_new_reminders.last().active)
+        # should create a new info to show in history of actions
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-02. ' + \
+                        'Odebrano prawy aparat m f m2, z datą 2000-01-02.'
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-#         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='left')
-#         right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-#             patient=patient1, side='right')
-#         left_confirmed_nfz = left_nfz_confirmed_all[0]
-#         right_confirmed_nfz = right_nfz_confirmed_all[0]
-#         left_confirmed_reminders = Reminder.objects.filter(
-#             nfz_confirmed=left_confirmed_nfz)
-#         self.assertEqual(len(left_confirmed_reminders), 1)
-#         right_confirmed_reminders = Reminder.objects.filter(
-#             nfz_confirmed=right_confirmed_nfz)
-#         self.assertEqual(len(right_confirmed_reminders), 1)
-#         self.assertFalse(left_confirmed_reminders.last().active)
-#         self.assertFalse(right_confirmed_reminders.last().active)
+        # reminders       
+        # there should be 2 Reminder_NFZ_New (one for each side), both inactive
+        left_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_new_all = NFZ_New.objects.filter(
+            patient=patient1, side='right')
+        left_new_nfz = left_nfz_new_all[0]
+        right_new_nfz = right_nfz_new_all[0]
+        left_new_reminders = Reminder_NFZ_New.objects.filter(
+            nfz_new=left_new_nfz)
+        self.assertEqual(left_new_reminders.count(), 1)
+        right_new_reminders = Reminder_NFZ_New.objects.filter(
+            nfz_new=right_new_nfz)
+        self.assertEqual(right_new_reminders.count(), 1)
+        self.assertFalse(left_new_reminders.last().active)
+        self.assertFalse(right_new_reminders.last().active)
 
-#         left_pcpr_all = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='left')
-#         right_pcpr_all = PCPR_Estimate.objects.filter(
-#             patient=patient1, ear='right')
-#         left_pcpr = left_pcpr_all[0]
-#         right_pcpr = right_pcpr_all[0]
-#         left_confirmed_reminders = Reminder.objects.filter(
-#             pcpr=left_pcpr)
-#         self.assertEqual(len(left_confirmed_reminders), 1)
-#         right_confirmed_reminders = Reminder.objects.filter(
-#             pcpr=right_pcpr)
-#         self.assertEqual(len(right_confirmed_reminders), 1)
-#         self.assertFalse(left_confirmed_reminders.last().active)
-#         self.assertFalse(right_confirmed_reminders.last().active)
+        # there should be 2 Reminder_NFZ_Confirmed (one for each side), both inactive
+        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='left')
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        left_confirmed_nfz = left_nfz_confirmed_all[0]
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        left_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+            nfz_confirmed=left_confirmed_nfz)
+        self.assertEqual(left_confirmed_reminders.count(), 1)
+        right_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(right_confirmed_reminders.count(), 1)
+        self.assertFalse(left_confirmed_reminders.last().active)
+        self.assertFalse(right_confirmed_reminders.last().active)
 
-#         left_invoice_all = HA_Invoice.objects.filter(
-#             patient=patient1, ear='left')
-#         right_invoice_all = HA_Invoice.objects.filter(
-#             patient=patient1, ear='right')
-#         left_invoice = left_invoice_all[0]
-#         right_invoice = right_invoice_all[0]
-#         left_invoice_reminders = Reminder.objects.filter(
-#             invoice=left_invoice)
-#         self.assertEqual(len(left_invoice_reminders), 1)
-#         right_invoice_reminders = Reminder.objects.filter(
-#             invoice=right_invoice)
-#         self.assertEqual(len(right_invoice_reminders), 1)
-#         self.assertFalse(left_invoice_reminders.last().active)
-#         self.assertFalse(right_invoice_reminders.last().active)
+        # there should be one Reminder_PCPR, inactive
+        pcpr_all = PCPR_Estimate.objects.filter(
+            patient=patient1)
+        pcpr_reminders = Reminder_PCPR.objects.filter(
+            pcpr=pcpr_all.last())
+        self.assertEqual(pcpr_reminders.count(), 1)
+        self.assertFalse(pcpr_reminders.last().active)
 
-#         # there should be 10 Reminders in total (8 inactive and 2 active Reminder.ha)
-#         reminders = Reminder.objects.all()
-#         self.assertEqual(len(reminders), 10)
+        # there should be one Reminder_Invoice, inactive
+        invoice_all = Invoice.objects.filter(
+            patient=patient1)
+        invoice_reminders = Reminder_Invoice.objects.filter(
+            invoice=invoice_all.last())
+        self.assertEqual(invoice_reminders.count(), 1)
+        self.assertFalse(invoice_reminders.last().active)
 
-#     def test_remove_audiogram(self):
-#         self.client.login(username='john', password='glassonion')
-#         patient1 = Patient.objects.get(id=1)
-#         Audiogram.objects.create(patient=patient1, ear='left')
+
+        # there should be 2 Reminder_Collection instances, both active
+        collection_reminders = Reminder_Collection.objects.all()
+        self.assertEqual(collection_reminders.count(), 2)
+        self.assertTrue(collection_reminders.first().active)
+        self.assertTrue(collection_reminders.last().active)
+
+    def test_remove_audiogram(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        Audiogram.objects.create(patient=patient1, ear='left')
         
-#         data = self.data.copy()
-#         data['remove_audiogram'] = 'remove'
+        data = self.data.copy()
+        data['remove_audiogram'] = 'remove'
 
-#         url = reverse('crm:updating', args=(patient1.id,))
-#         expected_url = reverse('crm:edit', args=(1,))
-#         response = self.client.post(url, data, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#         left_audiogram_all = Audiogram.objects.filter(
-#             patient=patient1, ear='left')
-#         right_audiogram_all = Audiogram.objects.filter(
-#             patient=patient1, ear='right')
+        left_audiogram_all = Audiogram.objects.filter(
+            patient=patient1, ear='left')
+        right_audiogram_all = Audiogram.objects.filter(
+            patient=patient1, ear='right')
         
-#         self.assertEqual(len(left_audiogram_all), 0)
-#         self.assertEqual(len(right_audiogram_all), 0)
+        self.assertEqual(left_audiogram_all.count(), 0)
+        self.assertEqual(right_audiogram_all.count(), 0)
 
 
-# class TestDeleteView(TestCase):
-#     def setUp(self):
-#         user_john = create_user()
-#         patient1 = create_patient(user_john)
+class TestDeleteView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
         
-#     def test_anonymous(self):
-#         '''should redirect to login'''
-#         patient1 = Patient.objects.get(id=1)
-#         url = reverse('crm:deleteconfirm', args=(patient1.id,))
-#         expected_url = reverse('login') + '?next=/' + \
-#             str(patient1.id) + '/deleteconfirm/'
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+    def test_anonymous(self):
+        '''should redirect to login'''
+        patient1 = Patient.objects.get(id=1)
+        url = reverse('crm:deleteconfirm', args=(patient1.id,))
+        expected_url = reverse('login') + '?next=/' + \
+            str(patient1.id) + '/deleteconfirm/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#     def test_setup_logged_in(self):
-#         self.client.login(username='john', password='glassonion')
-#         patient = Patient.objects.get(id=1)
-#         url = reverse('crm:deleteconfirm', args=(1,))
-#         response = self.client.get(url)
-#         assert response.status_code == 200, 'Should be callable by logged in user'
+    def test_setup_logged_in(self):
+        self.client.login(username='john', password='glassonion')
+        patient = Patient.objects.get(id=1)
+        url = reverse('crm:deleteconfirm', args=(1,))
+        response = self.client.get(url)
+        assert response.status_code == 200, 'Should be callable by logged in user'
 
-# class TestDeletePatientView(TestCase):
-#     def setUp(self):
-#         user_john = create_user()
-#         patient1 = create_patient(user_john)
+class TestDeletePatientView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
 
-#     def test_anonymous(self):
-#         '''should redirect to login'''
-#         patient1 = Patient.objects.get(id=1)
-#         url = reverse('crm:delete', args=(patient1.id,))
-#         expected_url = reverse('login') + '?next=/' + \
-#             str(patient1.id) + '/delete/'
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+    def test_anonymous(self):
+        '''should redirect to login'''
+        patient1 = Patient.objects.get(id=1)
+        url = reverse('crm:delete', args=(patient1.id,))
+        expected_url = reverse('login') + '?next=/' + \
+            str(patient1.id) + '/delete/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
     
-#     def test_setup_logged_in(self):
-#         self.client.login(username='john', password='glassonion')
-#         url = reverse('crm:delete', args=(1,))
-#         expected_url = reverse('crm:index')
-#         response = self.client.post(url,follow=True)
-#         assert response.status_code == 200, 'Should redirect'
-#         # should redirect to expected_url
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
-#         # patient should have been deleted
-#         self.assertFalse(Patient.objects.all().exists())
+    def test_setup_logged_in(self):
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:delete', args=(1,))
+        expected_url = reverse('crm:index')
+        response = self.client.post(url,follow=True)
+        assert response.status_code == 200, 'Should redirect'
+        # should redirect to expected_url
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+        # patient should have been deleted
+        self.assertFalse(Patient.objects.all().exists())
 
 
-# class TestRemindersView(TestCase):
-#     def setUp(self):
-#         user_john = create_user()
-#         patient1 = create_patient(user_john, first_name='Jóść', last_name='Óąźcsd')
-#         patient2 = create_patient(user_john, first_name='łas', last_name='łąć')
-#         NFZ_Confirmed.objects.create(patient=patient1, date=today, side='left')
-#         NFZ_Confirmed.objects.create(patient=patient1, date=today, side='right')
+class TestReminderNFZNewView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+
+    def test_one(self):
+        self.client.login(username='john', password='glassonion')
+        nfz = NFZ_New.objects.create(
+            patient=Patient.objects.get(id=1), date=today, side='left')
+        Reminder_NFZ_New.objects.create(nfz_new=nfz, activation_date=today)
+        url = reverse('crm:reminder_nfz_new', args=(1,))
+        response = self.client.post(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s otrzymano NOWY wniosek NFZ lewy' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
+        self.assertEqual(response.context['url_address'], url)
 
 
-#     def test_anonymous(self):
-#         '''should redirect to login'''
-#         url = reverse('crm:reminders')
-#         expected_url = reverse('login') + '?next=/reminders/'
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+    def test_inactivate_reminder_nfz_new(self):
+        self.client.login(username='john', password='glassonion')
+        nfz = NFZ_New.objects.create(
+            patient=Patient.objects.get(id=1), date=today, side='left')
+        Reminder_NFZ_New.objects.create(nfz_new=nfz, activation_date=today)
+        data = {'inactivate_reminder': 'inactivate'}
+        url = reverse('crm:reminder_nfz_new', args=(1,))
+        # should give code 200
+        response = self.client.post(url, data, follow=True)
+        assert response.status_code == 200
+        # should inactivate reminder
+        self.assertFalse(Reminder_NFZ_New.objects.get(id=1).active)
 
-#     def test_logged_in_2_reminders(self):
-#         self.client.login(username='john', password='glassonion')
-#         Reminder.objects.create(
-#             nfz_confirmed=NFZ_Confirmed.objects.get(id=1), activation_date=today)
-#         Reminder.objects.create(
-#             nfz_confirmed=NFZ_Confirmed.objects.get(id=2), activation_date=today)
-#         response = self.client.post(reverse('crm:reminders'))
-#         # should give code 200
-#         assert response.status_code == 200
-#         self.assertEqual(len(response.context['reminders_list']), 2)
+class TestReminderNFZConfirmedView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+
+    def test_one(self):
+        self.client.login(username='john', password='glassonion')
+        nfz = NFZ_Confirmed.objects.create(
+            patient=Patient.objects.get(id=1), date=today, side='left')
+        Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=nfz, activation_date=today)
+        url = reverse('crm:reminder_nfz_confirmed', args=(1,))
+        response = self.client.post(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s otrzymano POTWIERDZONY wniosek NFZ lewy' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
+
+    def test_inactivate_reminder_nfz_confirmed(self):
+        self.client.login(username='john', password='glassonion')
+        nfz = NFZ_Confirmed.objects.create(
+            patient=Patient.objects.get(id=1), date=today, side='left')
+        Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=nfz, activation_date=today)
+
+        data = {'inactivate_reminder': 'inactivate'}
+        # should give code 200
+        url = reverse('crm:reminder_nfz_confirmed', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        assert response.status_code == 200
+        # should inactivate reminder
+        self.assertFalse(Reminder_NFZ_Confirmed.objects.get(id=1).active)
 
 
-# class TestReminderView(TestCase):
-#     def setUp(self):
-#         user_john = create_user()
-#         patient1 = create_patient(user_john)
+class TestReminderPCPRView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+
+    def test_one(self):
+        self.client.login(username='john', password='glassonion')
+        pcpr = PCPR_Estimate.objects.create(patient=Patient.objects.get(id=1))
         
-#     def test_anonymous(self):
-#         '''should redirect to login'''
-#         url = reverse('crm:reminder', args=(1,))
-#         expected_url = reverse('login') + '?next=/1/reminder/'
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+        Reminder_PCPR.objects.create(pcpr=pcpr)
+        url = reverse('crm:reminder_pcpr', args=(1,))
+        response = self.client.get(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s wystawiono kosztorys' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
 
-#     def test_logged_in_nfz(self):
-#         self.client.login(username='john', password='glassonion')
-#         nfz = NFZ_Confirmed.objects.create(
-#             patient=Patient.objects.get(id=1), date=today, side='left')
-#         Reminder.objects.create(nfz_confirmed=nfz, activation_date=today)
-#         url = reverse('crm:reminder', args=(1,))
-#         response = self.client.post(url)
-#         # should give code 200
-#         assert response.status_code == 200
-#         self.assertEqual(response.context['reminder_id'], 1)
-#         exp_subj = 'John Smith1, w dniu: %s otrzymano POTWIERDZONY wniosek NFZ lewy' % today.strftime(
-#             "%d.%m.%Y")
-#         self.assertEqual(response.context['subject'], exp_subj)
+    def test_inactivate_reminder_pcpr(self):
+        self.client.login(username='john', password='glassonion')
+        pcpr = PCPR_Estimate.objects.create(patient=Patient.objects.get(id=1))
 
-#     def test_logged_in_ha(self):
-#         self.client.login(username='john', password='glassonion')
-#         ha = Hearing_Aid.objects.create(
-#             patient=Patient.objects.get(id=1),
-#             ha_make='m',
-#             ha_family='f',
-#             ha_model='m1',
-#             ear='left'
-#         )
-#         Reminder.objects.create(
-#             ha=ha, activation_date=today)
-#         url = reverse('crm:reminder', args=(1,))
-#         response = self.client.post(url)
-#         # should give code 200
-#         assert response.status_code == 200
-#         self.assertEqual(response.context['reminder_id'], 1)
-#         exp_subj = 'John Smith1, w dniu: %s wydano aparat m f m1 lewy' % today.strftime(
-#             "%d.%m.%Y")
-#         self.assertEqual(response.context['subject'], exp_subj)
+        Reminder_PCPR.objects.create(pcpr=pcpr)
+        data = {'inactivate_reminder': 'inactivate'}
+        url = reverse('crm:reminder_pcpr', args=(1,))
+        response = self.client.post(url, data, follow=True)        # should give code 200
+        assert response.status_code == 200
+        # should inactivate reminder
+        self.assertFalse(Reminder_PCPR.objects.get(id=1).active)
 
+class TestReminderInvoiceView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
 
-# class TestInactivateReminderView(TestCase):
-#     def setUp(self):
-#         user_john = create_user()
-#         create_patient(user_john)
+    def test_one(self):
+        self.client.login(username='john', password='glassonion')
+        invoice = Invoice.objects.create(
+            patient=Patient.objects.get(id=1), type='cash', payed=True)
 
-#     def test_anonymous(self):
-#         '''should redirect to login'''
-#         url = reverse('crm:inactivate_reminder', args=(1,))
-#         expected_url = reverse('login') + '?next=/1/inactivate_reminder/'
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+        Reminder_Invoice.objects.create(invoice=invoice)
+        url = reverse('crm:reminder_invoice', args=(1,))
+        response = self.client.get(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s wystawiono fakture' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
 
-#     def test_logged_in_nfz(self):
-#         self.client.login(username='john', password='glassonion')
-#         nfz = NFZ_Confirmed.objects.create(
-#             patient=Patient.objects.get(id=1), date=today, side='left')
-#         r = Reminder.objects.create(nfz_confirmed=nfz, activation_date=today)
-#         url = reverse('crm:inactivate_reminder', args=(1,))
-#         expected_url = reverse('crm:reminders')
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
-#         r.refresh_from_db()
-#         self.assertFalse(r.active)
+    def test_inactivate_reminder_invoice(self):
+        self.client.login(username='john', password='glassonion')
+        invoice = Invoice.objects.create(
+            patient=Patient.objects.get(id=1), type='cash', payed=True)
 
+        Reminder_Invoice.objects.create(invoice=invoice)
+        data = {'inactivate_reminder': 'inactivate'}
+        url = reverse('crm:reminder_invoice', args=(1,))
+        # should give code 200
+        response = self.client.post(url, data, follow=True)
+        assert response.status_code == 200
+        # should inactivate reminder
+        self.assertFalse(Reminder_Invoice.objects.get(id=1).active)
+
+    
+class TestReminderCollectionView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        patient1 = create_patient(user_john)
+
+    def test_one_present(self):
+        self.client.login(username='john', password='glassonion')
+        ha1 = Hearing_Aid.objects.create(patient=Patient.objects.get(id=1),
+                                    ear='left',
+                                    make='m',
+                                    family='f',
+                                    model='m1',
+                                   pkwiu_code='26.60.14',
+                                    purchase_date='2000-01-02',
+                                    our=False,
+                                    current=False)
+
+        Reminder_Collection.objects.create(ha=ha1)
+        url = reverse('crm:reminder_collection', args=(1,))
+        response = self.client.get(url)
+        # should give code 200
+        assert response.status_code == 200
+        self.assertEqual(response.context['reminder_id'], 1)
+        exp_subj = 'John Smith1, w dniu: %s wydano aparat m f m1 lewy' % today.strftime(
+            "%d.%m.%Y")
+        self.assertEqual(response.context['subject'], exp_subj)
+
+    def test_inactivate_reminder_collection(self):
+        self.client.login(username='john', password='glassonion')
+        ha1 = Hearing_Aid.objects.create(patient=Patient.objects.get(id=1),
+                                         ear='left',
+                                         make='m',
+                                         family='f',
+                                         model='m1',
+                                         pkwiu_code='26.60.14',
+                                         purchase_date='2000-01-02',
+                                         our=False,
+                                         current=False)
+
+        Reminder_Collection.objects.create(ha=ha1)
+
+        data = {'inactivate_reminder': 'inactivate'}
+        url = reverse('crm:reminder_collection', args=(1,))
+        response = self.client.post(url, data, follow=True)        # should give code 200
+        assert response.status_code == 200
+        # should inactivate reminder
+        self.assertFalse(Reminder_Collection.objects.get(id=1).active)
+
+#
 
 # class TestInvoiceCreateView(TestCase):
 #     def setUp(self):
