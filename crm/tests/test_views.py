@@ -802,6 +802,18 @@ class TestUpdatingView(TestCase):
                                         password='oleole')
         self.client.login(username='adam', password='oleole')
         patient1 = Patient.objects.get(id=1)
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='left',
+                                    make='m',
+                                    family='f',
+                                    model='m1',
+                                   pkwiu_code='26.60.14')
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='right',
+                                    make='m',
+                                    family='f',
+                                    model='m2',
+                                   pkwiu_code='26.60.14')
         data = self.data.copy()
         data['left_ha'] = 'b1_family1_model1'
         data['right_ha'] = 'b2_family2_model2'
@@ -815,8 +827,8 @@ class TestUpdatingView(TestCase):
 
         left_ha_all = Hearing_Aid.objects.filter(patient=patient1, ear='left')
         right_ha_all = Hearing_Aid.objects.filter(patient=patient1, ear='right')
-        self.assertEqual(left_ha_all.count(), 1)
-        self.assertEqual(right_ha_all.count(), 1)
+        self.assertEqual(left_ha_all.count(), 2)
+        self.assertEqual(right_ha_all.count(), 2)
         self.assertEqual(left_ha_all.last().model, 'model1')
         self.assertEqual(right_ha_all.last().model, 'model2')
         new_info = NewInfo.objects.get(id=1)
@@ -825,6 +837,18 @@ class TestUpdatingView(TestCase):
 
         self.assertEqual(new_info.note, expected_note)
         self.assertEqual(new_info.audiometrist, adam)
+        
+        # previous hearing aids should be inactivated (current=False)
+        previous_left = left_ha_all.get(model='m1')
+        self.assertFalse(previous_left.current)
+        previous_right = right_ha_all.get(model='m2')
+        self.assertFalse(previous_right.current)
+
+        # new hearing aids should be active (current=True)
+        new_left = left_ha_all.get(model='model1')
+        self.assertTrue(new_left.current)
+        new_right = right_ha_all.get(model='model2')
+        self.assertTrue(new_right.current)
 
     def test_adding_another_hearing_aids_with_purchase_dates(self):
         self.client.login(username='john', password='glassonion')
@@ -833,13 +857,13 @@ class TestUpdatingView(TestCase):
                                     ear='left',
                                     make='m',
                                     family='f',
-                                    model='m',
+                                    model='m1',
                                    pkwiu_code='26.60.14')
         Hearing_Aid.objects.create(patient=patient1,
                                     ear='right',
                                     make='m',
                                     family='f',
-                                    model='m',
+                                    model='m2',
                                    pkwiu_code='26.60.14')
         data = self.data.copy()
         data['left_ha'] = 'b1_family1_model1'
@@ -865,6 +889,18 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(left_ha_all.last().purchase_date), '2001-01-01')
         self.assertEqual(str(right_ha_all.last().purchase_date), '2001-01-02')
         self.assertFalse(left_ha_all.last().our)
+                
+        # previous hearing aids should be inactivated (current=False)
+        previous_left = left_ha_all.get(model='m1')
+        self.assertFalse(previous_left.current)
+        previous_right = right_ha_all.get(model='m2')
+        self.assertFalse(previous_right.current)
+
+        # new hearing aids should be active (current=True)
+        new_left = left_ha_all.get(model='model1')
+        self.assertTrue(new_left.current)
+        new_right = right_ha_all.get(model='model2')
+        self.assertTrue(new_right.current)
 
     def test_adding_other_hearing_aids_with_text_input_names(self):
         '''user inputs name of hearing aid in text field'''
@@ -1516,7 +1552,24 @@ class TestUpdatingView(TestCase):
                                     purchase_date='2000-01-02',
                                     our=False,
                                     current=False)
-       
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='left',
+                                    make='m',
+                                    family='f',
+                                    model='m1old',
+                                   pkwiu_code='26.60.14',
+                                    purchase_date='2000-01-02',
+                                    our=False,
+                                    current=True)
+        Hearing_Aid.objects.create(patient=patient1,
+                                    ear='right',
+                                    make='m',
+                                    family='f',
+                                    model='m2old',
+                                   pkwiu_code='26.60.14',
+                                    purchase_date='2000-01-02',
+                                    our=False,
+                                    current=True)
         Reminder_NFZ_New.objects.create(nfz_new=new1, activation_date=today)
         Reminder_NFZ_New.objects.create(nfz_new=new2, activation_date=today)
         Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n1, activation_date=today)
@@ -1547,6 +1600,13 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
         self.assertTrue(right_ha.our)
         self.assertTrue(right_ha.current)
+
+        # should inactivate previous hearing aids (current=false)
+        previous_left = Hearing_Aid.objects.get(model='m1old')
+        self.assertFalse(previous_left.current)
+        previous_right = Hearing_Aid.objects.get(model='m2old')
+        self.assertFalse(previous_right.current)
+
 
         # should set NFZ New if any to inactive
         left_nfz_all = NFZ_New.objects.filter(

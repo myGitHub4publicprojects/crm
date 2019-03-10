@@ -75,9 +75,10 @@ def advancedsearch(request):
     # search by ha make
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
-		all_ha_make = Hearing_Aid.objects.filter(make=ha_make)
+		all_ha_make = Hearing_Aid.objects.filter(make=ha_make, current=True)
 		patient_list = patient_list & patients_from_ha(all_ha_make)
-
+		# print(patient_list[0].hearing_aid_set.filter(make='Oticon'))
+		# print(patient_list[0].hearing_aid_set.filter(current=True))
 	# search by ha make family and model
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
@@ -336,6 +337,10 @@ def updating(request, patient_id):
 		pl_side = 'lewy' if ear == 'left' else 'prawy'
 			# adding hearing aid to patient
 		if request.POST.get(ear + '_ha'):
+	    	# inactivate previous hearing aids (current=False) if any
+			old = Hearing_Aid.objects.filter(patient=patient, ear=ear)
+			old.update(current=False)
+
 			ha = request.POST[ear + '_ha']
 			ha_make, ha_family, ha_model = ha.split('_')
 			hearing_aid = Hearing_Aid.objects.create(patient=patient,
@@ -344,6 +349,7 @@ def updating(request, patient_id):
 									model=ha_model,
 									ear=ear,
 									pkwiu_code='26.60.14')
+			
 
 			new_action.append('Dodano ' + pl_side + ' aparat ' + 
 							hearing_aid.make + ' ' + hearing_aid.family + 
@@ -358,6 +364,9 @@ def updating(request, patient_id):
 				
 			# adding hearing aid with a custom name to patient
 		if request.POST.get(ear + '_other_ha'):
+    		# inactivate previous hearing aids (current=False) if any
+			old = Hearing_Aid.objects.filter(patient=patient, ear=ear)
+			old.update(current=False)
 			ha = request.POST[ear + '_other_ha']
 			if ' ' in ha:
 				ha = ha.split(' ', 1)
@@ -451,6 +460,10 @@ def updating(request, patient_id):
 		invoiced_ha = Hearing_Aid.objects.filter(invoice=current_invoice)
 		date = request.POST.get('collection_date') or str(today)
 		for ha in invoiced_ha:
+    		# inactivate previous hearing aids (current=False)
+			old = Hearing_Aid.objects.filter(patient=patient, ear=ha.ear)
+			old.update(current=False)
+			# update hearing aid that are one the invoice
 			ha.purchase_date=date
 			ha.current = True
 			ha.our = True
