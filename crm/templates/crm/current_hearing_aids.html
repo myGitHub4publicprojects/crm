@@ -3,7 +3,7 @@
     {% if left_hearing_aid %}
         <h4 class="bg-info text-white">ucho lewe</h4>
         <p class="text-center">
-            {{ left_hearing_aid.ha_make }} {{ left_hearing_aid.ha_family }} {{ left_hearing_aid.ha_model }}<br>
+            {{ left_hearing_aid.make }} {{ left_hearing_aid.family }} {{ left_hearing_aid.model }}<br>
         <small>Data zakupu: {{ left_hearing_aid.purchase_date }}</small></p>
         <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_left" aria-expanded="false">Zmień</div>
         {% include "crm/left_ha_select.html" %}
@@ -22,7 +22,7 @@
     {% if right_hearing_aid %}
         <h4 class="bg-danger text-white">ucho prawe</h4>
         <p class="text-center">
-            {{ right_hearing_aid.ha_make }} {{ right_hearing_aid.ha_family }} {{ right_hearing_aid.ha_model }}<br>
+            {{ right_hearing_aid.make }} {{ right_hearing_aid.family }} {{ right_hearing_aid.model }}<br>
         <small>Data zakupu: {{ right_hearing_aid.purchase_date }}</small></p>
         <div class="btn btn-secondary" data-toggle="collapse" data-target="#add_ha_right" aria-expanded="false">Zmień</div>
          {% include "crm/right_ha_select.html" %}
