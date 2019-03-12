@@ -180,7 +180,7 @@
         var netPrice = ((grossPrice*100)/(100 + vatRate)).toFixed(2);
 
         // add new row
-        var newRow = tbody.insertRow(tbody.rows.lenth);
+        var newRow = tbody.insertRow(-1);
 
         // add new cells
         var cell1 = newRow.insertCell(0);

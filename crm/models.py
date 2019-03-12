@@ -70,6 +70,7 @@ class Invoice(Finance):
     # change this to True once payment received and HA dispenced
     type = models.CharField(max_length=8, choices=(
         ('transfer', 'transfer'), ('cash', 'cash')))
+	# note = models.CharField(max_length=200, null=True, blank=True)
 
 
 class Audiogram(models.Model):

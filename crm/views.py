@@ -8,9 +8,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
+from django.core.serializers.json import DjangoJSONEncoder
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import PatientForm
+from .forms import PatientForm, InvoiceForm, InvoiceTypeForm
 from .models import (Patient, Audiogram, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
@@ -735,8 +736,8 @@ def reminder_collection(request, reminder_id):
 def invoice_create(request, patient_id):
 	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
-	ha_list = Hearing_Aid.ha_list
-	json_ha_list = json.dumps(ha_list)
+	ha_list = get_ha_list()
+	json_ha_list = json.dumps(ha_list, cls= DjangoJSONEncoder)
 	json_other_devices = json.dumps(other_devices)
 	InvoiceFormSet = formset_factory(InvoiceForm, extra=1)
 	if request.method == 'POST':

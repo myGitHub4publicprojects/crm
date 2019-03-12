@@ -165,37 +165,38 @@
 		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#kosztorys" aria-expanded="false" aria-controls="kosztorys">kosztorys</div>
 		<div class="collapse" id="kosztorys">
 			<div class="card card-body">
-				<div class="btn btn-outline-info">
-					<h4 class="bg-info text-white">ucho lewe</h4>
-					{% if left_PCPR_estimate %}
-					kosztorys wystawiono: {{ left_PCPR_estimate.date|date:'d-m-Y' }}<br>
-					Aparat: <span id="left_PCPR_ha">{{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}</span>
-					<div class="w-50 p-3 float-left">
+				<div class="card-body">
+					{% if PCPR_estimate.current %}
+					{{ PCPR_estimate.timestamp|date:'d-m-Y' }}:
+						<ul>
+						{% for h in PCPR_estimate.hearing_aid_set.all %}
+							<li>
+							{{ h }}, {{ h.ear }}
+							</li>
+						</ul>
+						{% endfor %}
+					<!-- Aparat: <span id="left_PCPR_ha">{{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}</span> -->
+					<!-- <div class="w-50 p-3 float-left">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_left" aria-expanded="false" aria-controls="pcpr_left">Zmień</div>
 						<div class="collapse" id="pcpr_left">
 							Zmieniam aparat na:<br>
 							{% include "crm/left_pcpr_ha_select.html" %}
 							Zmieniam datę wystawienia kosztorysu na: <input type="date" name="left_PCPR_date" value={{ left_PCPR_estimate.date|date:'Y-m-d' }} ><br>
 						</div>
-					</div>
+					</div> -->
 					<div class="w-50 p-3 float-right">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_left_remove" aria-expanded="false" aria-controls="pcpr_left">Anuluj</div>
 						<div class="collapse" id="pcpr_left_remove">
-							<input type="radio" name="pcpr_left_remove" id="pcpr_left_remove"/>
+							<input type="radio" name="pcpr_inactivate" id="pcpr_left_remove"/>
 							<label for="pcpr_left_remove">Anuluj</label>
 						</div>
 					</div>
 					{% else %}
-					<div class="btn btn-secondary" data-toggle="collapse" data-target="#add_pcpr_left" aria-expanded="false" aria-controls="add_pcpr_left">dodaj kosztorys</div>
-					<div class="collapse" id="add_pcpr_left">
-						Aparat:<br>
-						{% include "crm/left_pcpr_ha_select.html" %}
-						Data wystawienia: <input type="date" name="left_PCPR_date" value={% now 'Y-m-d' %}>
-					</div>
+					<a href="" class="btn btn-secondary">dodaj kosztorys</a>
 					{% endif %}
 				</div>
 
-				<div class="btn btn-outline-danger">
+				<!-- <div class="btn btn-outline-danger">
 					<h4 class="bg-danger text-white">ucho prawe</h4>
 					{% if right_PCPR_estimate %}
 					kosztorys wystawiono: {{ right_PCPR_estimate.date|date:'d-m-Y' }}<br>
@@ -222,7 +223,7 @@
 						Data wystawienia: <input type="date" name="right_PCPR_date" value={% now 'Y-m-d' %}>
 					</div>
 					{% endif %}
-				</div>
+				</div> -->
 				{% if right_PCPR_estimate or left_PCPR_estimate %}
 				<button class="btn" onclick="printDiv()">Drukuj kosztorys</button>
 				{% endif %}
