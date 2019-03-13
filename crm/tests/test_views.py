@@ -1959,168 +1959,173 @@ class TestReminderCollectionView(TestCase):
 
 #
 
-# class TestInvoiceCreateView(TestCase):
-#     def setUp(self):
-#         user_john = create_user()
-#         create_patient(user_john)
+class TestInvoiceCreateView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        create_patient(user_john)
 
-#     def test_anonymous(self):
-#         '''should redirect to login'''
-#         url = reverse('crm:invoice_create', args=(1,))
-#         expected_url = reverse('login') + '?next=/1/invoice_create/'
-#         response = self.client.post(url, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
+    def test_anonymous(self):
+        '''should redirect to login'''
+        url = reverse('crm:invoice_create', args=(1,))
+        expected_url = reverse('login') + '?next=/1/invoice_create/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-#     def test_logged_in_with_valid_data_for_ha(self):
-#         '''should create:
-#         one hearing aid,
-#         one invoice instance with one position - hearing aid,
-#         for a given patient,
-#         should redirect to detail view'''
-#         self.client.login(username='john', password='glassonion')
-#         url = reverse('crm:invoice_create', args=(1,))
-#         expected_url = reverse('crm:invoice_detail', args=(1,))
-#         data = {
-#             # form data
-#             'type': 'transfer',
+    def test_logged_in_with_valid_data_for_ha(self):
+        '''should create:
+        one hearing aid,
+        one invoice instance with one position - hearing aid,
+        for a given patient,
+        should also:
+        inactivate prevous invoices (current=False)
+        redirect to detail view'''
+        Invoice.objects.create(patient=Patient.objects.get(id=1))
+        Invoice.objects.create(patient=Patient.objects.get(id=1))
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:invoice_create', args=(1,))
+        expected_url = reverse('crm:invoice_detail', args=(3,))
+        data = {
+            # form data
+            'type': 'transfer',
 
-#             # formset data
-#             # these are needed for formset to work
-#             'form-TOTAL_FORMS': 1,
-#             'form-INITIAL_FORMS': 0,
+            # formset data
+            # these are needed for formset to work
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
 
-#             # formset forms data
-#             'form-0-device_type': 'ha',
-#             'form-0-make': 'Bernafon',
-#             'form-0-family': 'WIN',
-#             'form-0-model': '102',
-#             'form-0-price_gross': 107,
-#             'form-0-vat_rate': 7,
-#             'form-0-pkwiu_code': '11.22',
-#             'form-0-quantity': 1,
-#             'form-0-ear': 'right',
-#         }
+            # formset forms data
+            'form-0-device_type': 'ha',
+            'form-0-make': 'Bernafon',
+            'form-0-family': 'WIN',
+            'form-0-model': '102',
+            'form-0-price_gross': 107,
+            'form-0-vat_rate': 7,
+            'form-0-pkwiu_code': '11.22',
+            'form-0-quantity': 1,
+            'form-0-ear': 'right',
+        }
 
-#         response = self.client.post(url, data, follow=True)
-#         # should give code 200 as follow is set to True
-#         assert response.status_code == 200
-#         self.assertRedirects(response, expected_url,
-#                              status_code=302, target_status_code=200)
-#         invoice = Invoice.objects.get(pk=1)
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+        invoice = Invoice.objects.get(pk=3)
 
-#         ha = Hearing_Aid.objects.get(pk=1)
-#         # should create only one Hearing_Aid obj
-#         self.assertEqual(len(Hearing_Aid.objects.all()), 1)
-#         # should create only one invoice obj
-#         self.assertEqual(len(Invoice.objects.all()), 1)
-#         # this invoice should be tied to hearing aid
-#         self.assertEqual(ha.invoice, invoice)
-#         # hearing aid make should be 'Bernafon'
-#         self.assertEqual(ha.ha_make, 'Bernafon')
+        ha = Hearing_Aid.objects.get(pk=1)
+        # should create only one Hearing_Aid obj
+        self.assertEqual(Hearing_Aid.objects.all().count(), 1)
+        # should create one new invoice obj (there are also 2 old)
+        self.assertEqual(Invoice.objects.all().count(), 3)
+        # this invoice should be tied to hearing aid
+        self.assertEqual(ha.invoice, invoice)
+        # hearing aid make should be 'Bernafon'
+        self.assertEqual(ha.make, 'Bernafon')
+        # previous invoices should be inactivated (current=False)
+        invoice1 = Invoice.objects.get(pk=1)
+        self.assertFalse(invoice1.current)
+        invoice2 = Invoice.objects.get(pk=1)
+        self.assertFalse(invoice2.current)
+        # new invoice should be active (current=True)
+        self.assertTrue(invoice.current)
 
-#         messages = list(get_messages(response.wsgi_request))
-#         self.assertEqual(len(messages), 1)
-#         self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
 
-#     def test_logged_in_with_invalid_form_data(self):
-#         '''should redisplay invoice_create page with a warning message'''
-#         self.client.login(username='john', password='glassonion')
-#         url = reverse('crm:invoice_create', args=(1,))
-#         data = {
-#             # form data
-#             'type': '', # this should make the form invalid
+    def test_logged_in_with_invalid_form_data(self):
+        '''should redisplay invoice_create page with a warning message'''
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:invoice_create', args=(1,))
+        data = {
+            # form data
+            'type': '', # this should make the form invalid
 
-#             # formset data
-#             # these are needed for formset to work
-#             'form-TOTAL_FORMS': 1,
-#             'form-INITIAL_FORMS': 0,
+            # formset data
+            # these are needed for formset to work
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
 
-#             # formset forms data
-#             'form-0-device_type': 'ha',
-#             'form-0-make': 'Bernafon',
-#             'form-0-family': 'WIN',
-#             'form-0-model': '102',
-#             'form-0-price_gross': 107,
-#             'form-0-vat_rate': 7,
-#             'form-0-ear': 'right',
-#         }
-#         response = self.client.post(url, data, follow=True)
+            # formset forms data
+            'form-0-device_type': 'ha',
+            'form-0-make': 'Bernafon',
+            'form-0-family': 'WIN',
+            'form-0-model': '102',
+            'form-0-price_gross': 107,
+            'form-0-vat_rate': 7,
+            'form-0-ear': 'right',
+        }
+        response = self.client.post(url, data, follow=True)
 
-#         assert response.status_code == 200
+        assert response.status_code == 200
 
-#         # should not create invoice obj
-#         self.assertEqual(len(Invoice.objects.all()), 0)
+        # should not create invoice obj
+        self.assertEqual(Invoice.objects.all().count(), 0)
 
-#         # should not create Hearing_Aid obj
-#         self.assertEqual(len(Hearing_Aid.objects.all()), 0)
+        # should not create Hearing_Aid obj
+        self.assertEqual(Hearing_Aid.objects.all().count(), 0)
 
-#         messages = list(get_messages(response.wsgi_request))
-#         self.assertEqual(len(messages), 1)
-#         self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
-
-
-
-
-    # def test_logged_in_with_valid_data_for_other_device(self):
-
-
-
-    # NIEDOKONCZONE!!!!!!!!!!!!!!
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
 
 
 
 
-    #     '''should create:
-    #     one instance of other device,
-    #     one invoice instance with one position - wkładka uszna,
-    #     for a given patient,
-    #     should redirect to detail view'''
-    #     self.client.login(username='john', password='glassonion')
-    #     url = reverse('crm:invoice_create', args=(1,))
-    #     expected_url = reverse('crm:invoice_detail', args=(1,))
-    #     data = {
-    #         # form data
-    #         'type': 'transfer',
+    def test_logged_in_with_valid_data_for_other_device(self):
+        '''should create:
+        one instance of other device,
+        one invoice instance with one position - wkładka uszna,
+        for a given patient,
+        should redirect to detail view'''
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:invoice_create', args=(1,))
+        expected_url = reverse('crm:invoice_detail', args=(1,))
+        data = {
+            # form data
+            'type': 'transfer',
 
-    #         # formset data
-    #         # these are needed for formset to work
-    #         'form-TOTAL_FORMS': 1,
-    #         'form-INITIAL_FORMS': 0,
+            # formset data
+            # these are needed for formset to work
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
 
-    #         # formset forms data
-    #         'form-0-device_type': 'other',
-    #         'form-0-make': 'Audioservice',
-    #         'form-0-family': 'wkładka uszna',
-    #         'form-0-model': 'twarda',
-    #         'form-0-price_gross': 17,
-    #         'form-0-vat_rate': 7,
-    #         'form-0-pkwiu_code': '11.22',
-    #         'form-0-quantity': 1,
-    #         'form-0-ear': 'right',  # this will not be saved anywhere, but requred
-    #                                 # for the form to be valid
-    #     }
+            # formset forms data
+            'form-0-device_type': 'other',
+            'form-0-make': 'Audioservice',
+            'form-0-family': 'wkładka uszna',
+            'form-0-model': 'twarda',
+            'form-0-price_gross': 17,
+            'form-0-vat_rate': 7,
+            'form-0-pkwiu_code': '11.22',
+            'form-0-quantity': 1,
+            'form-0-ear': 'right',  # this will not be saved anywhere, but requred
+                                    # for the form to be valid
+        }
 
-    #     response = self.client.post(url, data, follow=True)
-    #     # should give code 200 as follow is set to True
-    #     assert response.status_code == 200
-    #     self.assertRedirects(response, expected_url,
-    #                          status_code=302, target_status_code=200)
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-    #     invoice = Invoice.objects.get(pk=1)
+        invoice = Invoice.objects.get(pk=1)
 
-    #     other = Other_Item.objects.get(pk=1)
-    #     # should create only one Other_Item obj
-    #     self.assertEqual(len(Other_Item.objects.all()), 1)
-    #     # should create only one invoice obj
-    #     self.assertEqual(len(Invoice.objects.all()), 1)
-    #     # this invoice should be tied to 'other device'
-    #     self.assertEqual(other.invoice, invoice)
-    #     # other item make should be 'Audioservice'
-    #     self.assertEqual(other.make, 'Audioservice')
+        other = Other_Item.objects.get(pk=1)
+        # should create only one Other_Item obj
+        self.assertEqual(Other_Item.objects.all().count(), 1)
+        # should create only one invoice obj
+        self.assertEqual(Invoice.objects.all().count(), 1)
+        # this invoice should be tied to 'other device'
+        self.assertEqual(other.invoice, invoice)
+        # other item make should be 'Audioservice'
+        self.assertEqual(other.make, 'Audioservice')
 
-    #     messages = list(get_messages(response.wsgi_request))
-    #     self.assertEqual(len(messages), 1)
-    #     self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+
+

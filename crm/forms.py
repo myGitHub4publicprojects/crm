@@ -17,7 +17,7 @@ class InvoiceTypeForm(forms.ModelForm):
     	model = Invoice
     	fields = ['type',]
 
-class InvoiceForm(forms.Form):
+class DeviceForm(forms.Form):
 	device_type = forms.ChoiceField(
 		choices=(('ha', 'Aparat'), ('other', 'Inne')))
 	make = forms.CharField(max_length=20)
@@ -26,7 +26,7 @@ class InvoiceForm(forms.Form):
 	# eg. systemy wspomagające słyszenie, wkładka uszna, WIN
 	model = forms.CharField(max_length=120)
  	# eg. ROGER CLIP-ON MIC + 2, twarda, 102
-	price_gross = forms.DecimalField(max_digits=6, decimal_places=2)
+	price_gross = forms.DecimalField(max_digits=8, decimal_places=2)
 	vat_rate = forms.IntegerField()
 	pkwiu_code = forms.CharField(max_length=20)
 	quantity = forms.IntegerField()

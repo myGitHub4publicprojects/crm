@@ -1,0 +1,302 @@
+<script>
+    // var ha_models = document.getElementsByClassName('ha_models');
+    var form = document.getElementById('newInvoice');
+    var table = document.getElementById('currentItems');
+    var itemsNum = 0;
+    var hearingAids = {{ json_ha_list | safe }};
+    var other_devices = {{ json_other_devices | safe }};
+    var devices = {};
+    // var currentDeviceType = '';
+    var currentMake = '';
+    var currentFamily = '';
+    var selectDeviceType = document.getElementById('selectDeviceType');
+    var selectMake = document.getElementById('haSelectMake');
+    var selectFamily = document.getElementById('haSelectFamily');
+    var selectModel = document.getElementById('haSelectModel');
+    var currentItemPrice = document.getElementById('currentItemPrice');
+    var selectedPrice = document.getElementById('selectedPrice');
+    var haQuantity = document.getElementById('haQuantity');
+    var addItem = document.getElementById('addItem');
+    var selectSide = document.getElementById('haSelectSide');
+    var acceptItem = document.getElementById('acceptItem');
+    var totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+    selectDeviceType.addEventListener('change', processDeviceType);
+    selectMake.addEventListener('change', selectedMake);
+    addItem.addEventListener('click', showForm);
+    haQuantity.addEventListener('change', selectedQuantity);
+    acceptItem.addEventListener('click', processItem);
+
+    function showForm() {
+        document.getElementById('newItem').style.display = 'block';
+        addItem.style.display = 'none';
+    }
+
+    function processItem() {
+        form.style.display = 'block';
+        var tbody = table.getElementsByTagName('tbody')[0];
+
+        // increase number of items
+        itemsNum++;
+
+        // set values
+        var pkwiuCode = devices[selectMake.value][selectFamily.value][selectModel.value]['pkwiu'];
+        // if (selectDeviceType.value == 'ha') {
+        //     pkwiuCode = '26.60.14.0';
+        // }
+        // else if (selectMake.value == 'WKŁADKA USZNA') {
+        //     pkwiuCode = '32.50.23.0';
+        // }
+        var vatRate = devices[selectMake.value][selectFamily.value][selectModel.value]['vat'];
+        // if (selectDeviceType.value == 'ha' || selectMake.value == 'WKŁADKA USZNA') {
+        //     vatRate = 8;
+        // }
+
+        var grossPrice = devices[selectMake.value][selectFamily.value][selectModel.value]['price'];
+        var netPrice = ((grossPrice * 100) / (100 + vatRate)).toFixed(2);
+
+        // add new row
+        var newRow = tbody.insertRow(-1);
+
+        // add new cells
+        var cell1 = newRow.insertCell(0);
+        var cell2 = newRow.insertCell(1);
+        var cell3 = newRow.insertCell(2);
+        var cell4 = newRow.insertCell(3);
+        var cell5 = newRow.insertCell(4);
+        var cell6 = newRow.insertCell(5);
+        var cell7 = newRow.insertCell(6);
+        var cell8 = newRow.insertCell(7);
+        var cell9 = newRow.insertCell(8);
+        var cell10 = newRow.insertCell(9);
+
+        // populate cells with data
+        // item number
+        cell1.innerHTML = itemsNum;
+        // item name
+        cell2.innerHTML = `${selectMake.value} ${selectFamily.value} ${selectModel.value}`;
+        if (selectDeviceType.value == 'ha') {
+            cell2.innerHTML = 'Aparat słuchowy ' + cell2.innerHTML
+        }
+        // PKWiU code
+        cell3.innerHTML = pkwiuCode;
+        // quantity
+        cell4.innerHTML = haQuantity.value;
+        // gross price
+        cell5.innerHTML = grossPrice;
+        // net price
+        cell6.innerHTML = netPrice;
+        // net value (quantity * net price)
+        cell7.innerHTML = haQuantity.value * netPrice;
+        // VAT rate
+        cell8.innerHTML = vatRate;
+        // VAT amount
+        cell9.innerHTML = ((haQuantity.value * netPrice) * (vatRate / 100)).toFixed(2);
+        // gross value (gross price*quantity)
+        cell10.innerHTML = haQuantity.value * grossPrice;
+
+        // add inputs to the form (hidden)
+        var device_type = document.createElement("input");
+        device_type.type = "hidden";
+        device_type.name = `form-${totalForms.value}-device_type`;
+        device_type.value = selectDeviceType.value;
+        form.appendChild(device_type);
+
+        var make = document.createElement("input");
+        make.type = "hidden";
+        make.name = `form-${totalForms.value}-make`;
+        make.value = `${selectMake.value}`;
+        form.appendChild(make);
+
+        var family = document.createElement("input");
+        family.type = "hidden";
+        family.name = `form-${totalForms.value}-family`;
+        family.value = `${selectFamily.value}`;
+        form.appendChild(family);
+
+        var model = document.createElement("input");
+        model.type = "hidden";
+        model.name = `form-${totalForms.value}-model`;
+        model.value = `${selectModel.value}`;
+        form.appendChild(model);
+
+        var price_gross = document.createElement("input");
+        price_gross.type = 'hidden';
+        price_gross.name = `form-${totalForms.value}-price_gross`;
+        price_gross.value = grossPrice;
+        form.appendChild(price_gross);
+
+        var vat_rate = document.createElement("input");
+        vat_rate.type = 'hidden';
+        vat_rate.name = `form-${totalForms.value}-vat_rate`;
+        vat_rate.value = vatRate;
+        form.appendChild(vat_rate);
+
+        var pkwiu_code = document.createElement("input");
+        pkwiu_code.type = 'hidden';
+        pkwiu_code.name = `form-${totalForms.value}-pkwiu_code`;
+        pkwiu_code.value = pkwiuCode;
+        form.appendChild(pkwiu_code);
+
+        var quantity = document.createElement("input");
+        quantity.type = 'hidden';
+        quantity.name = `form-${totalForms.value}-quantity`;
+        quantity.value = haQuantity.value;
+        form.appendChild(quantity);
+
+
+        var ear = document.createElement("input");
+        ear.type = 'hidden';
+        ear.name = `form-${totalForms.value}-ear`;
+        ear.value = selectSide.value;
+        form.appendChild(ear);
+
+
+        // increase total number of forms in a formset
+        totalForms.value++;
+
+        // reset form
+        selectMake.style.display = 'none';
+        selectFamily.style.display = 'none';
+        selectModel.style.display = 'none';
+        selectedPrice.style.display = 'none';
+        haQuantity.style.display = 'none';
+        haQuantity.value = '';
+        selectSide.style.display = 'none';
+        currentItemPrice.style.display = 'none';
+        var currentMake = '';
+        var currentFamily = '';
+        selectDeviceType.value = '';
+        selectMake.value = '';
+        document.getElementById('newItem').style.display = 'none';
+        addItem.style.display = 'inline-block';
+        acceptItem.style.display = 'none'
+    }
+
+    function processDeviceType() {
+        console.log(this.value);
+        selectMake.style.display = 'inline-block';
+
+        // reset select element - useful when user changed his mind
+        selectMake.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
+        currentDeviceType = '';
+        // process hearing aid
+        if (selectDeviceType.value == 'ha') {
+            for (let i in hearingAids) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i;
+                // opt.addEventListener('change', selectMake);
+                selectMake.appendChild(opt);
+            }
+            // currentDeviceType = 'ha'
+        }
+
+        // process other devices
+        if (selectDeviceType.value == 'other') {
+            console.log('others');
+            for (let i in other_devices) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i;
+                // opt.addEventListener('change', selectMake);
+                selectMake.appendChild(opt);
+            }
+            // currentDeviceType = 'other'
+        }
+
+    }
+    function selectedMake() {
+        // reset select element - useful when user changed his mind
+        selectFamily.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
+
+        // propagate options
+        if (selectDeviceType.value == 'ha') {
+            devices = hearingAids;
+        }
+        else if (selectDeviceType.value == 'other') {
+            devices = other_devices;
+        }
+
+        for (let i in devices[this.value]) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i;
+            haSelectFamily.appendChild(opt);
+        }
+
+        // set current make
+        currentMake = this.value;
+
+        // add event listener for families change
+        selectFamily.addEventListener('change', selectedFamily);
+
+        // display families to select from
+        selectFamily.style.display = 'inline-block';
+    }
+
+    function selectedFamily() {
+        console.log('family: ', this.value);
+        console.log('devices: ', devices);
+        // reset select element - useful when user changed his mind
+        selectModel.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
+
+        // propagate options
+        for (let i in devices[currentMake][this.value]) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i;
+            selectModel.appendChild(opt);
+        }
+
+        // set current family
+        currentFamily = this.value;
+
+        // add event listener for model change
+        selectModel.addEventListener('change', selectedModel);
+
+        // display models to select from
+        selectModel.style.display = 'inline-block';
+    }
+
+    function selectedModel() {
+        console.log(this.value);
+        console.log(devices[currentMake][currentFamily]);
+        selectedPrice.innerText = devices[currentMake][currentFamily][this.value]["price"];
+        selectedPrice.style.display = 'inline';
+        currentItemPrice.style.display = 'inline';
+        haQuantity.style.display = 'inline-block';
+    }
+
+    function selectedQuantity() {
+        // reset values
+        selectSide.innerHTML = '';
+        for (let i of ['left', 'right']) {
+            var side = document.createElement("option");
+            side.value = i;
+            if (i == 'left') {
+                side.innerHTML = 'Lewy';
+            }
+            else {
+                side.innerHTML = 'Prawy';
+            }
+            selectSide.appendChild(side);
+        }
+
+        // if quantity == 2 and type == hearing aid - set sides to both left and right
+        console.log(this.value)
+        if (this.value == 2 && selectDeviceType.value == 'ha') {
+            var both = document.createElement("option");
+            both.value = 'both';
+            both.innerHTML = 'L+P';
+            selectSide.appendChild(both);
+        }
+
+        // display sides to choose from
+        selectSide.style.display = 'inline-block';
+
+        // display button to accept item and add it to the table
+        acceptItem.style.display = 'inline-block'
+    }
+
+</script>

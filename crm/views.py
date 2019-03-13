@@ -11,7 +11,7 @@ from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import PatientForm, InvoiceForm, InvoiceTypeForm
+from .forms import PatientForm, DeviceForm, InvoiceTypeForm
 from .models import (Patient, Audiogram, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
@@ -21,7 +21,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-from .utils import get_ha_list
+from .utils import get_ha_list, process_device_formset
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -736,89 +736,28 @@ def reminder_collection(request, reminder_id):
 def invoice_create(request, patient_id):
 	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
+	print(get_ha_list())
 	ha_list = get_ha_list()
 	json_ha_list = json.dumps(ha_list, cls= DjangoJSONEncoder)
 	json_other_devices = json.dumps(other_devices)
-	InvoiceFormSet = formset_factory(InvoiceForm, extra=1)
+	InvoiceFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
 		print(request.POST)
 		form = InvoiceTypeForm(request.POST)
 		formset = InvoiceFormSet(request.POST)
 		if form.is_valid() and formset.is_valid():
-    			
+    		
+			# inactivate prevoius invoices (current=False)
+			previous_inv = Invoice.objects.filter(patient=patient)
+			previous_inv.update(current=False)
+
     		# create invoice instance
 			invoice = form.save(commit=False)
 			invoice.patient = patient
 			invoice.save()
 
-    		# process forms
-			for form in formset:
-				# if hearing aid
-				if form.cleaned_data['device_type'] == 'ha':
-					print('creating aparat')
-					# print(form)
-					quantity = int(form.cleaned_data['quantity'])
-					ear = form.cleaned_data['ear']
-					if quantity==1:
-    						print('jeden')
-						Hearing_Aid.objects.create(
-							patient=patient,
-							ha_make=form.cleaned_data['make'],
-							ha_family=form.cleaned_data['family'],
-							ha_model=form.cleaned_data['model'],
-							purchase_date=today,
-							price_gross=form.cleaned_data['price_gross'],
-							vat_rate=form.cleaned_data['vat_rate'],
-							pkwiu_code = form.cleaned_data['pkwiu_code'],
-							ear = ear,
-							invoice=invoice
-						)
-					elif quantity==2 and ear=='both':
-    						for i in ['left', 'right']:
-    							Hearing_Aid.objects.create(
-									patient=patient,
-									ha_make=form.cleaned_data['make'],
-									ha_family=form.cleaned_data['family'],
-									ha_model=form.cleaned_data['model'],
-									purchase_date=today,
-									price_gross=form.cleaned_data['price_gross'],
-									vat_rate=form.cleaned_data['vat_rate'],
-									pkwiu_code = form.cleaned_data['pkwiu_code'],
-									ear = i,
-									invoice=invoice
-								)
-
-					elif quantity > 1:
-    						for i in range(quantity):
-    							Hearing_Aid.objects.create(
-									patient=patient,
-									ha_make=form.cleaned_data['make'],
-									ha_family=form.cleaned_data['family'],
-									ha_model=form.cleaned_data['model'],
-									purchase_date=today,
-									price_gross=form.cleaned_data['price_gross'],
-									vat_rate=form.cleaned_data['vat_rate'],
-									pkwiu_code = form.cleaned_data['pkwiu_code'],
-									ear = ear,
-									invoice=invoice
-								)
-				
-				# if other device
-				if form.cleaned_data['device_type'] == 'other':
-					print('creating other item')
-					print('Quant: ', form.cleaned_data['quantity'],)
-					# how many to create: 'quantity'
-
-					Other_Item.objects.create(
-						patient=patient,
-						make=form.cleaned_data['make'],
-						family=form.cleaned_data['family'],
-						model=form.cleaned_data['model'],
-						price_gross=form.cleaned_data['price_gross'],
-						vat_rate=form.cleaned_data['vat_rate'],
-					  	pkwiu_code = form.cleaned_data['pkwiu_code'],
-						invoice=invoice
-					)
+    		# process devices in a formset
+			process_device_formset(formset, patient, invoice, today)
 				
 			# redirect to detail view with a success message
 			messages.success(request, 'Utworzono nową fakturę.')
