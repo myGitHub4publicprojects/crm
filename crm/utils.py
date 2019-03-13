@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
 from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item
 
-def get_ha_list():
-    """ returns a dict of a hearing aid in the following form:
+def get_devices(model):
+    """ returns a dict of devices in the following form:
     {make1_name:{family1_name:{model1_name:price}}} """
-    ha_list = {}
-    for ha in Hearing_Aid_Stock.objects.all():
-        make = ha.make
-        family = ha.family
-        model = ha.model
-        price = ha.price_gross
-        pkwiu = ha.pkwiu_code
-        vat = ha.vat_rate
+    items = {}
+    for i in model.objects.all():
+        make = i.make
+        family = i.family
+        model = i.model
+        price = i.price_gross
+        pkwiu = i.pkwiu_code
+        vat = i.vat_rate
 
-        if make not in ha_list:
-            ha_list[make] = {}
+        if make not in items:
+            items[make] = {}
 
         # if ha_list[make].get(family):
         #     ha_list[make][family].update({model: price})
         # else:
         #     ha_list[make][family] = {model:price}
 
-        if ha_list[make].get(family):
-            ha_list[make][family].update({
+        if items[make].get(family):
+            items[make][family].update({
                 model: {'price': price, 'pkwiu': pkwiu, 'vat': vat}})
         else:
-            ha_list[make][family] = {
+            items[make][family] = {
                 model: {'price': price, 'pkwiu': pkwiu, 'vat': vat}}
 
-    return ha_list
+    return items
 
 
 def process_device_formset(formset, patient, invoice, today):

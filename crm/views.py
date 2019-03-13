@@ -21,7 +21,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-from .utils import get_ha_list, process_device_formset
+from .utils import get_devices, process_device_formset
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -736,10 +736,11 @@ def reminder_collection(request, reminder_id):
 def invoice_create(request, patient_id):
 	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
-	print(get_ha_list())
-	ha_list = get_ha_list()
+	print(get_devices(Hearing_Aid_Stock))
+	ha_list = get_devices(Hearing_Aid_Stock)
+	other_items = get_devices(Other_Item_Stock)
 	json_ha_list = json.dumps(ha_list, cls= DjangoJSONEncoder)
-	json_other_devices = json.dumps(other_devices)
+	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	InvoiceFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
 		print(request.POST)

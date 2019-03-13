@@ -71,6 +71,33 @@
 
 {% block content %}
 <div class="status mt-2">{% include "crm/status.html" %}</div>
+<!-- <p>{{ ha_list.Phonak.VITUS}}</p>
+<ul>
+	{% for fm in ha_list.Phonak.items %}
+	<li>{{ fm.0 }}</li>
+	{% endfor %}
+</ul> -->
+<!-- <p>{{ ha_list.Phonak.items.2 }}</p> -->
+<!-- <ul>
+	{% for i in ha_list.Phonak.items.2 %}
+	<li>{{ i }} </li>
+	{% endfor %}
+</ul>
+<p>{{ ha_list.Phonak.items.2.0 }}</p> -->
+	<!-- <ul>
+	{% for family, models in ha_list.Phonak.items %}
+		<li>
+		{{ family }}
+			<ul>
+			{% for model in models %}
+				<li>{{ model }}</li>
+			{% endfor %}
+			</ul>
+		</li>
+
+	{% endfor %}
+	</ul> -->
+
 <form action="{% url 'crm:updating' patient.id %}" method="post" id="edit_patient">
 {% csrf_token %}
 {% include "crm/actions.html" %}
