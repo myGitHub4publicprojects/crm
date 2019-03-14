@@ -48,26 +48,6 @@
         </tr>
     </thead>
 
-<!-- {% if invoice.hearing_aid_set.all %}   
-    <tbody>
-        {% for ha in invoice.hearing_aid_set.all %}
-        <tr>
-            <td>Aparat słuchowy {{ ha }}</td>
-            <td>{{ ha.pkwiu_code }}</td>
-            <td>1</td>
-            <td>{{ ha.price_gross }}</td>
-            <td>netto</td>
-            <td>w netto</td>
-            <td>{{ ha.vat_rate }}</td>
-            <td>kwota vat</td>
-            <td>{{ ha.price_gross }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-
-</table>
-{% endif %} -->
-
 
 {% if ha_list %}
 <tbody>

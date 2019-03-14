@@ -51,7 +51,7 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                     vat_rate=form.cleaned_data['vat_rate'],
                     pkwiu_code = form.cleaned_data['pkwiu_code'],
                     ear = ear,
-                    pcpr=pcpr
+                    estimate=pcpr
                 )
             elif quantity==2 and ear=='both':
                     for i in ['left', 'right']:
@@ -65,7 +65,7 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                             vat_rate=form.cleaned_data['vat_rate'],
                             pkwiu_code = form.cleaned_data['pkwiu_code'],
                             ear = i,
-                            pcpr=pcpr
+                            estimate=pcpr
                         )
 
             elif quantity > 1:
@@ -80,7 +80,7 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                             vat_rate=form.cleaned_data['vat_rate'],
                             pkwiu_code = form.cleaned_data['pkwiu_code'],
                             ear = ear,
-                            pcpr=pcpr
+                            estimate=pcpr
                         )
         
         # if other device
@@ -97,7 +97,7 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                 price_gross=form.cleaned_data['price_gross'],
                 vat_rate=form.cleaned_data['vat_rate'],
                 pkwiu_code = form.cleaned_data['pkwiu_code'],
-                pcpr=pcpr
+                estimate=pcpr
             )
 
 

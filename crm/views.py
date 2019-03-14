@@ -752,16 +752,14 @@ def pcpr_create(request, patient_id):
 			previous_pcpr.update(current=False)
 
     		# create invoice instance
-			pcpr = form.save(commit=False)
-			pcpr.patient = patient
-			pcpr.save()
+			pcpr = PCPR_Estimate.objects.create(patient=patient)
 
     		# process devices in a formset
 			process_device_formset_pcpr(formset, patient, pcpr, today)
 
 			# redirect to detail view with a success message
 			messages.success(request, 'Utworzono nowy kosztorys.')
-			return redirect('crm:pcpr_detail', invoice.id)
+			return redirect('crm:pcpr_detail', pcpr.id)
 		else:
 		    	# redispaly with message
 			messages.warning(request, 'Niepoprawne dane, popraw.')
@@ -776,7 +774,34 @@ def pcpr_create(request, patient_id):
 
 @login_required
 def pcpr_detail(request, pcpr_id):
-    pass
+	pcpr = get_object_or_404(PCPR_Estimate, pk=pcpr_id)
+	ha = pcpr.hearing_aid_set.all()
+	other_devices = pcpr.other_item_set.all()
+	all_devices = list(ha) + list(other_devices)
+	items = {}
+	for i in all_devices:
+		if str(i) not in items:
+			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+			items[str(i)] = {
+				# 'name': str(i),
+				'pkwiu_code': i.pkwiu_code,
+				'quantity': 1,
+				'price_gross': i.price_gross,
+				'net_price': net_price,
+				'net_value': net_price,
+				'vat_rate': i.vat_rate,
+				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+				'gross_value': i.price_gross
+			 }
+		else:
+			items[str(i)]['quantity'] += 1
+    		current_quantity = items[str(i)]['quantity']
+    		items[str(i)]['net_value'] *= current_quantity
+    		items[str(i)]['vat_amount'] *= current_quantity
+    		items[str(i)]['gross_value'] *= current_quantity
+
+	context = {'ha_list': items, 'pcpr': pcpr}
+	return render(request, 'crm/detail_pcpr.html', context)
     	
 @login_required
 def pcpr_update(request, pcpr_id):
@@ -858,11 +883,6 @@ def invoice_detail(request, invoice_id):
     		items[str(i)]['gross_value'] *= current_quantity
 
 	context = {'ha_list': items, 'invoice': invoice}
-	# if this ivnvoice is the last one in the system enable its removal
-	if Invoice.objects.all().last() == invoice:
-		print('this is last invoice')
-		context['removable'] = 'removable'
-	# print(ha_list)
 	return render(request, 'crm/detail_invoice.html', context)
 
 

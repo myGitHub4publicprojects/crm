@@ -1,0 +1,70 @@
+{% extends "crm/base.html" %}
+{% load static %}
+{% block content %}
+
+<h1 class="text-center">Kosztorys</h1>
+<p>Wystawiony: {{ pcpr.timestamp }}</p>
+<hr>
+
+<!-- patient details -->
+<div class="row mt-2">
+    <div class="col-6">
+        <h3>Odbiorca:</h3>
+        <p>{{ pcpr.patient }}</p>
+        <p>
+            <span>
+                {% if pcpr.patient.street %} {{ pcpr.patient.street }} {% else %} {{ pcpr.patient.city }} {% endif %} {{ pcpr.patient.home_number }} {% if pcpr.patient.apartment_number %}
+                /{{ pcpr.patient.apartment_number }} {% endif %}
+            </span>
+        </P>
+        </p>
+        <P>
+            <span>{{ pcpr.patient.zip_code }} {{ pcpr.patient.city }}</span>
+        </P>
+    </div>
+    <div class="col-6">
+        <h3>Wystawiający:</h3>
+        <p>Sonovox Aparaty Słuchowe Barbara Golon-Szczepaniak</p>
+        <P>ul. Wagi 6/1</P>
+        <p>61-244 Poznań</p>
+        <p>NIP: 7821377519</p>
+    </div>
+</div>
+<hr>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa pozycji</th>
+            <th>PKWiU</th>
+            <th>ilość</th>
+            <th>Cena brutto</th>
+            <th>Cena netto</th>
+            <th>Wartość netto</th>
+            <th>Stawka VAT [%]</th>
+            <th>Kwota VAT</th>
+            <th>wartość brutto</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for key, value in ha_list.items %}
+        <tr>
+            <td>Aparat słuchowy {{ key }}</td>
+            <td>{{ value.pkwiu_code }}</td>
+            <td>{{ value.quantity }}</td>
+            <td>{{ value.price_gross }}</td>
+            <td>{{ value.net_price }}</td>
+            <td>{{ value.net_value }}</td>
+            <td>{{ value.vat_rate }}</td>
+            <td>{{ value.vat_amount }}</td>
+            <td>{{ value.gross_value }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<div class="button">Usuń kosztorys</div>
+
+{% endblock content %}
