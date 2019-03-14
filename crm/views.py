@@ -21,7 +21,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-from .utils import get_devices, process_device_formset
+from .utils import get_devices, process_device_formset_invoice, process_device_formset_pcpr
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -156,7 +156,7 @@ def advancedsearch(request):
 
 	context = {	'patient_list': patient_list,
 				'locations': Patient.locations,
-				'ha_list': get_ha_list()}
+				'ha_list': get_devices(Hearing_Aid_Stock)}
 	return render(request, 'crm/advanced_search.html', context)
 
 
@@ -164,7 +164,7 @@ def advancedsearch(request):
 def create(request):
 	locations = Patient.locations
 	audiometrists = User.objects.all()
-	context = {	'ha_list': get_ha_list(), 'ears': ears, 'locations': locations}
+	context = {	'ha_list': get_devices(Hearing_Aid_Stock), 'ears': ears, 'locations': locations}
 	return render(request, 'crm/create.html', context)
 
 
@@ -207,7 +207,7 @@ def edit(request, patient_id):
 
 	context = {
 			'patient': patient,
-			'ha_list': get_ha_list(),
+			'ha_list': get_devices(Hearing_Aid_Stock),
 			'ears': ears,
             'audiometrists': audiometrists,
 			'patient_notes': patient.newinfo_set.order_by('-timestamp'),
@@ -733,6 +733,56 @@ def reminder_collection(request, reminder_id):
 
 
 @login_required
+def pcpr_create(request, patient_id):
+	# print('in create view:')
+	patient = get_object_or_404(Patient, pk=patient_id)
+	print(get_devices(Hearing_Aid_Stock))
+	ha_list = get_devices(Hearing_Aid_Stock)
+	other_items = get_devices(Other_Item_Stock)
+	json_ha_list = json.dumps(ha_list, cls=DjangoJSONEncoder)
+	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
+	PCPRFormSet = formset_factory(DeviceForm, extra=1)
+	if request.method == 'POST':
+		print(request.POST)
+		formset = PCPRFormSet(request.POST)
+		if formset.is_valid():
+
+			# inactivate prevoius invoices (current=False)
+			previous_pcpr = PCPR_Estimate.objects.filter(patient=patient)
+			previous_pcpr.update(current=False)
+
+    		# create invoice instance
+			pcpr = form.save(commit=False)
+			pcpr.patient = patient
+			pcpr.save()
+
+    		# process devices in a formset
+			process_device_formset_pcpr(formset, patient, pcpr, today)
+
+			# redirect to detail view with a success message
+			messages.success(request, 'Utworzono nowy kosztorys.')
+			return redirect('crm:pcpr_detail', invoice.id)
+		else:
+		    	# redispaly with message
+			messages.warning(request, 'Niepoprawne dane, popraw.')
+
+	context = {	'patient': patient,
+             'ha_list': ha_list,
+             "json_ha_list": json_ha_list,
+            'json_other_devices': json_other_devices,
+             'formset': PCPRFormSet()}
+	return render(request, 'crm/create_pcpr.html', context)
+
+
+@login_required
+def pcpr_detail(request, pcpr_id):
+    pass
+    	
+@login_required
+def pcpr_update(request, pcpr_id):
+    pass
+
+@login_required
 def invoice_create(request, patient_id):
 	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
@@ -758,7 +808,7 @@ def invoice_create(request, patient_id):
 			invoice.save()
 
     		# process devices in a formset
-			process_device_formset(formset, patient, invoice, today)
+			process_device_formset_invoice(formset, patient, invoice, today)
 				
 			# redirect to detail view with a success message
 			messages.success(request, 'Utworzono nową fakturę.')
@@ -777,12 +827,6 @@ def invoice_create(request, patient_id):
 				'form': form,
 				'formset': InvoiceFormSet()}
 	return render(request, 'crm/create_invoice.html', context)
-
-
-@login_required
-def invoice_store(request, patient_id):
-	patient = get_object_or_404(Patient, pk=patient_id)
-	pass
 
 
 @login_required

@@ -20,8 +20,6 @@ urlpatterns = [
         views.reminder_invoice, name='reminder_invoice'),
     url(r'^(?P<reminder_id>[0-9]+)/reminder_collection/$',
         views.reminder_collection, name='reminder_collection'),
-	# url(r'^(?P<reminder_id>[0-9]+)/inactivate_reminder/$',
-	#     views.inactivate_reminder, name='inactivate_reminder'),
 	url(r'^import_from_noach/$', views.import_from_noach, name='import_from_noach'),     # this is probably not needed but html file needs to be adjusted
 	url(r'^(?P<patient_id>[0-9]+)/edit/$', views.edit, name='edit'),
 	url(r'^(?P<patient_id>[0-9]+)/updating/$', views.updating, name='updating'),
@@ -29,10 +27,16 @@ urlpatterns = [
 	url(r'^(?P<patient_id>[0-9]+)/delete/$', views.delete_patient, name='delete'),
     url(r'^(?P<patient_id>[0-9]+)/invoice_create/$',
         views.invoice_create, name='invoice_create'),
-    url(r'^(?P<patient_id>[0-9]+)/invoice_store/$',
-        views.invoice_store, name='invoice_store'),
 	url(r'^(?P<invoice_id>[0-9]+)/invoice_detail/$',
 	    views.invoice_detail, name='invoice_detail'),
     url(r'^(?P<invoice_id>[0-9]+)/invoice_update/$',
         views.invoice_update, name='invoice_update'),
+    # url invoice delete
+    
+    url(r'^(?P<patient_id>[0-9]+)/pcpr_create/$',
+        views.pcpr_create, name='pcpr_create'),
+	url(r'^(?P<pcpr_id>[0-9]+)/pcpr_detail/$',
+	    views.pcpr_detail, name='pcpr_detail'),
+    url(r'^(?P<pcpr_id>[0-9]+)/pcpr_update/$',
+        views.pcpr_update, name='pcpr_update'),
 ]
