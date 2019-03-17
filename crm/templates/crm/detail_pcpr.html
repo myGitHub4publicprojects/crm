@@ -4,6 +4,10 @@
 
 <h1 class="text-center">Kosztorys</h1>
 <p>Wystawiony: {{ pcpr.timestamp }}</p>
+<a href="{% url 'crm:edit' pcpr.patient.id %}">
+    <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
+</a>
+
 <hr>
 
 <!-- patient details -->
@@ -64,7 +68,8 @@
     </tbody>
 </table>
 
+<div id="print" class="btn btn-outline-primary mb-3">Drukuj kosztorys</div>
 
-<div class="button">Usuń kosztorys</div>
+<div id="remove" class="btn btn-outline-danger float-right mb-3">Usuń kosztorys</div>
 
 {% endblock content %}
