@@ -775,6 +775,13 @@ def pcpr_create(request, patient_id):
 @login_required
 def pcpr_detail(request, pcpr_id):
 	pcpr = get_object_or_404(PCPR_Estimate, pk=pcpr_id)
+	if request.POST.get('inactivate'):
+		pcpr.current=False
+		pcpr.save()
+		# redirect to edit view with a success message
+		messages.success(request, 'Kosztorys został przeniesiony do nieaktywnych.')
+		return redirect('crm:edit', pcpr.patient.id)
+    			
 	ha = pcpr.hearing_aid_set.all()
 	other_devices = pcpr.other_item_set.all()
 	all_devices = list(ha) + list(other_devices)

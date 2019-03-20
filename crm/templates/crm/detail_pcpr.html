@@ -70,6 +70,22 @@
 
 <div id="print" class="btn btn-outline-primary mb-3">Drukuj kosztorys</div>
 
-<div id="remove" class="btn btn-outline-danger float-right mb-3">Usuń kosztorys</div>
+<form action="{% url 'crm:pcpr_detail' pcpr.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="inactivate" value="True">
+    <input class="btn btn-outline-danger float-right mb-3" type="submit"
+    id="remove" value=Usuń kosztorys>
+</form>
 
+
+<script>
+var remove = document.getElementById('remove');
+remove.addEventListener('click', function(event){
+    
+    var decission = confirm('Czy napewno chcesz usunąć kosztorys?');
+    if (decission==false){
+        event.preventDefault();
+    }
+})
+</script>
 {% endblock content %}

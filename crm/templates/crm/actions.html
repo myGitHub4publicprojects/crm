@@ -167,11 +167,13 @@
 			<div class="card card-body">
 				<div class="card-body">
 					{% if PCPR_estimate.current %}
+					<a href="{% url 'crm:pcpr_detail' PCPR_estimate.id %}">
 					{{ PCPR_estimate.timestamp|date:'d-m-Y' }}:
-						<ul>
+					</a>
+						<ul class="list-unstyled">
 						{% for h in PCPR_estimate.hearing_aid_set.all %}
 							<li>
-							{{ h }}, {{ h.ear }}
+							<small>{{ h }}, {{ h.ear }}</small>
 							</li>
 						</ul>
 						{% endfor %}
@@ -185,14 +187,14 @@
 						</div>
 					</div> -->
 					<div class="w-50 p-3 float-right">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_left_remove" aria-expanded="false" aria-controls="pcpr_left">Anuluj</div>
-						<div class="collapse" id="pcpr_left_remove">
-							<input type="radio" name="pcpr_inactivate" id="pcpr_left_remove"/>
-							<label for="pcpr_left_remove">Anuluj</label>
+						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_remove" aria-expanded="false">Anuluj</div>
+						<div class="collapse" id="pcpr_remove">
+							<input type="radio" name="pcpr_inactivate" id="pcpr_remove"/>
+							<label for="pcpr_remove">Anuluj</label>
 						</div>
 					</div>
 					{% else %}
-					<a href="" class="btn btn-secondary">dodaj kosztorys</a>
+					<a href="{% url 'crm:pcpr_create' PCPR_estimate.patient.id %}" class="btn btn-secondary">dodaj kosztorys</a>
 					{% endif %}
 				</div>
 
