@@ -1,5 +1,9 @@
 {% extends "crm/base.html" %}
 {% load static %}
+
+{% block scripts %}
+<script src="{% static 'crm/scripts/print_pcpr.js' %}"></script>
+{% endblock scripts %}
 {% block content %}
 
 <h1 class="text-center">Kosztorys</h1>
@@ -69,6 +73,7 @@
 </table>
 
 <div id="print" class="btn btn-outline-primary mb-3">Drukuj kosztorys</div>
+<button class="btn" onclick="printDiv()">Drukuj kosztorys</button>
 
 <form action="{% url 'crm:pcpr_detail' pcpr.id %}" method="post">
     {% csrf_token %}

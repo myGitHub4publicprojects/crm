@@ -177,15 +177,7 @@
 							</li>
 						</ul>
 						{% endfor %}
-					<!-- Aparat: <span id="left_PCPR_ha">{{ left_PCPR_estimate.ha_make }} {{ left_PCPR_estimate.ha_family }} {{ left_PCPR_estimate.ha_model }}</span> -->
-					<!-- <div class="w-50 p-3 float-left">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_left" aria-expanded="false" aria-controls="pcpr_left">Zmień</div>
-						<div class="collapse" id="pcpr_left">
-							Zmieniam aparat na:<br>
-							{% include "crm/left_pcpr_ha_select.html" %}
-							Zmieniam datę wystawienia kosztorysu na: <input type="date" name="left_PCPR_date" value={{ left_PCPR_estimate.date|date:'Y-m-d' }} ><br>
-						</div>
-					</div> -->
+
 					<div class="w-50 p-3 float-right">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_remove" aria-expanded="false">Anuluj</div>
 						<div class="collapse" id="pcpr_remove">
@@ -198,59 +190,19 @@
 					{% endif %}
 				</div>
 
-				<!-- <div class="btn btn-outline-danger">
-					<h4 class="bg-danger text-white">ucho prawe</h4>
-					{% if right_PCPR_estimate %}
-					kosztorys wystawiono: {{ right_PCPR_estimate.date|date:'d-m-Y' }}<br>
-					Aparat: <span id="right_PCPR_ha">{{ right_PCPR_estimate.ha_make }} {{ right_PCPR_estimate.ha_family }} {{ right_PCPR_estimate.ha_model }}</span>
-					<div class="w-50 p-3 float-left">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_right" aria-expanded="false" aria-controls="pcpr_right">Zmień</div>
-						<div class="collapse" id="pcpr_right">
-							Zmieniam aparat na:<br>
-								{% include "crm/right_pcpr_ha_select.html" %}
-							Zmieniam datę wystawienia kosztorysu na: <input type="date" name="right_PCPR_date" value={{ right_PCPR_estimate.date|date:'Y-m-d' }} ><br>
-						</div>
-					</div>
-					<div class="w-50 p-3 float-right">
-							<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_right_remove" aria-expanded="false" aria-controls="pcpr_right">Anuluj</div>
-							<div class="collapse" id="pcpr_right_remove">
-								<input type="radio" name="pcpr_right_remove" id="pcpr_right_remove"/>
-								<label for="pcpr_right_remove">Anuluj</label>
-							</div>
-					</div>
-					{% else %}
-					<div class="btn btn-secondary" data-toggle="collapse" data-target="#add_pcpr_right" aria-expanded="false" aria-controls="add_pcpr_right">dodaj kosztorys</div>
-					<div class="collapse" id="add_pcpr_right">
-						{% include "crm/right_pcpr_ha_select.html" %}
-						Data wystawienia: <input type="date" name="right_PCPR_date" value={% now 'Y-m-d' %}>
-					</div>
-					{% endif %}
-				</div> -->
-				{% if right_PCPR_estimate or left_PCPR_estimate %}
-				<button class="btn" onclick="printDiv()">Drukuj kosztorys</button>
+				{% if PCPR_estimate_all %}
+					<p>Poprzednie kosztorysy:</p>
+					<ul class="list-unstyled">
+					{% for i in PCPR_estimate_all %}
+					<li>
+						<a href="{% url 'crm:pcpr_detail' i.id %}">
+							<small>{{ i.timestamp|date:'d-m-Y' }}</small>
+						</a>
+						<hr>
+					</li>
+					{% endfor %}
+					</ul>
 				{% endif %}
-					{% if left_PCPR_estimate_all %}
-						<h4>Poprzednie lewe:</h4>
-						<ul class="list-unstyled">
-						{% for i in left_PCPR_estimate_all %}
-						<li>
-							<small>{{ i.date|date:'d-m-Y' }}, {{ i.ha_make }} {{ i.ha_family }} {{ i.ha_model }}</small>
-							<hr>
-						</li>
-						{% endfor %}
-						</ul>
-					{% endif %}
-					{% if right_PCPR_estimate_all %}
-						<h4>Poprzednie prawe:</h4>
-						<ul class="list-unstyled">
-						{% for i in right_PCPR_estimate_all %}
-						<li>
-							<small>{{ i.date|date:'d-m-Y' }}, {{ i.ha_make }} {{ i.ha_family }} {{ i.ha_model }}</small>
-							<hr>
-						</li>
-						{% endfor %}
-						</ul>
-					{% endif %}
 			</div>
 				
 		</div>
