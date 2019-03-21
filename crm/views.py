@@ -21,7 +21,8 @@ from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-from .utils import get_devices, process_device_formset_invoice, process_device_formset_pcpr
+from .utils import (get_devices, process_device_formset_invoice,
+                    process_device_formset_pcpr, process_device_formset_proforma)
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -185,6 +186,12 @@ def edit(request, patient_id):
 	if PCPR_estimate_last and PCPR_estimate_last.current != False:
 		PCPR_estimate_all = PCPR_estimate_all.exclude(id=PCPR_estimate_last.id)
 
+	Proforma_all = Pro_Forma_Invoice.objects.filter(
+		patient=patient).order_by('timestamp')
+	Proforma_last = Proforma_all.last()
+	if Proforma_last and Proforma_last.current != False:
+		Proforma_all = Proforma_all.exclude(id=Proforma_last.id)
+
 	Invoice_all = Invoice.objects.filter(
 		patient=patient).order_by('timestamp')
 	Invoice_last = Invoice_all.last()
@@ -224,6 +231,8 @@ def edit(request, patient_id):
 			
 			'PCPR_estimate_all': PCPR_estimate_all,
 			'PCPR_estimate': PCPR_estimate_last,
+			'Proforma_all': Proforma_all,
+			'Proforma': Proforma_last,
 
 			'invoice_all': Invoice_all,
 			'invoice': Invoice_last,
@@ -806,7 +815,7 @@ def pcpr_detail(request, pcpr_id):
     		items[str(i)]['net_value'] *= current_quantity
     		items[str(i)]['vat_amount'] *= current_quantity
     		items[str(i)]['gross_value'] *= current_quantity
-			
+
 	total_value = sum(decimal.Decimal(v['price_gross']) for k,v in items.items())
 
 	context = {'ha_list': items, 'pcpr': pcpr, 'total_value': total_value}
@@ -814,6 +823,90 @@ def pcpr_detail(request, pcpr_id):
     	
 @login_required
 def pcpr_update(request, pcpr_id):
+    pass
+
+
+@login_required
+def proforma_create(request, patient_id):
+	patient = get_object_or_404(Patient, pk=patient_id)
+	ha_list = get_devices(Hearing_Aid_Stock)
+	other_items = get_devices(Other_Item_Stock)
+	json_ha_list = json.dumps(ha_list, cls=DjangoJSONEncoder)
+	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
+	ProFormaFormSet = formset_factory(DeviceForm, extra=1)
+	if request.method == 'POST':
+		print(request.POST)
+		formset = ProFormaFormSet(request.POST)
+		if formset.is_valid():
+
+			# inactivate prevoius proforma (current=False)
+			previous_proforma = Pro_Forma_Invoice.objects.filter(patient=patient)
+			previous_proforma.update(current=False)
+
+    		# create proforma instance
+			proforma = Pro_Forma_Invoice.objects.create(patient=patient)
+
+    		# process devices in a formset
+			process_device_formset_proforma(formset, patient, proforma, today)
+
+			# redirect to detail view with a success message
+			messages.success(request, 'Utworzono nową pro formę.')
+			return redirect('crm:proforma_detail', proforma.id)
+		else:
+		    	# redispaly with message
+			messages.warning(request, 'Niepoprawne dane, popraw.')
+
+	context = {	'patient': patient,
+             'ha_list': ha_list,
+             "json_ha_list": json_ha_list,
+             'json_other_devices': json_other_devices,
+             'formset': ProFormaFormSet()}
+	return render(request, 'crm/create_proforma.html', context)
+
+
+@login_required
+def proforma_detail(request, proforma_id):
+	proforma = get_object_or_404(Pro_Forma_Invoice, pk=proforma_id)
+	if request.POST.get('inactivate'):
+		proforma.current = False
+		proforma.save()
+		# redirect to edit view with a success message
+		messages.success(request, 'Pro forma została przeniesiona do nieaktywnych.')
+		return redirect('crm:edit', proforma.patient.id)
+
+	ha = proforma.hearing_aid_set.all()
+	other_devices = proforma.other_item_set.all()
+	all_devices = list(ha) + list(other_devices)
+	items = {}
+	for i in all_devices:
+		if str(i) not in items:
+			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+			items[str(i)] = {
+                            # 'name': str(i),
+                        				'pkwiu_code': i.pkwiu_code,
+                        				'quantity': 1,
+                        				'price_gross': i.price_gross,
+                        				'net_price': net_price,
+                        				'net_value': net_price,
+                        				'vat_rate': i.vat_rate,
+                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                        				'gross_value': i.price_gross
+                        }
+		else:
+			items[str(i)]['quantity'] += 1
+    		current_quantity = items[str(i)]['quantity']
+    		items[str(i)]['net_value'] *= current_quantity
+    		items[str(i)]['vat_amount'] *= current_quantity
+    		items[str(i)]['gross_value'] *= current_quantity
+
+	total_value = sum(decimal.Decimal(v['price_gross']) for k, v in items.items())
+
+	context = {'ha_list': items, 'proforma': proforma, 'total_value': total_value}
+	return render(request, 'crm/detail_proforma.html', context)
+
+
+@login_required
+def proforma_update(request, pcpr_id):
     pass
 
 @login_required

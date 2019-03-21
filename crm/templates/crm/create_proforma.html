@@ -1,0 +1,91 @@
+{% extends "crm/base.html" %}
+{% load static %}
+{% block content %}
+<h3 class="text-muted text-center">Faktura Pro Forma dla:</h3>
+<h1 class="text-center">{{ patient }}</h1>
+
+{% if error_message %}
+<p>
+    <strong>{{ error_message }}</strong>
+</p>
+{% endif %}
+
+<!-- patient details -->
+<div class="row mt-2">
+    <p>
+        Adres:
+        {% if patient.street %}
+        ul. {{ patient.street }}
+        {% else %}
+        {{ patient.city }}
+        {% endif %}
+        {{ patient.house_number }}
+        {% if patient.apartment_number %}
+        /{{ patient.apartment_number }}
+        {% endif %},
+        {{ patient.zip_code }} {{ patient.city }}</P>
+</div>
+<hr>
+
+<form action="{% url 'crm:proforma_create' patient.id %}" method="post" id="newInvoice">
+    {% csrf_token %}
+    <!-- required code for formsets -->
+    <input id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" type="hidden" value="0" />
+    <!-- total forms setto 0 as they are increased when item is added -->
+    <input id="id_form-INITIAL_FORMS" name="form-INITIAL_FORMS" type="hidden" value="0" />
+    <input id="id_form-MIN_NUM_FORMS" name="form-MIN_NUM_FORMS" type="hidden" value="0" />
+    <input id="id_form-MAX_NUM_FORMS" name="form-MAX_NUM_FORMS" type="hidden" value="1000" />
+
+    <table id='currentItems' class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Lp</td>
+                <td>Nazwa</td>
+                <td>PKWiU</td>
+                <td>ilość</td>
+                <td>Cena brutto</td>
+                <td>Cena netto</td>
+                <td>Wartość netto</td>
+                <td>Stawka VAT [%]</td>
+                <td>Kwota VAT</td>
+                <td>wartość brutto</td>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <button type='button' class="btn btn-outline-secondary btn-sm mb-3">Dodaj notatkę</button>
+    <textarea form="new_invoice" name="note" id="invoiceNote" placeholder="dodatkowa notatka"></textarea>
+
+    <input class="btn btn-primary mb-3 float-right" type="submit" value="Zatwierdzam fakturę" />
+
+</form>
+<hr>
+
+<button id="addItem" class="btn btn-secondary mb-3" type='button'>Dodaj pozycję</button>
+<div id="newItem" class="row mb-3">
+    <div class="col-xl-12">
+        <select name="device_type" id="selectDeviceType">
+            <option disabled selected value> -- wybierz -- </option>
+            <option value='ha'>Aparat słuchowy</option>
+            <option value='other'>Inne</option>
+        </select>
+        <select name="make" id="haSelectMake">
+            <option disabled selected value> -- wybierz -- </option>
+        </select>
+        <select name="family" id="haSelectFamily">
+        </select>
+        <select name="model" id="haSelectModel">
+        </select>
+        <span id="currentItemPrice"> cena brutto: <span id="selectedPrice"></span></span>
+        <input name="quantity" id="haQuantity" type="number" min="1" placeholder="ilość">
+        <select name="side" id="haSelectSide">
+        </select>
+        <button id="acceptItem" class="btn btn-secondary" type='button'>Zatwierdzam pozycję</button>
+    </div>
+</div>
+
+{% include "crm/invoice_create_js.html" %}
+
+{% endblock content %}

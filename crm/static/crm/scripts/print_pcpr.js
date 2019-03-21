@@ -10,7 +10,12 @@ function printDiv() {
     var sVox3 = 'NIP 782-137-75-19, Regon 302634863<br>';
     var sVox4 = 'tel. 721 210 180</small></p>';
     var sonovox = sVox+sVox1+sVox2+sVox3+sVox4;
-    var head = style + date + sonovox + '<h1 style="text-align:center;">Kosztorys</h1>';
+    var documentType = document.getElementById('documentType').innerText;
+    if (documentType.startsWith('Faktura')){
+        documentType += ' nr: ' + document.getElementById('documentNo').innerText;
+    }
+    var documentTitle = '<h1 style="text-align:center;">' + documentType + '</h1>';
+    var head = style + date + sonovox + documentTitle;
 
     var patientName = document.getElementById('patientName');
     var name = '<p>Imię i Nazwisko: ' + patientName.innerText + '</p><hr>';

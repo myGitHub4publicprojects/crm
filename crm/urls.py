@@ -31,7 +31,6 @@ urlpatterns = [
 	    views.invoice_detail, name='invoice_detail'),
     url(r'^(?P<invoice_id>[0-9]+)/invoice_update/$',
         views.invoice_update, name='invoice_update'),
-    # url invoice delete
     
     url(r'^(?P<patient_id>[0-9]+)/pcpr_create/$',
         views.pcpr_create, name='pcpr_create'),
@@ -39,4 +38,11 @@ urlpatterns = [
 	    views.pcpr_detail, name='pcpr_detail'),
     url(r'^(?P<pcpr_id>[0-9]+)/pcpr_update/$',
         views.pcpr_update, name='pcpr_update'),
+
+    url(r'^(?P<patient_id>[0-9]+)/proforma_create/$',
+            views.proforma_create, name='proforma_create'),
+   	url(r'^(?P<proforma_id>[0-9]+)/proforma_detail/$',
+        views.proforma_detail, name='proforma_detail'),
+    url(r'^(?P<proforma_id>[0-9]+)/proforma_update/$',
+        views.proforma_update, name='proforma_update'),
 ]

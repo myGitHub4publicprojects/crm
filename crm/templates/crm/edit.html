@@ -262,20 +262,18 @@
 		alert('Podaj prawidłowy numer telefonu');
 	}
 
-	var invoiceCreate = document.getElementById('invoiceCreate');
-	invoiceCreate.addEventListener('click', function(event) {
-	
-		let zip_code = '{{ patient.zip_code }}';
-		let city = '{{ patient.city }}';
-		let house_number = '{{ patient.house_number }}';
+	document.addEventListener('click', function (event) {
+			if (event.target.classList.contains('finance')) {
+				let zip_code = '{{ patient.zip_code }}';
+				let city = '{{ patient.city }}';
+				let house_number = '{{ patient.house_number }}';
+				if (zip_code == 'None' || city == 'None' || house_number == 'None') {
+					event.preventDefault();
+					alert('Najpierw uzupełnij adres i zaktualizuj dane pacjenta');
+				}
+			}
+		}, false);
 
-		if (zip_code == 'None' || city == 'None' || house_number == 'None'){
-			event.preventDefault();
-			alert('Najpierw uzupełnij adres i zaktualizuj dane pacjenta');
-		}
-
-		}
-	)
 </script>
 
 {% endblock content %}

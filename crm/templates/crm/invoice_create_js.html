@@ -41,17 +41,7 @@
 
         // set values
         var pkwiuCode = devices[selectMake.value][selectFamily.value][selectModel.value]['pkwiu'];
-        // if (selectDeviceType.value == 'ha') {
-        //     pkwiuCode = '26.60.14.0';
-        // }
-        // else if (selectMake.value == 'WKŁADKA USZNA') {
-        //     pkwiuCode = '32.50.23.0';
-        // }
         var vatRate = devices[selectMake.value][selectFamily.value][selectModel.value]['vat'];
-        // if (selectDeviceType.value == 'ha' || selectMake.value == 'WKŁADKA USZNA') {
-        //     vatRate = 8;
-        // }
-
         var grossPrice = devices[selectMake.value][selectFamily.value][selectModel.value]['price'];
         var netPrice = ((grossPrice * 100) / (100 + vatRate)).toFixed(2);
 
