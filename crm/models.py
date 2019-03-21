@@ -201,8 +201,12 @@ class Reminder_PCPR(Reminder):
 	pcpr = models.ForeignKey(PCPR_Estimate, on_delete=models.CASCADE)
 
 
+class Reminder_Proforma(Reminder):
+	proforma = models.ForeignKey(Pro_Forma_Invoice, on_delete=models.CASCADE)
+
+
 class Reminder_Invoice(Reminder):
-	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
 
 
 class Reminder_Collection(Reminder):
