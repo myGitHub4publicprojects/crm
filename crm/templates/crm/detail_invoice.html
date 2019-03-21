@@ -3,7 +3,10 @@
 {% block content %}
 
 <h1 id="documentType" class="text-center">Faktura VAT</h1>
-<p>Wystawiona: {{ invoice.timestamp }}</p>
+<p>
+    <span id="date">Wystawiona: {{ invoice.timestamp|date:'d-m-Y' }}</span>,
+    Nr dokumentu: <span id="documentNo">{{ invoice.id }}</span>
+</p>
 <p>Typ faktury: {{ invoice.type }}</p>
 <hr>
 
@@ -64,6 +67,17 @@
         <td>{{ value.gross_value }}</td>
     </tr>
     {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><strong>Łącznie:</strong></td>
+        <td id="totalVal"><strong>{{ total_value }}</strong></td>
+    </tr>
 </tbody>
 
 </table>

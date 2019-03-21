@@ -540,6 +540,17 @@ def updating(request, patient_id):
 		reminder.save()
 
 
+		# remove proforma from currently active
+	# if request.POST.get('proforma_inactivate'):
+	# 	last_proforma = Pro_Forma_Invoice.objects.filter(
+	# 		patient=patient).last()
+	# 	last_proforma.current = False
+	# 	last_proforma.save()
+	# 	new_action.append('Zdezaktywowano proformę z datą ' + str(last_proforma.timestamp.date()) + '.')
+	# 	reminder = Reminder_Invoice.objects.get(invoice=last_invoice)
+	# 	reminder.active = False
+	# 	reminder.save()
+
 		# remove invoice from currently active
 	if request.POST.get('invoice_inactivate'):
 		last_invoice = Invoice.objects.filter(
@@ -984,7 +995,9 @@ def invoice_detail(request, invoice_id):
     		items[str(i)]['vat_amount'] *= current_quantity
     		items[str(i)]['gross_value'] *= current_quantity
 
-	context = {'ha_list': items, 'invoice': invoice}
+	total_value = sum(decimal.Decimal(v['price_gross']) for k, v in items.items())
+
+	context = {'ha_list': items, 'invoice': invoice, 'total_value': total_value}
 	return render(request, 'crm/detail_invoice.html', context)
 
 

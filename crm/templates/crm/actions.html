@@ -217,7 +217,7 @@
 			<div class="card card-body">
 				<div class="card-body">
 					{% if Proforma.current %}
-					<a href="{% url 'crm:pcpr_detail' PCPR_estimate.id %}">
+					<a href="{% url 'crm:proforma_detail' Proforma.id %}">
 						{{ Proforma.timestamp|date:'d-m-Y' }}:
 					</a>
 					<ul class="list-unstyled">
@@ -257,93 +257,53 @@
 	
 		</div>
 	</div>
+
 	<!-- faktura -->
 	<div class="col-lg">
-		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#faktura" aria-expanded="false" aria-controls="faktura">faktura</div>
-		<div class="collapse" id="faktura">
+		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#invoice" aria-expanded="false"
+		 aria-controls="invoice">faktura</div>
+		<div class="collapse" id="invoice">
 			<div class="card card-body">
-				<div class="btn btn-outline-info">
-					<h4 class="bg-info text-white">ucho lewe</h4>
-					{% if left_invoice %}
-					fakture wystawiono: {{ left_invoice.date|date:'d-m-Y' }}<br>
-					Aparat: {{ left_invoice.ha_make }} {{ left_invoice.ha_family }} {{ left_invoice.ha_model }}
-					<div class="w-50 p-3 float-left">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#left_invoice" aria-expanded="false">Zmień</div>
-						<div class="collapse" id="left_invoice">
-							Zmieniam aparat na:<br>
-								{% include "crm/left_invoice_ha_select.html" %}
-							Zmieniam datę wystawienia faktury na: <input type="date" name="left_invoice_date" value={{ left_invoice.date|date:'Y-m-d' }} ><br>
-						</div>
-					</div>
+				<div class="card-body">
+					{% if invoice.current %}
+					<a href="{% url 'crm:invoice_detail' invoice.id %}">
+						{{ invoice.timestamp|date:'d-m-Y' }}:
+					</a>
+					<ul class="list-unstyled">
+						{% for h in invoice.hearing_aid_set.all %}
+						<li>
+							<small>{{ h }}, {{ h.ear }}</small>
+						</li>
+					</ul>
+					{% endfor %}
+	
 					<div class="w-50 p-3 float-right">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#left_invoice_remove" aria-expanded="false">Anuluj</div>
-						<div class="collapse" id="left_invoice_remove">
-							<input type="radio" name="left_invoice_remove" id="left_invoice_remove"/>
-							<label for="left_invoice_remove">Anuluj</label>
+						<div class="btn btn-secondary" data-toggle="collapse" data-target="#invoice_remove" aria-expanded="false">Anuluj</div>
+						<div class="collapse" id="invoice_remove">
+							<input type="radio" name="invoice_inactivate" id="invoice_remove" />
+							<label for="invoice_remove">Anuluj</label>
 						</div>
 					</div>
 					{% else %}
-					<div class="btn btn-secondary" data-toggle="collapse" data-target="#add_left_invoice" aria-expanded="false" aria-controls="add_left_invoice">dodaj fakturę</div>
-					<div class="collapse" id="add_left_invoice">
-						Aparat:<br>
-						{% include "crm/left_invoice_ha_select.html" %}
-						Data wystawienia: <input type="date" name="left_invoice_date" value={% now 'Y-m-d' %}>
-					</div>
+					<a href="{% url 'crm:invoice_create' patient.id %}" class="btn btn-secondary finance">dodaj fakturę</a>
 					{% endif %}
 				</div>
-				<div class="btn btn-outline-danger">
-					<h4 class="bg-danger text-white">ucho prawe</h4>
-					{% if right_invoice %}
-					fakture wystawiono: {{ right_invoice.date|date:'d-m-Y' }}<br>
-					Aparat: {{ right_invoice.ha_make }} {{ right_invoice.ha_family }} {{ right_invoice.ha_model }}
-					<div class="w-50 p-3 float-left">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#right_invoice" aria-expanded="false" aria-controls="right_invoice">Zmień</div>
-						<div class="collapse" id="right_invoice">
-							Zmieniam aparat na:<br>
-							{% include "crm/right_invoice_ha_select.html" %}
-							Zmieniam datę wystawienia faktury na: <input type="date" name="right_invoice_date" value={{ right_invoice.date|date:'Y-m-d' }} ><br>
-						</div>
-					</div>
-					<div class="w-50 p-3 float-right">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#right_invoice_remove" aria-expanded="false">Anuluj</div>
-						<div class="collapse" id="right_invoice_remove">
-							<input type="radio" name="right_invoice_remove" id="right_invoice_remove"/>
-							<label for="right_invoice_remove">Anuluj</label>
-						</div>
-					</div>
-					{% else %}
-					<div class="btn btn-secondary" data-toggle="collapse" data-target="#add_right_invoice" aria-expanded="false" aria-controls="add_right_invoice">dodaj fakturę</div>
-					<div class="collapse" id="add_right_invoice">
-						Aparat:<br>
-						{% include "crm/right_invoice_ha_select.html" %}
-						Data wystawienia: <input type="date" name="right_invoice_date" value={% now 'Y-m-d' %}>
-					</div>
-					{% endif %}
-				</div>
-					{% if left_invoice_all %}
-						<h4>Poprzednie lewe:</h4>
-						<ul class="list-unstyled">
-						{% for i in left_invoice_all %}
-						<li>
-							<small>{{ i.date|date:'d-m-Y' }}, {{ i.ha_make }} {{ i.ha_family }} {{ i.ha_model }}</small>
-							<hr>
-						</li>
-						{% endfor %}
-						</ul>
-					{% endif %}
-					{% if right_invoice_all %}
-						<h4>Poprzednie prawe:</h4>
-						<ul class="list-unstyled">
-						{% for i in right_invoice_all %}
-						<li>
-							<small>{{ i.date|date:'d-m-Y' }}, {{ i.ha_make }} {{ i.ha_family }} {{ i.ha_model }}</small>
-							<hr>
-						</li>
-						{% endfor %}
-						</ul>
-					{% endif %}
-				</div>
-				
+	
+				{% if invoice_all %}
+				<p>Poprzednie faktury:</p>
+				<ul class="list-unstyled">
+					{% for i in invoice_all %}
+					<li>
+						<a href="{% url 'crm:invoice_detail' i.id %}">
+							<small>{{ i.timestamp|date:'d-m-Y' }}</small>
+						</a>
+						<hr>
+					</li>
+					{% endfor %}
+				</ul>
+				{% endif %}
+			</div>
+	
 		</div>
 	</div>
 
