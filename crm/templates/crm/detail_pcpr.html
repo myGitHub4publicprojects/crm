@@ -7,7 +7,7 @@
 {% block content %}
 
 <h1 class="text-center">Kosztorys</h1>
-<p>Wystawiony: {{ pcpr.timestamp }}</p>
+<p id="date">Wystawiony: {{ pcpr.timestamp|date:'d-m-Y' }}</p>
 <a href="{% url 'crm:edit' pcpr.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
 </a>
@@ -18,16 +18,16 @@
 <div class="row mt-2">
     <div class="col-6">
         <h3>Odbiorca:</h3>
-        <p>{{ pcpr.patient }}</p>
+        <p id="patientName">{{ pcpr.patient }}</p>
         <p>
-            <span>
+            <span id="address1">
                 {% if pcpr.patient.street %} {{ pcpr.patient.street }} {% else %} {{ pcpr.patient.city }} {% endif %} {{ pcpr.patient.home_number }} {% if pcpr.patient.apartment_number %}
                 /{{ pcpr.patient.apartment_number }} {% endif %}
             </span>
         </P>
         </p>
         <P>
-            <span>{{ pcpr.patient.zip_code }} {{ pcpr.patient.city }}</span>
+            <span id="address2">{{ pcpr.patient.zip_code }} {{ pcpr.patient.city }}</span>
         </P>
     </div>
     <div class="col-6">
@@ -51,7 +51,7 @@
             <th>Wartość netto</th>
             <th>Stawka VAT [%]</th>
             <th>Kwota VAT</th>
-            <th>wartość brutto</th>
+            <th>wartość brutto (PLN)</th>
         </tr>
     </thead>
 
@@ -69,11 +69,21 @@
             <td>{{ value.gross_value }}</td>
         </tr>
         {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>Łącznie:</strong></td>
+            <td id="totalVal"><strong>{{ total_value }}</strong></td>
+        </tr>
     </tbody>
 </table>
 
-<div id="print" class="btn btn-outline-primary mb-3">Drukuj kosztorys</div>
-<button class="btn" onclick="printDiv()">Drukuj kosztorys</button>
+<button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj kosztorys</button>
 
 <form action="{% url 'crm:pcpr_detail' pcpr.id %}" method="post">
     {% csrf_token %}

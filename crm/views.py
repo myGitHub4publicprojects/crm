@@ -806,8 +806,10 @@ def pcpr_detail(request, pcpr_id):
     		items[str(i)]['net_value'] *= current_quantity
     		items[str(i)]['vat_amount'] *= current_quantity
     		items[str(i)]['gross_value'] *= current_quantity
+			
+	total_value = sum(decimal.Decimal(v['price_gross']) for k,v in items.items())
 
-	context = {'ha_list': items, 'pcpr': pcpr}
+	context = {'ha_list': items, 'pcpr': pcpr, 'total_value': total_value}
 	return render(request, 'crm/detail_pcpr.html', context)
     	
 @login_required
