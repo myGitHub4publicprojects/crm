@@ -263,19 +263,19 @@
 	}
 
 	var invoiceCreate = document.getElementById('invoiceCreate');
-	invoiceCreate.addEventListener('click', validAddress)
-	function validAddress(){
+	invoiceCreate.addEventListener('click', function(event) {
+	
 		let zip_code = '{{ patient.zip_code }}';
 		let city = '{{ patient.city }}';
 		let house_number = '{{ patient.house_number }}';
 
-		if (zip_code != 'None' && city != 'None' && house_number != 'None'){
-			window.location.href = "{% url 'crm:invoice_create' patient.id %}";
-		}
-		else {
+		if (zip_code == 'None' || city == 'None' || house_number == 'None'){
+			event.preventDefault();
 			alert('Najpierw uzupełnij adres i zaktualizuj dane pacjenta');
 		}
-	}
+
+		}
+	)
 </script>
 
 {% endblock content %}

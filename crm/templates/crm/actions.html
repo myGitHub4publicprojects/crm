@@ -186,7 +186,9 @@
 						</div>
 					</div>
 					{% else %}
-					<a href="{% url 'crm:pcpr_create' PCPR_estimate.patient.id %}" class="btn btn-secondary">dodaj kosztorys</a>
+						<a id="invoiceCreate"
+						href="{% url 'crm:pcpr_create' patient.id %}"
+						class="btn btn-secondary">dodaj kosztorys</a>
 					{% endif %}
 				</div>
 
