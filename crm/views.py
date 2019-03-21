@@ -541,15 +541,15 @@ def updating(request, patient_id):
 
 
 		# remove proforma from currently active
-	# if request.POST.get('proforma_inactivate'):
-	# 	last_proforma = Pro_Forma_Invoice.objects.filter(
-	# 		patient=patient).last()
-	# 	last_proforma.current = False
-	# 	last_proforma.save()
-	# 	new_action.append('Zdezaktywowano proformę z datą ' + str(last_proforma.timestamp.date()) + '.')
-	# 	reminder = Reminder_Invoice.objects.get(invoice=last_invoice)
-	# 	reminder.active = False
-	# 	reminder.save()
+	if request.POST.get('proforma_inactivate'):
+		last_proforma = Pro_Forma_Invoice.objects.filter(
+			patient=patient).last()
+		last_proforma.current = False
+		last_proforma.save()
+		new_action.append('Zdezaktywowano proformę z datą ' + str(last_proforma.timestamp.date()) + '.')
+		reminder = Reminder_Proforma.objects.get(proforma=last_proforma)
+		reminder.active = False
+		reminder.save()
 
 		# remove invoice from currently active
 	if request.POST.get('invoice_inactivate'):
