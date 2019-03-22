@@ -165,7 +165,15 @@
 				let zip_code = '{{ patient.zip_code }}';
 				let city = '{{ patient.city }}';
 				let house_number = '{{ patient.house_number }}';
-				if (zip_code != 'None' || city != 'None' || house_number == 'None') {
+
+
+				// console.log(zip_code=='', city, house_number)
+				// event.preventDefault();
+
+
+				if (zip_code == 'None' || zip_code == '' ||
+					city == 'None' || city == '' ||
+					house_number == 'None' || house_number == '') {
 					event.preventDefault();
 					alert('Najpierw uzupełnij adres i zaktualizuj dane pacjenta');
 				}
