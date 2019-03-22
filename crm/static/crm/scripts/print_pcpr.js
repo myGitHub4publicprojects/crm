@@ -25,26 +25,9 @@ function printDiv() {
     var address = "<p>Adres zamieszkania: " + address1 + ', ' + address2 + "</p><hr>";
 
     var table = document.getElementsByClassName('table')[0];
-    var totalVal = document.getElementById('totalVal').innerText;
-    var nfzFunds = 0;
-    var items = table.getElementsByTagName('tr');
-    for (i=0; i<items.length; i++){
-        var itemName = items[i].children[0].innerText;
-        var itemPrice = items[i].children[3].innerText;
-        if (itemName.startsWith('Aparat słuchowy')){
-            nfzFunds += 700;
-        }
-        if (itemName.includes('WKŁADKA USZNA')) {
-            nfzFunds += 50;
-        }
-    }
-
     var patient = name + address;
 
-    var h2 = '<h2 style="text-align:center;">Dofinansowanie z NFZ</h2>';
-    var fundsSum = '<p>Suma dofinansowania z NFZ: ' + nfzFunds + '</p><hr>';
-    var difference = parseFloat(totalVal).toFixed(2) - parseFloat(nfzFunds).toFixed(2);
-    var nfz = h2 + fundsSum + '<p><strong>Kwota wnioskowanej dopłaty: ' + difference + ' zł</strong></p><hr>';
+    var nfz = document.getElementById('nfz_refund').outerHTML;
     var accNo = '<p>Przelew na konto: 40 1160 2202 0000 0002 5500 6585</p><hr>';
     var currentYear = new Date().getFullYear();
     var dopisek = '<p style="position: fixed; bottom: 150px; left: 100px;"><small>Do realizacji do 31.12.' + currentYear + '</small></p>';

@@ -787,22 +787,26 @@ def pcpr_detail(request, pcpr_id):
 		messages.success(request, 'Kosztorys został przeniesiony do nieaktywnych.')
 		return redirect('crm:edit', pcpr.patient.id)
     			
+	total_value = 0
+	nfz_ha_refund = 0
 	ha = pcpr.hearing_aid_set.all()
 	ha_items = {}
 	for i in ha:
+		total_value += i.price_gross
+		nfz_ha_refund += 700
 		if str(i) not in ha_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
 			ha_items[str(i)] = {
-				# 'name': str(i),
-				'pkwiu_code': i.pkwiu_code,
-				'quantity': 1,
-				'price_gross': i.price_gross,
-				'net_price': net_price,
-				'net_value': net_price,
-				'vat_rate': i.vat_rate,
-				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-				'gross_value': i.price_gross
-			 }
+                            # 'name': str(i),
+                        				'pkwiu_code': i.pkwiu_code,
+                        				'quantity': 1,
+                        				'price_gross': i.price_gross,
+                        				'net_price': net_price,
+                        				'net_value': net_price,
+                        				'vat_rate': i.vat_rate,
+                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                        				'gross_value': i.price_gross
+                        }
 		else:
 			ha_items[str(i)]['quantity'] += 1
     		current_quantity = ha_items[str(i)]['quantity']
@@ -812,20 +816,23 @@ def pcpr_detail(request, pcpr_id):
 
 	other_devices = pcpr.other_item_set.all()
 	other_items = {}
+	nfz_mold_refund = 0
 	for i in other_devices:
+		total_value += i.price_gross
+		if 'WKŁADKA'.encode('utf-8') in str(i):
+			nfz_mold_refund += 50
 		if str(i) not in other_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
 			other_items[str(i)] = {
-				# 'name': str(i),
-				'pkwiu_code': i.pkwiu_code,
-				'quantity': 1,
-				'price_gross': i.price_gross,
-				'net_price': net_price,
-				'net_value': net_price,
-				'vat_rate': i.vat_rate,
-				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-				'gross_value': i.price_gross
-				}
+                            'pkwiu_code': i.pkwiu_code,
+                        				'quantity': 1,
+                        				'price_gross': i.price_gross,
+                        				'net_price': net_price,
+                        				'net_value': net_price,
+                        				'vat_rate': i.vat_rate,
+                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                        				'gross_value': i.price_gross
+                        }
 		else:
 			other_items[str(i)]['quantity'] += 1
 			current_quantity = other_items[str(i)]['quantity']
@@ -833,13 +840,12 @@ def pcpr_detail(request, pcpr_id):
 			other_items[str(i)]['vat_amount'] *= current_quantity
 			other_items[str(i)]['gross_value'] *= current_quantity
 
-	total_value = sum(decimal.Decimal(v['price_gross'])
-	                  for k, v in ha_items.items())
-	total_value += sum(decimal.Decimal(v['price_gross'])
-                    for k, v in other_items.items())
-
 	context = {	'ha_list': ha_items,
 				'other_list': other_items,
+				'nfz_ha_refund': nfz_ha_refund,
+				'nfz_mold_refund': nfz_mold_refund,
+				'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,
+				'difference': total_value - (nfz_ha_refund + nfz_mold_refund),
 				'pcpr': pcpr,
 				'total_value': total_value}
 	return render(request, 'crm/detail_pcpr.html', context)
@@ -896,10 +902,13 @@ def proforma_detail(request, proforma_id):
 		# redirect to edit view with a success message
 		messages.success(request, 'Pro forma została przeniesiona do nieaktywnych.')
 		return redirect('crm:edit', proforma.patient.id)
-
+	total_value = 0
+	nfz_ha_refund = 0
 	ha = proforma.hearing_aid_set.all()
 	ha_items = {}
 	for i in ha:
+		total_value += i.price_gross
+		nfz_ha_refund += 700
 		if str(i) not in ha_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
 			ha_items[str(i)] = {
@@ -922,11 +931,14 @@ def proforma_detail(request, proforma_id):
 
 	other_devices = proforma.other_item_set.all()
 	other_items = {}
+	nfz_mold_refund = 0
 	for i in other_devices:
+		total_value += i.price_gross
+		if 'WKŁADKA'.encode('utf-8') in str(i):
+			nfz_mold_refund += 50
 		if str(i) not in other_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
 			other_items[str(i)] = {
-                            # 'name': str(i),
                         				'pkwiu_code': i.pkwiu_code,
                         				'quantity': 1,
                         				'price_gross': i.price_gross,
@@ -943,14 +955,13 @@ def proforma_detail(request, proforma_id):
 			other_items[str(i)]['vat_amount'] *= current_quantity
 			other_items[str(i)]['gross_value'] *= current_quantity
 
-	total_value = sum(decimal.Decimal(v['price_gross'])
-	                  for k, v in ha_items.items())
-	total_value += sum(decimal.Decimal(v['price_gross'])
-                    for k, v in other_items.items())
-
 	context = {	'ha_list': ha_items,
              'other_list': other_items,
-             'pcpr': pcpr,
+             'nfz_ha_refund': nfz_ha_refund,
+             'nfz_mold_refund': nfz_mold_refund,
+			 'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,
+             'difference': total_value - (nfz_ha_refund + nfz_mold_refund),
+             'proforma': proforma,
              'total_value': total_value}
 	return render(request, 'crm/detail_proforma.html', context)
 
@@ -970,7 +981,6 @@ def invoice_create(request, patient_id):
 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	InvoiceFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
-		print(request.POST)
 		form = InvoiceTypeForm(request.POST)
 		formset = InvoiceFormSet(request.POST)
 		if form.is_valid() and formset.is_valid():
@@ -1009,9 +1019,19 @@ def invoice_create(request, patient_id):
 @login_required
 def invoice_detail(request, invoice_id):
 	invoice = get_object_or_404(Invoice, pk=invoice_id)
+	if request.POST.get('inactivate'):
+		invoice.current = False
+		invoice.save()
+		# redirect to edit view with a success message
+		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
+		return redirect('crm:edit', invoice.patient.id)
+		total_value = 0
+	nfz_ha_refund = 0
 	ha = invoice.hearing_aid_set.all()
 	ha_items = {}
 	for i in ha:
+		total_value += i.price_gross
+		nfz_ha_refund += 700
 		if str(i) not in ha_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
 			ha_items[str(i)] = {
@@ -1034,12 +1054,15 @@ def invoice_detail(request, invoice_id):
 
 	other_devices = invoice.other_item_set.all()
 	other_items = {}
+	nfz_mold_refund = 0
 	for i in other_devices:
+		total_value += i.price_gross
+		if 'WKŁADKA'.encode('utf-8') in str(i):
+			nfz_mold_refund += 50
 		if str(i) not in other_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
 			other_items[str(i)] = {
-                            # 'name': str(i),
-                        				'pkwiu_code': i.pkwiu_code,
+                            'pkwiu_code': i.pkwiu_code,
                         				'quantity': 1,
                         				'price_gross': i.price_gross,
                         				'net_price': net_price,
@@ -1055,14 +1078,13 @@ def invoice_detail(request, invoice_id):
 			other_items[str(i)]['vat_amount'] *= current_quantity
 			other_items[str(i)]['gross_value'] *= current_quantity
 
-	total_value = sum(decimal.Decimal(v['price_gross'])
-	                  for k, v in ha_items.items())
-	total_value += sum(decimal.Decimal(v['price_gross'])
-                    for k, v in other_items.items())
-
 	context = {	'ha_list': ha_items,
              'other_list': other_items,
-             'pcpr': pcpr,
+             'nfz_ha_refund': nfz_ha_refund,
+             'nfz_mold_refund': nfz_mold_refund,
+             'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,
+             'difference': total_value - (nfz_ha_refund + nfz_mold_refund),
+             'invoice': invoice,
              'total_value': total_value}
 	return render(request, 'crm/detail_invoice.html', context)
 
