@@ -29,7 +29,6 @@ function printDiv() {
     var nfzFunds = 0;
     var items = table.getElementsByTagName('tr');
     for (i=0; i<items.length; i++){
-        console.log('zero', items[i].children[0].innerText);
         var itemName = items[i].children[0].innerText;
         var itemPrice = items[i].children[3].innerText;
         if (itemName.startsWith('Aparat słuchowy')){

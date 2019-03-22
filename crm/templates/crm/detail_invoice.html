@@ -72,6 +72,19 @@
         <td>{{ value.gross_value }}</td>
     </tr>
     {% endfor %}
+    {% for key, value in other_list.items %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>{{ value.pkwiu_code }}</td>
+        <td>{{ value.quantity }}</td>
+        <td>{{ value.price_gross }}</td>
+        <td>{{ value.net_price }}</td>
+        <td>{{ value.net_value }}</td>
+        <td>{{ value.vat_rate }}</td>
+        <td>{{ value.vat_amount }}</td>
+        <td>{{ value.gross_value }}</td>
+    </tr>
+    {% endfor %}
     <tr>
         <td></td>
         <td></td>

@@ -788,13 +788,11 @@ def pcpr_detail(request, pcpr_id):
 		return redirect('crm:edit', pcpr.patient.id)
     			
 	ha = pcpr.hearing_aid_set.all()
-	other_devices = pcpr.other_item_set.all()
-	all_devices = list(ha) + list(other_devices)
-	items = {}
-	for i in all_devices:
-		if str(i) not in items:
+	ha_items = {}
+	for i in ha:
+		if str(i) not in ha_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			items[str(i)] = {
+			ha_items[str(i)] = {
 				# 'name': str(i),
 				'pkwiu_code': i.pkwiu_code,
 				'quantity': 1,
@@ -806,15 +804,44 @@ def pcpr_detail(request, pcpr_id):
 				'gross_value': i.price_gross
 			 }
 		else:
-			items[str(i)]['quantity'] += 1
-    		current_quantity = items[str(i)]['quantity']
-    		items[str(i)]['net_value'] *= current_quantity
-    		items[str(i)]['vat_amount'] *= current_quantity
-    		items[str(i)]['gross_value'] *= current_quantity
+			ha_items[str(i)]['quantity'] += 1
+    		current_quantity = ha_items[str(i)]['quantity']
+    		ha_items[str(i)]['net_value'] *= current_quantity
+    		ha_items[str(i)]['vat_amount'] *= current_quantity
+    		ha_items[str(i)]['gross_value'] *= current_quantity
 
-	total_value = sum(decimal.Decimal(v['price_gross']) for k,v in items.items())
+	other_devices = pcpr.other_item_set.all()
+	other_items = {}
+	for i in other_devices:
+		if str(i) not in other_items:
+			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+			other_items[str(i)] = {
+				# 'name': str(i),
+				'pkwiu_code': i.pkwiu_code,
+				'quantity': 1,
+				'price_gross': i.price_gross,
+				'net_price': net_price,
+				'net_value': net_price,
+				'vat_rate': i.vat_rate,
+				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+				'gross_value': i.price_gross
+				}
+		else:
+			other_items[str(i)]['quantity'] += 1
+			current_quantity = other_items[str(i)]['quantity']
+			other_items[str(i)]['net_value'] *= current_quantity
+			other_items[str(i)]['vat_amount'] *= current_quantity
+			other_items[str(i)]['gross_value'] *= current_quantity
 
-	context = {'ha_list': items, 'pcpr': pcpr, 'total_value': total_value}
+	total_value = sum(decimal.Decimal(v['price_gross'])
+	                  for k, v in ha_items.items())
+	total_value += sum(decimal.Decimal(v['price_gross'])
+                    for k, v in other_items.items())
+
+	context = {	'ha_list': ha_items,
+				'other_list': other_items,
+				'pcpr': pcpr,
+				'total_value': total_value}
 	return render(request, 'crm/detail_pcpr.html', context)
     	
 @login_required
@@ -871,13 +898,11 @@ def proforma_detail(request, proforma_id):
 		return redirect('crm:edit', proforma.patient.id)
 
 	ha = proforma.hearing_aid_set.all()
-	other_devices = proforma.other_item_set.all()
-	all_devices = list(ha) + list(other_devices)
-	items = {}
-	for i in all_devices:
-		if str(i) not in items:
+	ha_items = {}
+	for i in ha:
+		if str(i) not in ha_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			items[str(i)] = {
+			ha_items[str(i)] = {
                             # 'name': str(i),
                         				'pkwiu_code': i.pkwiu_code,
                         				'quantity': 1,
@@ -889,15 +914,44 @@ def proforma_detail(request, proforma_id):
                         				'gross_value': i.price_gross
                         }
 		else:
-			items[str(i)]['quantity'] += 1
-    		current_quantity = items[str(i)]['quantity']
-    		items[str(i)]['net_value'] *= current_quantity
-    		items[str(i)]['vat_amount'] *= current_quantity
-    		items[str(i)]['gross_value'] *= current_quantity
+			ha_items[str(i)]['quantity'] += 1
+    		current_quantity = ha_items[str(i)]['quantity']
+    		ha_items[str(i)]['net_value'] *= current_quantity
+    		ha_items[str(i)]['vat_amount'] *= current_quantity
+    		ha_items[str(i)]['gross_value'] *= current_quantity
 
-	total_value = sum(decimal.Decimal(v['price_gross']) for k, v in items.items())
+	other_devices = proforma.other_item_set.all()
+	other_items = {}
+	for i in other_devices:
+		if str(i) not in other_items:
+			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+			other_items[str(i)] = {
+                            # 'name': str(i),
+                        				'pkwiu_code': i.pkwiu_code,
+                        				'quantity': 1,
+                        				'price_gross': i.price_gross,
+                        				'net_price': net_price,
+                        				'net_value': net_price,
+                        				'vat_rate': i.vat_rate,
+                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                        				'gross_value': i.price_gross
+                        }
+		else:
+			other_items[str(i)]['quantity'] += 1
+			current_quantity = other_items[str(i)]['quantity']
+			other_items[str(i)]['net_value'] *= current_quantity
+			other_items[str(i)]['vat_amount'] *= current_quantity
+			other_items[str(i)]['gross_value'] *= current_quantity
 
-	context = {'ha_list': items, 'proforma': proforma, 'total_value': total_value}
+	total_value = sum(decimal.Decimal(v['price_gross'])
+	                  for k, v in ha_items.items())
+	total_value += sum(decimal.Decimal(v['price_gross'])
+                    for k, v in other_items.items())
+
+	context = {	'ha_list': ha_items,
+             'other_list': other_items,
+             'pcpr': pcpr,
+             'total_value': total_value}
 	return render(request, 'crm/detail_proforma.html', context)
 
 
@@ -956,33 +1010,60 @@ def invoice_create(request, patient_id):
 def invoice_detail(request, invoice_id):
 	invoice = get_object_or_404(Invoice, pk=invoice_id)
 	ha = invoice.hearing_aid_set.all()
-	other_devices = invoice.other_item_set.all()
-	all_devices = list(ha) + list(other_devices)
-	items = {}
-	for i in all_devices:
-		if str(i) not in items:
+	ha_items = {}
+	for i in ha:
+		if str(i) not in ha_items:
 			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			items[str(i)] = {
-				# 'name': str(i),
-				'pkwiu_code': i.pkwiu_code,
-				'quantity': 1,
-				'price_gross': i.price_gross,
-				'net_price': net_price,
-				'net_value': net_price,
-				'vat_rate': i.vat_rate,
-				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-				'gross_value': i.price_gross
-			 }
+			ha_items[str(i)] = {
+                            # 'name': str(i),
+                        				'pkwiu_code': i.pkwiu_code,
+                        				'quantity': 1,
+                        				'price_gross': i.price_gross,
+                        				'net_price': net_price,
+                        				'net_value': net_price,
+                        				'vat_rate': i.vat_rate,
+                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                        				'gross_value': i.price_gross
+                        }
 		else:
-			items[str(i)]['quantity'] += 1
-    		current_quantity = items[str(i)]['quantity']
-    		items[str(i)]['net_value'] *= current_quantity
-    		items[str(i)]['vat_amount'] *= current_quantity
-    		items[str(i)]['gross_value'] *= current_quantity
+			ha_items[str(i)]['quantity'] += 1
+    		current_quantity = ha_items[str(i)]['quantity']
+    		ha_items[str(i)]['net_value'] *= current_quantity
+    		ha_items[str(i)]['vat_amount'] *= current_quantity
+    		ha_items[str(i)]['gross_value'] *= current_quantity
 
-	total_value = sum(decimal.Decimal(v['price_gross']) for k, v in items.items())
+	other_devices = invoice.other_item_set.all()
+	other_items = {}
+	for i in other_devices:
+		if str(i) not in other_items:
+			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+			other_items[str(i)] = {
+                            # 'name': str(i),
+                        				'pkwiu_code': i.pkwiu_code,
+                        				'quantity': 1,
+                        				'price_gross': i.price_gross,
+                        				'net_price': net_price,
+                        				'net_value': net_price,
+                        				'vat_rate': i.vat_rate,
+                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                        				'gross_value': i.price_gross
+                        }
+		else:
+			other_items[str(i)]['quantity'] += 1
+			current_quantity = other_items[str(i)]['quantity']
+			other_items[str(i)]['net_value'] *= current_quantity
+			other_items[str(i)]['vat_amount'] *= current_quantity
+			other_items[str(i)]['gross_value'] *= current_quantity
 
-	context = {'ha_list': items, 'invoice': invoice, 'total_value': total_value}
+	total_value = sum(decimal.Decimal(v['price_gross'])
+	                  for k, v in ha_items.items())
+	total_value += sum(decimal.Decimal(v['price_gross'])
+                    for k, v in other_items.items())
+
+	context = {	'ha_list': ha_items,
+             'other_list': other_items,
+             'pcpr': pcpr,
+             'total_value': total_value}
 	return render(request, 'crm/detail_invoice.html', context)
 
 
