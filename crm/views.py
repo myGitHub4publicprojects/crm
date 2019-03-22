@@ -16,7 +16,6 @@ from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New)
-from .noach_file_handler import noach_file_handler
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q

@@ -6,7 +6,6 @@ urlpatterns = [
 	url(r'^$', views.index, name='index'),
 	url(r'^advanced_search/$', views.advancedsearch, name='advanced_search'),
 	url(r'^create/$', views.create, name='create'),
-	url(r'^select_noach_file/$', views.select_noach_file, name='select_noach_file'),
 	url(r'^store/$', views.store, name='store'),
 	url(r'^reminders/$', views.reminders, name='reminders'),
 	url(r'^duplicate_check/$', views.duplicate_check, name='duplicate_check'),
@@ -20,7 +19,6 @@ urlpatterns = [
         views.reminder_invoice, name='reminder_invoice'),
     url(r'^(?P<reminder_id>[0-9]+)/reminder_collection/$',
         views.reminder_collection, name='reminder_collection'),
-	url(r'^import_from_noach/$', views.import_from_noach, name='import_from_noach'),     # this is probably not needed but html file needs to be adjusted
 	url(r'^(?P<patient_id>[0-9]+)/edit/$', views.edit, name='edit'),
 	url(r'^(?P<patient_id>[0-9]+)/updating/$', views.updating, name='updating'),
 	url(r'^(?P<patient_id>[0-9]+)/deleteconfirm/$', views.deleteconfirm, name='deleteconfirm'),

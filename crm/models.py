@@ -19,8 +19,6 @@ class Patient(models.Model):
 	location = models.CharField(max_length=120, default='nie podano')
 	phone_no = models.IntegerField(default=0)
 	create_date = models.DateTimeField(auto_now=False, auto_now_add=True)
-	noachcreatedate = models.DateField(null=True, blank=True)
-	noachID = models.IntegerField(null=True, blank=True)
 	notes = models.TextField(null=True, blank=True)
 	# person who added a patient or a new note about patient
 	audiometrist = models.ForeignKey(settings.AUTH_USER_MODEL)
