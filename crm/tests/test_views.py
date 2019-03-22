@@ -11,7 +11,7 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import (Patient, Audiogram, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
+from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New)
@@ -586,27 +586,6 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
         self.assertEqual(response.context['invoice'], invoice3)
         self.assertEqual(response.context['invoice_all'].count(), 2)
-
-
-    def test_patient_with_two_left_and_two_right_Audiograms(self):
-        ''' scenario with two left and two right Audiogram instances '''
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        aud0 = Audiogram.objects.create(patient=patient1,
-                            time_of_test=now - timedelta(days=1),
-                            ear = 'left')
-        aud1 = Audiogram.objects.create(patient=patient1,
-                            time_of_test=now,
-                            ear = 'left')
-        aud2 = Audiogram.objects.create(patient=patient1,
-                            time_of_test=now - timedelta(days=1),
-                            ear = 'right')
-        aud3 = Audiogram.objects.create(patient=patient1,
-                            time_of_test=now,
-                            ear = 'right')
-        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
-        self.assertEqual(response.context['left_audiogram'], aud1)
-        self.assertEqual(response.context['right_audiogram'], aud3)
 
 
 class TestStoreView(TestCase):
@@ -1695,30 +1674,6 @@ class TestUpdatingView(TestCase):
         self.assertEqual(collection_reminders.count(), 2)
         self.assertTrue(collection_reminders.first().active)
         self.assertTrue(collection_reminders.last().active)
-
-    def test_remove_audiogram(self):
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        Audiogram.objects.create(patient=patient1, ear='left')
-        
-        data = self.data.copy()
-        data['remove_audiogram'] = 'remove'
-
-        url = reverse('crm:updating', args=(patient1.id,))
-        expected_url = reverse('crm:edit', args=(1,))
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-        left_audiogram_all = Audiogram.objects.filter(
-            patient=patient1, ear='left')
-        right_audiogram_all = Audiogram.objects.filter(
-            patient=patient1, ear='right')
-        
-        self.assertEqual(left_audiogram_all.count(), 0)
-        self.assertEqual(right_audiogram_all.count(), 0)
 
 
 class TestDeleteView(TestCase):

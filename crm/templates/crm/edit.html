@@ -2,70 +2,6 @@
 {% load staticfiles%}
 
 {% block scripts %}
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load("current", {packages:["corechart"]});
-      google.charts.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Frequency', 'Air'],
-          ['250',        {% if left_audiogram.a250Hz %}{{ left_audiogram.a250Hz }}{% else %}0{% endif %}],
-          ['500',       {% if left_audiogram.a500Hz %}{{ left_audiogram.a500Hz }}{% else %}'none'{% endif %}],
-          ['1k',       {% if left_audiogram.a1kHz %}{{ left_audiogram.a1kHz }}{% else %}'none'{% endif %}],
-          ['2k',       {% if left_audiogram.a2kHz %}{{ left_audiogram.a2kHz }}{% else %}'none'{% endif %}],
-          ['4k',       {% if left_audiogram.a4kHz %}{{ left_audiogram.a4kHz }}{% else %}'none'{% endif %}],
-          ['8k',       {% if left_audiogram.a8kHz %}{{ left_audiogram.a8kHz }}{% else %}'none'{% endif %}]
-        ]);
-
-
-        var options = {
-          'title':'Lewy',
-          legend: 'none',
-          hAxis: { minValue: 0, maxValue: 9 },
-          colors: ['blue'],
-          lineWidth: 0.5,
-          series: {
-            0: { pointShape: {  type: 'star', sides: 4, dent: 0.05, rotation: 45 }, pointSize: 25  },
-            
-                  },
-          vAxis: {direction: '-1', minValue: 10, maxValue: 100},
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('left_audiogram'));
-        chart.draw(data, options);
-    }
-
-
-    google.charts.setOnLoadCallback(drawChart2);
-      function drawChart2() {
-        var data = google.visualization.arrayToDataTable([
-          ['Frequency', 'Air'],
-           ['250',        {% if right_audiogram.a250Hz %}{{ right_audiogram.a250Hz }}{% else %}0{% endif %}],
-          ['500',       {% if right_audiogram.a500Hz %}{{ right_audiogram.a500Hz }}{% else %}'none'{% endif %}],
-          ['1k',       {% if right_audiogram.a1kHz %}{{ right_audiogram.a1kHz }}{% else %}'none'{% endif %}],
-          ['2k',       {% if right_audiogram.a2kHz %}{{ right_audiogram.a2kHz }}{% else %}'none'{% endif %}],
-          ['4k',       {% if right_audiogram.a4kHz %}{{ right_audiogram.a4kHz }}{% else %}'none'{% endif %}],
-          ['8k',       {% if right_audiogram.a8kHz %}{{ right_audiogram.a8kHz }}{% else %}'none'{% endif %}]
-        ]);
-
-
-        var options = {
-          'title':'Prawy',
-          legend: 'none',
-          hAxis: { minValue: 0, maxValue: 9 },
-          colors: ['red'],
-          lineWidth: 0.5,
-          series: {
-            0: { pointSize: 6 },
-                  },
-          vAxis: {direction: '-1', minValue: 10, maxValue: 100},
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('right_audiogram'));
-        chart.draw(data, options);
-    }
-    </script>
-
 <script src="{% static 'crm/scripts/main.js' %}"></script>
 {% endblock scripts %}
 
@@ -186,44 +122,6 @@
 			{% include "crm/current_hearing_aids.html" %}
 		</div>
 		<hr>
-
-		<!-- audiogram -->
-		{% if left_audiogram or right_audiogram %}
-		<h4 class="text-center">Audiogram:</h4>
-		<div class="row mt-2">
-			<div class="col-xl-6">
-				<div id="left_audiogram">Lewe:
-					<ul>
-						<li>250Hz: {{ left_audiogram.a250Hz }}</li>
-						<li>500Hz: {{ left_audiogram.a500Hz }}</li>
-						<li>1kHz: {{ left_audiogram.a1kHz }}</li>
-						<li>2kHz: {{ left_audiogram.a2kHz }}</li>
-						<li>4kHz: {{ left_audiogram.a4kHz }}</li>
-						<li>8kHz: {{ left_audiogram.a8kHz }}</li>
-					</ul>
-				</div>
-			</div>
-			<div class="col-xl-6">
-				<div id="right_audiogram">Prawe:
-					<ul>
-						<li>250Hz: {{ right_audiogram.a250Hz }}</li>
-						<li>500Hz: {{ right_audiogram.a500Hz }}</li>
-						<li>1kHz: {{ right_audiogram.a1kHz }}</li>
-						<li>2kHz: {{ right_audiogram.a2kHz }}</li>
-						<li>4kHz: {{ right_audiogram.a4kHz }}</li>
-						<li>8kHz: {{ right_audiogram.a8kHz }}</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-
-		<div class="btn btn-sm btn-secondary float-right">
-			Usuń audiogram: 
-			<input type="checkbox" name="remove_audiogram" value="remove" />
-		</div>
-		<br>
-		<hr>
-		{% endif %}
 
 		<input class="btn btn-primary btn-lg" type="submit" value="Aktualizuj dane pacjenta" />
 		</form>

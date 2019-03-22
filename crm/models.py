@@ -73,25 +73,6 @@ class Invoice(Finance):
 	# note = models.CharField(max_length=200, null=True, blank=True)
 
 
-class Audiogram(models.Model):
-	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-	time_of_test = models.DateTimeField(null=True, blank=True)
-	ear = models.CharField(max_length=5, choices=(
-		('left', 'left'), ('right', 'right')))
-	a250Hz = models.IntegerField(null=True, blank=True)
-	a500Hz = models.IntegerField(null=True, blank=True)
-	a1kHz = models.IntegerField(null=True, blank=True)
-	a2kHz = models.IntegerField(null=True, blank=True)
-	a4kHz = models.IntegerField(null=True, blank=True)
-	a8kHz = models.IntegerField(null=True, blank=True)
-	b250Hz = models.IntegerField(null=True, blank=True)
-	b500Hz = models.IntegerField(null=True, blank=True)
-	b1kHz = models.IntegerField(null=True, blank=True)
-	b2kHz = models.IntegerField(null=True, blank=True)
-	b4kHz = models.IntegerField(null=True, blank=True)
-	b8kHz = models.IntegerField(null=True, blank=True)
-
-
 class Device(models.Model):
     '''Master class for all devices. Not to be used directly'''
     make = models.CharField(max_length=50)
