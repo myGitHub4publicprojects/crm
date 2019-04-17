@@ -266,27 +266,27 @@ def get_finance_context(instance):
     other_items = {}
     nfz_mold_refund = 0
     for i in other_devices:
-		total_value += i.price_gross
-		if 'WKŁADKA'.encode('utf-8') in str(i):
-			nfz_mold_refund += 50
-		if str(i) not in other_items:
-			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			other_items[str(i)] = {
+        total_value += i.price_gross
+        if 'WKŁADKA'.encode('utf-8') in str(i):
+            nfz_mold_refund += 50
+        if str(i) not in other_items:
+            net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+            other_items[str(i)] = {
                             'pkwiu_code': i.pkwiu_code,
-                        				'quantity': 1,
-                        				'price_gross': i.price_gross,
-                        				'net_price': net_price,
-                        				'net_value': net_price,
-                        				'vat_rate': i.vat_rate,
-                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-                        				'gross_value': i.price_gross
+                                        'quantity': 1,
+                                        'price_gross': i.price_gross,
+                                        'net_price': net_price,
+                                        'net_value': net_price,
+                                        'vat_rate': i.vat_rate,
+                                        'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+                                        'gross_value': i.price_gross
                         }
-		else:
-			other_items[str(i)]['quantity'] += 1
-			current_quantity = other_items[str(i)]['quantity']
-			other_items[str(i)]['net_value'] *= current_quantity
-			other_items[str(i)]['vat_amount'] *= current_quantity
-			other_items[str(i)]['gross_value'] *= current_quantity
+        else:
+            other_items[str(i)]['quantity'] += 1
+            current_quantity = other_items[str(i)]['quantity']
+            other_items[str(i)]['net_value'] *= current_quantity
+            other_items[str(i)]['vat_amount'] *= current_quantity
+            other_items[str(i)]['gross_value'] *= current_quantity
 
     context = {	'ha_list': ha_items,
 				'other_list': other_items,

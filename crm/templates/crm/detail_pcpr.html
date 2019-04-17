@@ -7,8 +7,8 @@
 {% block content %}
 
 <h1 id="documentType" class="text-center">Kosztorys</h1>
-<p id="date">Wystawiony: {{ pcpr.timestamp|date:'d-m-Y' }}</p>
-<a href="{% url 'crm:edit' pcpr.patient.id %}">
+<p id="date">Wystawiony: {{ instance.timestamp|date:'d-m-Y' }}</p>
+<a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
 </a>
 
@@ -18,16 +18,16 @@
 <div class="row mt-2">
     <div class="col-6">
         <h3>Odbiorca:</h3>
-        <p id="patientName">{{ pcpr.patient }}</p>
+        <p id="patientName">{{ instance.patient }}</p>
         <p>
             <span id="address1">
-                {% if pcpr.patient.street %} {{ pcpr.patient.street }} {% else %} {{ pcpr.patient.city }} {% endif %} {{ pcpr.patient.home_number }} {% if pcpr.patient.apartment_number %}
-                /{{ pcpr.patient.apartment_number }} {% endif %}
+                {% if instance.patient.street %} {{ instance.patient.street }} {% else %} {{ instance.patient.city }} {% endif %} {{ instance.patient.house_number }} {% if instance.patient.apartment_number %}
+                /{{ instance.patient.apartment_number }} {% endif %}
             </span>
         </P>
         </p>
         <P>
-            <span id="address2">{{ pcpr.patient.zip_code }} {{ pcpr.patient.city }}</span>
+            <span id="address2">{{ instance.patient.zip_code }} {{ instance.patient.city }}</span>
         </P>
     </div>
     <div class="col-6">
@@ -105,7 +105,7 @@
 
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj kosztorys</button>
 
-<form action="{% url 'crm:pcpr_detail' pcpr.id %}" method="post">
+<form action="{% url 'crm:pcpr_detail' instance.id %}" method="post">
     {% csrf_token %}
     <input type="hidden" name="inactivate" value="True">
     <input class="btn btn-outline-danger float-right mb-3" type="submit"

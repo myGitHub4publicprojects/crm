@@ -966,7 +966,8 @@ def invoice_detail(request, invoice_id):
 		# redirect to edit view with a success message
 		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
 		return redirect('crm:edit', invoice.patient.id)
-		total_value = 0
+		
+	total_value = 0
 	nfz_ha_refund = 0
 	ha = invoice.hearing_aid_set.all()
 	ha_items = {}

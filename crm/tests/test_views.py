@@ -566,7 +566,7 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
 
         self.assertEqual(len(response.context['invoice_all']), 3)
-        self.assertFalse(response.context['invoice'].current)
+        self.assertIsNone(response.context['invoice'])
 
     def test_patient_with_one_active_and_two_inactive_Invoice(self):
         ''' scenario with one active and two inactive (current=False)
