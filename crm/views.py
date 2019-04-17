@@ -21,7 +21,8 @@ from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
 from .utils import (get_devices, process_device_formset_invoice,
-                    process_device_formset_pcpr, process_device_formset_proforma)
+                    process_device_formset_pcpr, process_device_formset_proforma,
+                    get_finance_context)
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -181,21 +182,22 @@ def edit(request, patient_id):
 
 	PCPR_estimate_all = PCPR_Estimate.objects.filter(
 		patient=patient).order_by('timestamp')
-	PCPR_estimate_last = PCPR_estimate_all.last()
-	if PCPR_estimate_last and PCPR_estimate_last.current != False:
-		PCPR_estimate_all = PCPR_estimate_all.exclude(id=PCPR_estimate_last.id)
+	PCPR_estimate_last_active = PCPR_estimate_all.filter(current=True).last()
+	if PCPR_estimate_last_active != None:
+		PCPR_estimate_all = PCPR_estimate_all.exclude(
+			id=PCPR_estimate_last_active.id)
 
 	Proforma_all = Pro_Forma_Invoice.objects.filter(
 		patient=patient).order_by('timestamp')
-	Proforma_last = Proforma_all.last()
-	if Proforma_last and Proforma_last.current != False:
-		Proforma_all = Proforma_all.exclude(id=Proforma_last.id)
+	Proforma_last_active = Proforma_all.filter(current=True).last()
+	if Proforma_last_active != None:
+		Proforma_all = Proforma_all.exclude(id=Proforma_last_active.id)
 
 	Invoice_all = Invoice.objects.filter(
 		patient=patient).order_by('timestamp')
-	Invoice_last = Invoice_all.last()
-	if Invoice_last and Invoice_last.current != False:
-		Invoice_all = Invoice_all.exclude(id=Invoice_last.id)
+	Invoice_last_active = Invoice_all.filter(current=True).last()
+	if Invoice_last_active != None:
+		Invoice_all = Invoice_all.exclude(id=Invoice_last_active.id)
 
 	audiometrists = User.objects.all()
 
@@ -229,12 +231,12 @@ def edit(request, patient_id):
 			'right_NFZ_confirmed': last_and_previous(nfz_confirmed_right_qs)['last'],
 			
 			'PCPR_estimate_all': PCPR_estimate_all,
-			'PCPR_estimate': PCPR_estimate_last,
+			'PCPR_estimate': PCPR_estimate_last_active,
 			'Proforma_all': Proforma_all,
-			'Proforma': Proforma_last,
+			'Proforma': Proforma_last_active,
 
 			'invoice_all': Invoice_all,
-			'invoice': Invoice_last,
+			'invoice': Invoice_last_active,
 			}
 
 	return render(request, 'crm/edit.html', context)
@@ -786,68 +788,7 @@ def pcpr_detail(request, pcpr_id):
 		# redirect to edit view with a success message
 		messages.success(request, 'Kosztorys został przeniesiony do nieaktywnych.')
 		return redirect('crm:edit', pcpr.patient.id)
-    			
-	total_value = 0
-	nfz_ha_refund = 0
-	ha = pcpr.hearing_aid_set.all()
-	ha_items = {}
-	for i in ha:
-		total_value += i.price_gross
-		nfz_ha_refund += 700
-		if str(i) not in ha_items:
-			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			ha_items[str(i)] = {
-                            # 'name': str(i),
-                        				'pkwiu_code': i.pkwiu_code,
-                        				'quantity': 1,
-                        				'price_gross': i.price_gross,
-                        				'net_price': net_price,
-                        				'net_value': net_price,
-                        				'vat_rate': i.vat_rate,
-                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-                        				'gross_value': i.price_gross
-                        }
-		else:
-			ha_items[str(i)]['quantity'] += 1
-    		current_quantity = ha_items[str(i)]['quantity']
-    		ha_items[str(i)]['net_value'] *= current_quantity
-    		ha_items[str(i)]['vat_amount'] *= current_quantity
-    		ha_items[str(i)]['gross_value'] *= current_quantity
-
-	other_devices = pcpr.other_item_set.all()
-	other_items = {}
-	nfz_mold_refund = 0
-	for i in other_devices:
-		total_value += i.price_gross
-		if 'WKŁADKA'.encode('utf-8') in str(i):
-			nfz_mold_refund += 50
-		if str(i) not in other_items:
-			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			other_items[str(i)] = {
-                            'pkwiu_code': i.pkwiu_code,
-                        				'quantity': 1,
-                        				'price_gross': i.price_gross,
-                        				'net_price': net_price,
-                        				'net_value': net_price,
-                        				'vat_rate': i.vat_rate,
-                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-                        				'gross_value': i.price_gross
-                        }
-		else:
-			other_items[str(i)]['quantity'] += 1
-			current_quantity = other_items[str(i)]['quantity']
-			other_items[str(i)]['net_value'] *= current_quantity
-			other_items[str(i)]['vat_amount'] *= current_quantity
-			other_items[str(i)]['gross_value'] *= current_quantity
-
-	context = {	'ha_list': ha_items,
-				'other_list': other_items,
-				'nfz_ha_refund': nfz_ha_refund,
-				'nfz_mold_refund': nfz_mold_refund,
-				'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,
-				'difference': total_value - (nfz_ha_refund + nfz_mold_refund),
-				'pcpr': pcpr,
-				'total_value': total_value}
+	context = get_finance_context(pcpr)
 	return render(request, 'crm/detail_pcpr.html', context)
     	
 @login_required
