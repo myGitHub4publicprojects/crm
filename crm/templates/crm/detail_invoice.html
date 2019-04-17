@@ -8,11 +8,11 @@
 
 <h1 id="documentType" class="text-center">Faktura VAT</h1>
 <p>
-    <span id="date">Wystawiona: {{ invoice.timestamp|date:'d-m-Y' }}</span>,
-    Nr dokumentu: <span id="documentNo">{{ invoice.id }}</span>
+    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
+    Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
 </p>
-<p>Typ faktury: {{ invoice.type }}</p>
-<a href="{% url 'crm:edit' invoice.patient.id %}">
+<p>Typ faktury: {{ instance.type }}</p>
+<a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
 </a>
 <hr>
@@ -21,16 +21,16 @@
 <div class="row mt-2">
     <div class="col-6">
         <h3>Odbiorca:</h3>
-        <p id="patientName">{{ invoice.patient }}</p>
+        <p id="patientName">{{ instance.patient }}</p>
         <p>
             <span id="address1">
-              {% if invoice.patient.street %} {{ invoice.patient.street }} {% else %} {{ invoice.patient.city }} {% endif %} {{ invoice.patient.home_number }} {% if invoice.patient.apartment_number %}
-               /{{ invoice.patient.apartment_number }} {% endif %}
+              {% if instance.patient.street %} {{ instance.patient.street }} {% else %} {{ instance.patient.city }} {% endif %} {{ instance.patient.house_number }} {% if instance.patient.apartment_number %}
+               /{{ instance.patient.apartment_number }} {% endif %}
             </span>
         </P>
         </p>
         <P>
-            <span id="address2">{{ invoice.patient.zip_code }} {{ invoice.patient.city }}</span>
+            <span id="address2">{{ instance.patient.zip_code }} {{ instance.patient.city }}</span>
         </P>
     </div>
     <div class="col-6">
@@ -101,7 +101,7 @@
 </table>
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj fakturę</button>
 
-<form action="{% url 'crm:invoice_detail' invoice.id %}" method="post">
+<form action="{% url 'crm:invoice_detail' instance.id %}" method="post">
     {% csrf_token %}
     <input type="hidden" name="inactivate" value="True">
     <input class="btn btn-outline-danger float-right mb-3" type="submit" id="remove" value=Usuń fakturę>
