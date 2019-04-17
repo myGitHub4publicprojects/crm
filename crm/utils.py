@@ -267,7 +267,7 @@ def get_finance_context(instance):
     nfz_mold_refund = 0
     for i in other_devices:
         total_value += i.price_gross
-        if 'WKŁADKA'.encode('utf-8') in str(i):
+        if 'WKŁADKA' in str(i):
             nfz_mold_refund += 50
         if str(i) not in other_items:
             net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)

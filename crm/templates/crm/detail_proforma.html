@@ -8,10 +8,10 @@
 
 <h1 id="documentType" class="text-center">Faktura Pro Forma</h1>
 <p>
-    <span id="date">Wystawiona: {{ proforma.timestamp|date:'d-m-Y' }}</span>, 
-    Nr dokumentu: <span id="documentNo">{{ proforma.id }}</span>
+    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>, 
+    Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
 </p>
-<a href="{% url 'crm:edit' proforma.patient.id %}">
+<a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
 </a>
 
@@ -21,17 +21,17 @@
 <div class="row mt-2">
     <div class="col-6">
         <h3>Odbiorca:</h3>
-        <p id="patientName">{{ proforma.patient }}</p>
+        <p id="patientName">{{ instance.patient }}</p>
         <p>
             <span id="address1">
-                {% if proforma.patient.street %} {{ proforma.patient.street }} {% else %} {{ proforma.patient.city }} {% endif %}
-                {{ proforma.patient.home_number }} {% if proforma.patient.apartment_number %}
-                /{{ proforma.patient.apartment_number }} {% endif %}
+                {% if instance.patient.street %} {{ instance.patient.street }} {% else %} {{ instance.patient.city }} {% endif %}
+                {{ instance.patient.house_number }} {% if instance.patient.apartment_number %}
+                /{{ instance.patient.apartment_number }} {% endif %}
             </span>
         </P>
         </p>
         <P>
-            <span id="address2">{{ proforma.patient.zip_code }} {{ proforma.patient.city }}</span>
+            <span id="address2">{{ instance.patient.zip_code }} {{ instance.patient.city }}</span>
         </P>
     </div>
     <div class="col-6">
@@ -109,7 +109,7 @@
 
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj proformę</button>
 
-<form action="{% url 'crm:proforma_detail' proforma.id %}" method="post">
+<form action="{% url 'crm:proforma_detail' instance.id %}" method="post">
     {% csrf_token %}
     <input type="hidden" name="inactivate" value="True">
     <input class="btn btn-outline-danger float-right mb-3" type="submit" id="remove" value=Usuń proformę>

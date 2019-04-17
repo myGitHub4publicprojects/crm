@@ -843,67 +843,68 @@ def proforma_detail(request, proforma_id):
 		# redirect to edit view with a success message
 		messages.success(request, 'Pro forma została przeniesiona do nieaktywnych.')
 		return redirect('crm:edit', proforma.patient.id)
-	total_value = 0
-	nfz_ha_refund = 0
-	ha = proforma.hearing_aid_set.all()
-	ha_items = {}
-	for i in ha:
-		total_value += i.price_gross
-		nfz_ha_refund += 700
-		if str(i) not in ha_items:
-			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			ha_items[str(i)] = {
-                            # 'name': str(i),
-                        				'pkwiu_code': i.pkwiu_code,
-                        				'quantity': 1,
-                        				'price_gross': i.price_gross,
-                        				'net_price': net_price,
-                        				'net_value': net_price,
-                        				'vat_rate': i.vat_rate,
-                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-                        				'gross_value': i.price_gross
-                        }
-		else:
-			ha_items[str(i)]['quantity'] += 1
-    		current_quantity = ha_items[str(i)]['quantity']
-    		ha_items[str(i)]['net_value'] *= current_quantity
-    		ha_items[str(i)]['vat_amount'] *= current_quantity
-    		ha_items[str(i)]['gross_value'] *= current_quantity
+	# total_value = 0
+	# nfz_ha_refund = 0
+	# ha = proforma.hearing_aid_set.all()
+	# ha_items = {}
+	# for i in ha:
+	# 	total_value += i.price_gross
+	# 	nfz_ha_refund += 700
+	# 	if str(i) not in ha_items:
+	# 		net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+	# 		ha_items[str(i)] = {
+    #                         # 'name': str(i),
+    #                     				'pkwiu_code': i.pkwiu_code,
+    #                     				'quantity': 1,
+    #                     				'price_gross': i.price_gross,
+    #                     				'net_price': net_price,
+    #                     				'net_value': net_price,
+    #                     				'vat_rate': i.vat_rate,
+    #                     				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+    #                     				'gross_value': i.price_gross
+    #                     }
+	# 	else:
+	# 		ha_items[str(i)]['quantity'] += 1
+    # 		current_quantity = ha_items[str(i)]['quantity']
+    # 		ha_items[str(i)]['net_value'] *= current_quantity
+    # 		ha_items[str(i)]['vat_amount'] *= current_quantity
+    # 		ha_items[str(i)]['gross_value'] *= current_quantity
 
-	other_devices = proforma.other_item_set.all()
-	other_items = {}
-	nfz_mold_refund = 0
-	for i in other_devices:
-		total_value += i.price_gross
-		if 'WKŁADKA'.encode('utf-8') in str(i):
-			nfz_mold_refund += 50
-		if str(i) not in other_items:
-			net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
-			other_items[str(i)] = {
-                        				'pkwiu_code': i.pkwiu_code,
-                        				'quantity': 1,
-                        				'price_gross': i.price_gross,
-                        				'net_price': net_price,
-                        				'net_value': net_price,
-                        				'vat_rate': i.vat_rate,
-                        				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
-                        				'gross_value': i.price_gross
-                        }
-		else:
-			other_items[str(i)]['quantity'] += 1
-			current_quantity = other_items[str(i)]['quantity']
-			other_items[str(i)]['net_value'] *= current_quantity
-			other_items[str(i)]['vat_amount'] *= current_quantity
-			other_items[str(i)]['gross_value'] *= current_quantity
+	# other_devices = proforma.other_item_set.all()
+	# other_items = {}
+	# nfz_mold_refund = 0
+	# for i in other_devices:
+	# 	total_value += i.price_gross
+	# 	if 'WKŁADKA'.encode('utf-8') in str(i):
+	# 		nfz_mold_refund += 50
+	# 	if str(i) not in other_items:
+	# 		net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+	# 		other_items[str(i)] = {
+    #                     				'pkwiu_code': i.pkwiu_code,
+    #                     				'quantity': 1,
+    #                     				'price_gross': i.price_gross,
+    #                     				'net_price': net_price,
+    #                     				'net_value': net_price,
+    #                     				'vat_rate': i.vat_rate,
+    #                     				'vat_amount': round(i.price_gross - decimal.Decimal(net_price), 2),
+    #                     				'gross_value': i.price_gross
+    #                     }
+	# 	else:
+	# 		other_items[str(i)]['quantity'] += 1
+	# 		current_quantity = other_items[str(i)]['quantity']
+	# 		other_items[str(i)]['net_value'] *= current_quantity
+	# 		other_items[str(i)]['vat_amount'] *= current_quantity
+	# 		other_items[str(i)]['gross_value'] *= current_quantity
 
-	context = {	'ha_list': ha_items,
-             'other_list': other_items,
-             'nfz_ha_refund': nfz_ha_refund,
-             'nfz_mold_refund': nfz_mold_refund,
-			 'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,
-             'difference': total_value - (nfz_ha_refund + nfz_mold_refund),
-             'proforma': proforma,
-             'total_value': total_value}
+	# context = {	'ha_list': ha_items,
+    #          'other_list': other_items,
+    #          'nfz_ha_refund': nfz_ha_refund,
+    #          'nfz_mold_refund': nfz_mold_refund,
+	# 		 'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,
+    #          'difference': total_value - (nfz_ha_refund + nfz_mold_refund),
+    #          'proforma': proforma,
+    #          'total_value': total_value}
+	context = get_finance_context(proforma)
 	return render(request, 'crm/detail_proforma.html', context)
 
 
