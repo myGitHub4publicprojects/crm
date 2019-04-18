@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block scripts %}
-<script src="{% static 'crm/scripts/print_pcpr.js' %}"></script>
+<script src="{% static 'crm/scripts/print_invoice.js' %}"></script>
 {% endblock scripts %}
 {% block content %}
 
@@ -11,7 +11,7 @@
     <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
     Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
 </p>
-<p>Typ faktury: {{ instance.type }}</p>
+<p>Typ faktury: <span id="invoiceType" >{{ instance.type }}</span></p>
 <a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
 </a>
@@ -98,6 +98,13 @@
     </tr>
 </tbody>
 </table>
+{% if instance.note %}
+<section>
+    <h3>Notatka:</h3>
+    <p id="invoiceNote">{{ instance.note }}</p>
+</section>
+{% endif %}
+
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj fakturę</button>
 
 <form action="{% url 'crm:invoice_detail' instance.id %}" method="post">
