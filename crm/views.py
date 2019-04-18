@@ -79,8 +79,6 @@ def advancedsearch(request):
 	if ha_make:
 		all_ha_make = Hearing_Aid.objects.filter(make=ha_make, current=True)
 		patient_list = patient_list & patients_from_ha(all_ha_make)
-		# print(patient_list[0].hearing_aid_set.filter(make='Oticon'))
-		# print(patient_list[0].hearing_aid_set.filter(current=True))
 	# search by ha make family and model
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
@@ -741,16 +739,13 @@ def reminder_collection(request, reminder_id):
 
 @login_required
 def pcpr_create(request, patient_id):
-	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
-	print(get_devices(Hearing_Aid_Stock))
 	ha_list = get_devices(Hearing_Aid_Stock)
 	other_items = get_devices(Other_Item_Stock)
 	json_ha_list = json.dumps(ha_list, cls=DjangoJSONEncoder)
 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	PCPRFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
-		print(request.POST)
 		formset = PCPRFormSet(request.POST)
 		if formset.is_valid():
 
@@ -805,7 +800,6 @@ def proforma_create(request, patient_id):
 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	ProFormaFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
-		print(request.POST)
 		formset = ProFormaFormSet(request.POST)
 		if formset.is_valid():
 
@@ -853,9 +847,7 @@ def proforma_update(request, pcpr_id):
 
 @login_required
 def invoice_create(request, patient_id):
-	# print('in create view:')
 	patient = get_object_or_404(Patient, pk=patient_id)
-	print(get_devices(Hearing_Aid_Stock))
 	ha_list = get_devices(Hearing_Aid_Stock)
 	other_items = get_devices(Other_Item_Stock)
 	json_ha_list = json.dumps(ha_list, cls= DjangoJSONEncoder)
@@ -865,7 +857,7 @@ def invoice_create(request, patient_id):
 		form = InvoiceForm(request.POST)
 		formset = InvoiceFormSet(request.POST)
 		if form.is_valid() and formset.is_valid():
-    		
+			print(form)
 			# inactivate prevoius invoices (current=False)
 			previous_inv = Invoice.objects.filter(patient=patient)
 			previous_inv.update(current=False)
@@ -874,6 +866,8 @@ def invoice_create(request, patient_id):
 			invoice = form.save(commit=False)
 			invoice.patient = patient
 			invoice.save()
+			print(invoice.type)
+			print('note: ', invoice.note)
 
     		# process devices in a formset
 			process_device_formset_invoice(formset, patient, invoice, today)

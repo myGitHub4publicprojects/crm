@@ -2,6 +2,8 @@
     // var ha_models = document.getElementsByClassName('ha_models');
     var form = document.getElementById('newInvoice');
     var table = document.getElementById('currentItems');
+    var enableNote = document.getElementById('enableNote');
+    var invoiceNote = document.getElementById('invoiceNote');
     var itemsNum = 0;
     var hearingAids = {{ json_ha_list | safe }};
     var other_devices = {{ json_other_devices | safe }};
@@ -20,12 +22,15 @@
     var selectSide = document.getElementById('haSelectSide');
     var acceptItem = document.getElementById('acceptItem');
     var totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    var haTotalNo = 0;
+    var moldTotalNo = 0;
 
     selectDeviceType.addEventListener('change', processDeviceType);
     selectMake.addEventListener('change', selectedMake);
     addItem.addEventListener('click', showForm);
     haQuantity.addEventListener('change', selectedQuantity);
     acceptItem.addEventListener('click', processItem);
+    enableNote.addEventListener('click', addNote);
 
     function showForm() {
         document.getElementById('newItem').style.display = 'block';
@@ -144,6 +149,15 @@
 
         // increase total number of forms in a formset
         totalForms.value++;
+
+        // increase total number of hearing aids or molds
+        if (selectDeviceType.value == 'ha') {
+            haTotalNo += parseInt(haQuantity.value);
+        }
+
+        if (selectDeviceType.value == 'other' && selectFamily.value == "WKŁADKA USZNA") {
+            moldTotalNo += parseInt(haQuantity.value);
+        }
 
         // reset form
         selectMake.style.display = 'none';
@@ -287,6 +301,13 @@
 
         // display button to accept item and add it to the table
         acceptItem.style.display = 'inline-block'
+    }
+
+    function addNote() {
+        var nfz = (moldTotalNo * 50) + (haTotalNo * 700);
+        var autoNote = 'Dofinansowanie NFZ: ' + nfz + ' zł';
+        invoiceNote.style.display = 'inline-block';
+        invoiceNote.innerText = autoNote;
     }
 
 </script>
