@@ -12,10 +12,10 @@ class PatientForm(forms.ModelForm):
 			"date_of_birth"
 		]
 
-class InvoiceTypeForm(forms.ModelForm):
+class InvoiceForm(forms.ModelForm):
     class Meta:
     	model = Invoice
-    	fields = ['type',]
+    	fields = ['type','note']
 
 class DeviceForm(forms.Form):
 	device_type = forms.ChoiceField(

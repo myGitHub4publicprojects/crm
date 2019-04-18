@@ -11,7 +11,7 @@ from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import PatientForm, DeviceForm, InvoiceTypeForm
+from .forms import PatientForm, DeviceForm, InvoiceForm
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
@@ -862,7 +862,7 @@ def invoice_create(request, patient_id):
 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	InvoiceFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
-		form = InvoiceTypeForm(request.POST)
+		form = InvoiceForm(request.POST)
 		formset = InvoiceFormSet(request.POST)
 		if form.is_valid() and formset.is_valid():
     		
@@ -886,7 +886,7 @@ def invoice_create(request, patient_id):
 			messages.warning(request, 'Niepoprawne dane, popraw.')
     		
 	else:
-		form = InvoiceTypeForm()
+		form = InvoiceForm()
     	
 	context = {	'patient': patient,
 				'ha_list': ha_list,

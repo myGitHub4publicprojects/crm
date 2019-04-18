@@ -1934,6 +1934,8 @@ class TestInvoiceCreateView(TestCase):
         one hearing aid,
         one invoice instance with one position - hearing aid,
         for a given patient,
+        invoice type should be 'transfer',
+        invoice note: 'test note',
         should also:
         inactivate prevous invoices (current=False)
         redirect to detail view'''
@@ -1945,6 +1947,7 @@ class TestInvoiceCreateView(TestCase):
         data = {
             # form data
             'type': 'transfer',
+            'note': 'test note',
 
             # formset data
             # these are needed for formset to work
@@ -1986,6 +1989,10 @@ class TestInvoiceCreateView(TestCase):
         self.assertFalse(invoice2.current)
         # new invoice should be active (current=True)
         self.assertTrue(invoice.current)
+        # new invoice should have a type of 'transfer'
+        self.assertEqual(invoice.type, 'transfer')
+        # new invoice should have a note: 'test note'
+        self.assertEqual(invoice.note, 'test note')
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
