@@ -64,11 +64,11 @@ class Pro_Forma_Invoice(Finance):
 
 
 class Invoice(Finance):
-    payed = models.BooleanField(default=False)
-    # change this to True once payment received and HA dispenced
-    type = models.CharField(max_length=8, choices=(
-        ('transfer', 'transfer'), ('cash', 'cash')))
-	# note = models.CharField(max_length=200, null=True, blank=True)
+	payed = models.BooleanField(default=False)
+	# change this to True once payment received and HA dispenced
+	type = models.CharField(max_length=8, choices=(
+		('transfer', 'transfer'), ('cash', 'cash')))
+	note = models.CharField(max_length=200, null=True, blank=True)
 
 
 class Device(models.Model):
