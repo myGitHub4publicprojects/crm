@@ -99,12 +99,13 @@
 </tbody>
 </table>
 {% if instance.note %}
-<section>
-    <h3>Notatka:</h3>
-    <p id="invoiceNote">{{ instance.note }}</p>
+<section id="note">
+    <h4>Notatka:</h4>
+    <p>{{ instance.note }}</p>
+    <hr>
 </section>
 {% endif %}
-{{ instance.note }}
+
 
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj fakturę</button>
 

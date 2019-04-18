@@ -28,12 +28,14 @@ function printDiv() {
 
     var table = document.getElementsByClassName('table')[0];
     var patient = name + address;
-    var invoiceNote = document.getElementById('invoiceNote');
+    var printContents = head + patient + table.outerHTML;
+    var invoiceNote = document.getElementById('note');
     if (invoiceNote){
-        invoiceNote = invoiceNote.innerText;
+        invoiceNote = invoiceNote.innerHTML;
+        printContents += invoiceNote;
     }
-    var divClose = '</div>';
-    var printContents = head + patient + table.outerHTML + divClose;
+    printContents += '</div>';
+
     var originalContents = document.body.innerHTML;
 
     document.body.innerHTML = printContents;
