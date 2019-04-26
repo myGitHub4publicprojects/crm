@@ -1,10 +1,6 @@
 {% extends "crm/base.html" %}
 {% load staticfiles%}
 
-{% block scripts %}
-<script src="{% static 'crm/scripts/main.js' %}"></script>
-{% endblock scripts %}
-
 {% block content %}
 <div class="status mt-2">{% include "crm/status.html" %}</div>
 
@@ -173,6 +169,33 @@
 				}
 			}
 		}, false);
+	
+	// var hearingAids = {{ json_ha_list | safe }};
+	// console.log(hearingAids);
+	// var Phonak = hearingAids.Phonak;
+	// for (family of Object.entries(Phonak)){
+	// 	for ([k,v] of Object.entries(i)){
+	// 		console.log(k, v);
+	// 	}
+	// }
+
+
+
+		// Phonak VITUS+ fix - '+' sign causes problems with toggling
+		// `${selectMake.value}
+	var sides = ['left', 'right'];
+	for (i=0; i<2; i++){
+		var hrefSel = "a[href='#Phonak_VITUS+_" + sides[i] + "']";
+		var phonakVitusLinks = document.querySelectorAll(hrefSel);
+		if (phonakVitusLinks){
+			vitus = phonakVitusLinks[0]
+			oldHref = '#' + vitus.href.split('#')[1];
+			newHref = oldHref.replace('+', 'PLUS');
+			vitus.setAttribute('href', newHref);
+			targetDiv = document.getElementById('Phonak_VITUS+_' + sides[i]);
+			targetDiv.setAttribute('id', newHref.substring(1));
+		}
+	}
 
 </script>
 
