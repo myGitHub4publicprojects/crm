@@ -24,6 +24,8 @@
     var totalForms = document.getElementById('id_form-TOTAL_FORMS');
     var haTotalNo = 0;
     var moldTotalNo = 0;
+    var totalPrice = 0;
+    var totalVal = document.getElementById('totalVal');
 
     selectDeviceType.addEventListener('change', processDeviceType);
     selectMake.addEventListener('change', selectedMake);
@@ -159,6 +161,10 @@
             moldTotalNo += parseInt(haQuantity.value);
         }
 
+
+        totalPrice += haQuantity.value * grossPrice;
+        totalVal.innerText = totalPrice;
+
         // reset form
         selectMake.style.display = 'none';
         selectFamily.style.display = 'none';
@@ -175,6 +181,8 @@
         document.getElementById('newItem').style.display = 'none';
         addItem.style.display = 'inline-block';
         acceptItem.style.display = 'none'
+
+        console.log(totalPrice);
     }
 
     function processDeviceType() {
@@ -305,7 +313,8 @@
 
     function addNote() {
         var nfz = (moldTotalNo * 50) + (haTotalNo * 700);
-        var autoNote = 'Dofinansowanie NFZ: ' + nfz + ' zł';
+        var clientPayment = totalPrice - nfz;
+        var autoNote = 'Dofinansowanie NFZ: ' + nfz + ' zł. Udział własny: ' + clientPayment;
         invoiceNote.style.display = 'inline-block';
         invoiceNote.innerText = autoNote;
     }
