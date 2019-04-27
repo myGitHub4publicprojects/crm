@@ -46,13 +46,14 @@ class NewInfo(models.Model):
 
 
 class Finance(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True, auto_now_add=False)
-    current = models.BooleanField(default=True)
+	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True, auto_now_add=False)
+	current = models.BooleanField(default=True)
+	note = models.CharField(max_length=200, null=True, blank=True)
 
-    class Meta:
-    		abstract = True
+	class Meta:
+		abstract = True
 
 
 class PCPR_Estimate(Finance):
@@ -68,7 +69,6 @@ class Invoice(Finance):
 	# change this to True once payment received and HA dispenced
 	type = models.CharField(max_length=8, choices=(
 		('transfer', 'transfer'), ('cash', 'cash')))
-	note = models.CharField(max_length=200, null=True, blank=True)
 
 
 class Device(models.Model):
