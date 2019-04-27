@@ -26,6 +26,7 @@
     var moldTotalNo = 0;
     var totalPrice = 0;
     var totalVal = document.getElementById('totalVal');
+    var documentType = document.getElementById('documentType');
 
     selectDeviceType.addEventListener('change', processDeviceType);
     selectMake.addEventListener('change', selectedMake);
@@ -312,11 +313,20 @@
     }
 
     function addNote() {
-        var nfz = (moldTotalNo * 50) + (haTotalNo * 700);
-        var clientPayment = totalPrice - nfz;
-        var autoNote = 'Dofinansowanie NFZ: ' + nfz + ' zł. Udział własny: ' + clientPayment;
+        var totalNfz = (moldTotalNo * 50) + (haTotalNo * 700);
+        var clientPayment = totalPrice - totalNfz;
+        if (documentType.innerText=='Faktura'){
+            var autoNote = 'Dofinansowanie NFZ: ' + totalNfz + ' zł. Udział własny: ' + clientPayment;
+            }
+        else {
+            var haNfz = 'Dofinansowanie NFZ do aparatów słuchowych: ' + haTotalNo * 700 + ' zł.&#10'
+            var moldNfz = 'Dofinansowanie NFZ do wkładek usznych: ' + moldTotalNo * 50 + ' zł.&#10';
+            var combinedNfz = 'Dofinansowanie NFZ łącznie: ' + totalNfz + ' zł.&#10';
+            var requestedAmount = 'Kwota wnioskowanej dopłaty: ' + clientPayment + 'zł.&#10';
+            var autoNote = haNfz + moldNfz + combinedNfz + requestedAmount;
+        }
         invoiceNote.style.display = 'inline-block';
-        invoiceNote.innerText = autoNote;
+        invoiceNote.innerHTML = autoNote;
     }
 
 </script>
