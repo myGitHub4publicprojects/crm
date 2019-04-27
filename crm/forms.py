@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from .models import Patient, Invoice
+from .models import Patient, Invoice, Pro_Forma_Invoice, PCPR_Estimate
 
 class PatientForm(forms.ModelForm):
 	class Meta:
@@ -15,7 +15,19 @@ class PatientForm(forms.ModelForm):
 class InvoiceForm(forms.ModelForm):
     class Meta:
     	model = Invoice
-    	fields = ['type','note']
+    	fields = ['note']
+
+
+class PCPR_EstimateForm(forms.ModelForm):
+    class Meta:
+    	model = PCPR_Estimate
+    	fields = ['note']
+
+
+class Pro_Forma_InvoiceForm(forms.ModelForm):
+    class Meta:
+    	model = Pro_Forma_Invoice
+    	fields = [ 'note']
 
 class DeviceForm(forms.Form):
 	device_type = forms.ChoiceField(

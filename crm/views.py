@@ -11,7 +11,8 @@ from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import PatientForm, DeviceForm, InvoiceForm
+from .forms import (PatientForm, DeviceForm, InvoiceForm, Pro_Forma_InvoiceForm,
+					PCPR_EstimateForm)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
@@ -747,15 +748,18 @@ def pcpr_create(request, patient_id):
 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	PCPRFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
+		form = PCPR_EstimateForm(request.POST)
 		formset = PCPRFormSet(request.POST)
-		if formset.is_valid():
+		if form.is_valid() and formset.is_valid():
 
 			# inactivate prevoius invoices (current=False)
 			previous_pcpr = PCPR_Estimate.objects.filter(patient=patient)
 			previous_pcpr.update(current=False)
 
-    		# create invoice instance
-			pcpr = PCPR_Estimate.objects.create(patient=patient)
+    		# create proforma instance
+			pcpr = form.save(commit=False)
+			pcpr.patient = patient
+			pcpr.save()
 
     		# process devices in a formset
 			process_device_formset_pcpr(formset, patient, pcpr, today)
@@ -766,11 +770,14 @@ def pcpr_create(request, patient_id):
 		else:
 		    	# redispaly with message
 			messages.warning(request, 'Niepoprawne dane, popraw.')
+	else:
+		form = PCPR_EstimateForm()
 
 	context = {	'patient': patient,
              'ha_list': ha_list,
              "json_ha_list": json_ha_list,
             'json_other_devices': json_other_devices,
+             'form': form,
              'formset': PCPRFormSet()}
 	return render(request, 'crm/create_pcpr.html', context)
 
@@ -801,15 +808,18 @@ def proforma_create(request, patient_id):
 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
 	ProFormaFormSet = formset_factory(DeviceForm, extra=1)
 	if request.method == 'POST':
+		form = Pro_Forma_InvoiceForm(request.POST)
 		formset = ProFormaFormSet(request.POST)
-		if formset.is_valid():
+		if form.is_valid() and formset.is_valid():
 
 			# inactivate prevoius proforma (current=False)
 			previous_proforma = Pro_Forma_Invoice.objects.filter(patient=patient)
 			previous_proforma.update(current=False)
 
-    		# create proforma instance
-			proforma = Pro_Forma_Invoice.objects.create(patient=patient)
+    		# create proforma instance			    		
+			proforma = form.save(commit=False)
+			proforma.patient = patient
+			proforma.save()
 
     		# process devices in a formset
 			process_device_formset_proforma(formset, patient, proforma, today)
@@ -820,11 +830,14 @@ def proforma_create(request, patient_id):
 		else:
 		    	# redispaly with message
 			messages.warning(request, 'Niepoprawne dane, popraw.')
+	else:
+		form = Pro_Forma_InvoiceForm()
 
 	context = {	'patient': patient,
              'ha_list': ha_list,
              "json_ha_list": json_ha_list,
              'json_other_devices': json_other_devices,
+			 'form': form,
              'formset': ProFormaFormSet()}
 	return render(request, 'crm/create_proforma.html', context)
 
@@ -858,7 +871,6 @@ def invoice_create(request, patient_id):
 		form = InvoiceForm(request.POST)
 		formset = InvoiceFormSet(request.POST)
 		if form.is_valid() and formset.is_valid():
-			print(form)
 			# inactivate prevoius invoices (current=False)
 			previous_inv = Invoice.objects.filter(patient=patient)
 			previous_inv.update(current=False)
@@ -867,8 +879,6 @@ def invoice_create(request, patient_id):
 			invoice = form.save(commit=False)
 			invoice.patient = patient
 			invoice.save()
-			print(invoice.type)
-			print('note: ', invoice.note)
 
     		# process devices in a formset
 			process_device_formset_invoice(formset, patient, invoice, today)

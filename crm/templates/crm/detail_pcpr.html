@@ -103,6 +103,15 @@
     <p><strong>Kwota wnioskowanej dopłaty: {{ difference }}</strong></p>
 </div>
 
+{% if instance.note %}
+<section id="note">
+    <h4>Notatka:</h4>
+    <p>{{ instance.note }}</p>
+    <hr>
+</section>
+{% endif %}
+
+
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj kosztorys</button>
 
 <form action="{% url 'crm:pcpr_detail' instance.id %}" method="post">
