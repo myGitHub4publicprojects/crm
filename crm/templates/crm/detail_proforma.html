@@ -99,18 +99,11 @@
         </tr>
     </tbody>
 </table>
-<div id="nfz_refund">
-    <h2 style="text-align:center">Dofinasowania NFZ</h2>
-    <p>Dofinansowanie NFZ do aparatów słuchowych: {{ nfz_ha_refund }} zł</p>
-    <p>Dofinansowanie NFZ do wkładek usznych: {{ nfz_mold_refund }} zł</p>
-    <p>Dofinansowanie NFZ łącznie: {{ nfz_total_refund }} zł</p>
-    <p><strong>Kwota wnioskowanej dopłaty: {{ difference }}</strong></p>
-</div>
 
 {% if instance.note %}
 <section id="note">
     <h4>Notatka:</h4>
-    <p>{{ instance.note }}</p>
+    <p>{{ instance.note|safe }}</p>
     <hr>
 </section>
 {% endif %}
@@ -135,5 +128,6 @@
             event.preventDefault();
         }
     })
+
 </script>
 {% endblock content %}

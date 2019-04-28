@@ -759,6 +759,7 @@ def pcpr_create(request, patient_id):
     		# create proforma instance
 			pcpr = form.save(commit=False)
 			pcpr.patient = patient
+			pcpr.note = pcpr.note.replace('\r\n', '<br>')
 			pcpr.save()
 
     		# process devices in a formset
@@ -819,6 +820,7 @@ def proforma_create(request, patient_id):
     		# create proforma instance			    		
 			proforma = form.save(commit=False)
 			proforma.patient = patient
+			proforma.note = proforma.note.replace('\r\n', '<br>')
 			proforma.save()
 
     		# process devices in a formset

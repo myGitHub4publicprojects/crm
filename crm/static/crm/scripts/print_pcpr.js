@@ -26,13 +26,16 @@ function printDiv() {
 
     var table = document.getElementsByClassName('table')[0];
     var patient = name + address;
-
-    var nfz = document.getElementById('nfz_refund').outerHTML;
+    var printContents = head + patient + table.outerHTML;
+    var invoiceNote = document.getElementById('note');
+    if (invoiceNote) {
+        invoiceNote = invoiceNote.innerHTML;
+        printContents += invoiceNote;
+    }
     var accNo = '<p>Przelew na konto: 40 1160 2202 0000 0002 5500 6585</p><hr>';
     var currentYear = new Date().getFullYear();
     var dopisek = '<p style="position: fixed; bottom: 150px; left: 100px;"><small>Do realizacji do 31.12.' + currentYear + '</small></p>';
-    var divClose = '</div>';
-    var printContents = head + patient + table.outerHTML +  nfz + accNo + dopisek + divClose;
+    printContents += accNo + dopisek + '</div>';
     var originalContents = document.body.innerHTML;
 
     document.body.innerHTML = printContents;
