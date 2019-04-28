@@ -931,7 +931,10 @@ def corrective_invoice_create(request, invoice_id):
 	if request.method == 'POST':
 		selected_ha = request.POST.getlist['ha']
 		selected_other = request.POST.getlist['other']
-		
+		note = request.POST.get('note')
+		cinvoice = Corrective_Invoice.objects.create(
+			patient=invoice.patient,
+			invoice=invoice)
 
 		# redirect to detail view with a success message
 		messages.success(request, 'Utworzono nową fakturę korektę.')

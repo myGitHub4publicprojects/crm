@@ -72,7 +72,7 @@ class Invoice(Finance):
 
 
 class Corrective_Invoice(Finance):
-    models.ForeignKey(Invoice, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
 
 
 class Device(models.Model):
