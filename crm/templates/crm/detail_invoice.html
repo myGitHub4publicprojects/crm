@@ -7,6 +7,7 @@
 {% block content %}
 
 <h1 id="documentType" class="text-center">Faktura VAT</h1>
+<a href="">Faktury korekty:</a>
 <p>
     <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
     Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
@@ -109,6 +110,9 @@
 
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj fakturę</button>
 
+<a href="{% url 'crm:corrective_invoice_create' instance.id %}">
+    <div class="btn btn-outline-warning float-right mb-3">Faktura korekta</div>
+</a>
 <form action="{% url 'crm:invoice_detail' instance.id %}" method="post">
     {% csrf_token %}
     <input type="hidden" name="inactivate" value="True">

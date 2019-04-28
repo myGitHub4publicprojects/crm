@@ -1,0 +1,30 @@
+{% extends "crm/base.html" %}
+{% load static %}
+{% block content %}
+<h3 class="text-muted text-center">Utwórz fakturę korygującą</h3>
+<p>Korekta do faktury nr {{ invoice.id }} z dnia {{ invoice.timestamp|date }}</p>
+<p>Pacjent: {{ invoice.patient }}</p>
+
+<h4>Zaznacz aparaty do usunięcia:</h4>
+<form action="{% url 'crm:corrective_invoice_create' invoice.id %}" method="post">
+{% csrf_token %}
+<table class="table table-bordered">
+    {% for ha in ha_list %}
+    <tr>
+        <td>
+            {{ ha }}
+        </td>
+        <td>
+            {{ ha.price_gross }}
+        </td>
+        <td>
+            <input type="checkbox" name="ha" id="ha{{ ha.id }}" value="{{ ha.id }}" />
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<input type="submit" value="utwórz">
+</form>
+
+{% endblock content %}

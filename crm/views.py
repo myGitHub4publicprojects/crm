@@ -17,7 +17,7 @@ from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_Proforma, Reminder_PCPR,  Reminder_NFZ_Confirmed,
-					 Reminder_NFZ_New)
+                     Reminder_NFZ_New, Corrective_Invoice)
 from django.core.urlresolvers import reverse
 from django.db.models.functions import Lower
 from django.db.models import Q
@@ -919,4 +919,44 @@ def invoice_detail(request, invoice_id):
 
 @login_required
 def invoice_update(request, invoice_id):
+    	pass
+
+
+@login_required
+def corrective_invoice_create(request, invoice_id):
+	invoice = get_object_or_404(Invoice, pk=invoice_id)
+	ha_list = invoice.hearing_aid_set.all()
+	other_items = invoice.other_item_set.all()
+
+	if request.method == 'POST':
+		selected_ha = request.POST.getlist['ha']
+		selected_other = request.POST.getlist['other']
+		
+
+		# redirect to detail view with a success message
+		messages.success(request, 'Utworzono nową fakturę korektę.')
+		return redirect('crm:corrective_invoice_detail', cinvoice.id)
+
+	context = {	'invoice': invoice,
+				'ha_list': ha_list,
+				'other_items': other_items,
+				}
+	return render(request, 'crm/create_corrective_invoice.html', context)
+
+
+@login_required
+def corrective_invoice_detail(request, cinvoice_id):
+	cinvoice = get_object_or_404(Invoice, pk=cinvoice_id)
+	if request.POST.get('inactivate'):
+		cinvoice.current = False
+		cinvoice.save()
+		# redirect to edit view with a success message
+		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
+		return redirect('crm:edit', cinvoice.patient.id)
+	context = get_finance_context(cinvoice)
+	return render(request, 'crm/detail_invoice.html', context)
+
+
+@login_required
+def corrective_invoice_update(request, cinvoice_id):
     	pass
