@@ -71,6 +71,10 @@ class Invoice(Finance):
 		('transfer', 'transfer'), ('cash', 'cash')))
 
 
+class Corrective_Invoice(Finance):
+    models.ForeignKey(Invoice, on_delete=models.CASCADE)
+
+
 class Device(models.Model):
     '''Master class for all devices. Not to be used directly'''
     make = models.CharField(max_length=50)
@@ -90,6 +94,8 @@ class Our_Device(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	invoice = models.ForeignKey(
 		Invoice, on_delete=models.CASCADE, null=True, blank=True)
+	corrective_invoice = models.ForeignKey(
+            Corrective_Invoice, on_delete=models.CASCADE, null=True, blank=True)
 	pro_forma = models.ForeignKey(
 		Pro_Forma_Invoice, on_delete=models.CASCADE, null=True, blank=True)
 	estimate = models.ForeignKey(
