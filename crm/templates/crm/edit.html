@@ -145,10 +145,6 @@
 	<div class="btn btn-outline-danger">usuń pacjenta</div>
 </a>
 
-
-<div id='invoiceCreate' class="btn btn-outline-warning float-right mb-3">Utwórz nową fakturę</div>
-
-
 <script>
 	var tel_no = document.querySelector('#patient_tel');
 	if (tel_no.value == 0) {
@@ -169,17 +165,6 @@
 				}
 			}
 		}, false);
-	
-	// var hearingAids = {{ json_ha_list | safe }};
-	// console.log(hearingAids);
-	// var Phonak = hearingAids.Phonak;
-	// for (family of Object.entries(Phonak)){
-	// 	for ([k,v] of Object.entries(i)){
-	// 		console.log(k, v);
-	// 	}
-	// }
-
-
 
 		// Phonak VITUS+ fix - '+' sign causes problems with toggling
 		// `${selectMake.value}
