@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 <h3 class="text-muted text-center">Utwórz fakturę korygującą</h3>
-<p>Korekta do faktury nr {{ invoice.id }} z dnia {{ invoice.timestamp|date }}</p>
+<p>Korekta do faktury nr {{ invoice.id }} z dnia {{ invoice.timestamp|date:'d-m-Y' }}</p>
 <p>Pacjent: {{ invoice.patient }}</p>
 
 <h4>Zaznacz aparaty do usunięcia:</h4>

@@ -929,12 +929,20 @@ def corrective_invoice_create(request, invoice_id):
 	other_items = invoice.other_item_set.all()
 
 	if request.method == 'POST':
-		selected_ha = request.POST.getlist['ha']
-		selected_other = request.POST.getlist['other']
+		selected_ha = request.POST.getlist('ha')
+		selected_other = request.POST.getlist('other')
 		note = request.POST.get('note')
 		cinvoice = Corrective_Invoice.objects.create(
 			patient=invoice.patient,
-			invoice=invoice)
+			invoice=invoice,
+			note=note)
+		# associate hearing aids and other devices with corrective invoice
+		for ha in selected_ha:
+			device = Hearing_Aid.objects.filter(id=int(ha))
+			device.update(corrective_invoice=cinvoice)
+		for other in selected_other:
+			other = Other_Item.objects.filter(id=int(ha))
+			other.update(corrective_invoice=cinvoice)
 
 		# redirect to detail view with a success message
 		messages.success(request, 'Utworzono nową fakturę korektę.')
@@ -949,7 +957,7 @@ def corrective_invoice_create(request, invoice_id):
 
 @login_required
 def corrective_invoice_detail(request, cinvoice_id):
-	cinvoice = get_object_or_404(Invoice, pk=cinvoice_id)
+	cinvoice = get_object_or_404(Corrective_Invoice, pk=cinvoice_id)
 	if request.POST.get('inactivate'):
 		cinvoice.current = False
 		cinvoice.save()
@@ -957,7 +965,11 @@ def corrective_invoice_detail(request, cinvoice_id):
 		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
 		return redirect('crm:edit', cinvoice.patient.id)
 	context = get_finance_context(cinvoice)
-	return render(request, 'crm/detail_invoice.html', context)
+	original_context = get_finance_context(cinvoice.invoice)
+	context['original_ha_list'] = original_context['ha_list']
+	context['original_other_list'] = original_context['other_list']
+	context['original_total_value'] = original_context['total_value']
+	return render(request, 'crm/detail_corrective_invoice.html', context)
 
 
 @login_required

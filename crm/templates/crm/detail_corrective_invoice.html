@@ -1,0 +1,216 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block scripts %}
+<script src="{% static 'crm/scripts/print_correction.js' %}"></script>
+{% endblock scripts %}
+{% block content %}
+
+<h1 id="documentType" class="text-center">Faktura Korygująca</h1>
+<a id="originalDoc" href="{% url 'crm:invoice_detail' instance.invoice.id %}">
+    Korekta do faktury nr {{ instance.invoice.id }} z dnia {{ instance.timestamp|date:'d-m-Y' }}
+</a>
+<p>
+    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
+    Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
+</p>
+<!-- <p>Typ faktury: <span id="invoiceType">{{ instance.type }}</span></p> -->
+<a href="{% url 'crm:edit' instance.patient.id %}">
+    <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
+</a>
+<hr>
+
+<!-- patient details -->
+<div class="row mt-2">
+    <div class="col-6">
+        <h3>Odbiorca:</h3>
+        <p id="patientName">{{ instance.patient }}</p>
+        <p>
+            <span id="address1">
+                {% if instance.patient.street %} {{ instance.patient.street }} {% else %} {{ instance.patient.city }}
+                {% endif %} {{ instance.patient.house_number }} {% if instance.patient.apartment_number %}
+                /{{ instance.patient.apartment_number }} {% endif %}
+            </span>
+        </P>
+        </p>
+        <P>
+            <span id="address2">{{ instance.patient.zip_code }} {{ instance.patient.city }}</span>
+        </P>
+    </div>
+    <div class="col-6">
+        <h3>Wystawiający:</h3>
+        <p>Sonovox Aparaty Słuchowe Barbara Golon-Szczepaniak</p>
+        <P>ul. Wagi 6/1</P>
+        <p>61-244 Poznań</p>
+        <p>NIP: 7821377519</p>
+    </div>
+</div>
+<hr>
+<section id="tables">
+<p>Przed korektą:</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa pozycji</th>
+            <th>PKWiU</th>
+            <th>ilość</th>
+            <th>Cena brutto</th>
+            <th>Cena netto</th>
+            <th>Wartość netto</th>
+            <th>Stawka VAT [%]</th>
+            <th>Kwota VAT</th>
+            <th>wartość brutto</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for key, value in original_ha_list.items %}
+        <tr>
+            <td>Aparat słuchowy {{ key }}</td>
+            <td>{{ value.pkwiu_code }}</td>
+            <td>{{ value.quantity }}</td>
+            <td>{{ value.price_gross }}</td>
+            <td>{{ value.net_price }}</td>
+            <td>{{ value.net_value }}</td>
+            <td>{{ value.vat_rate }}</td>
+            <td>{{ value.vat_amount }}</td>
+            <td>{{ value.gross_value }}</td>
+        </tr>
+        {% endfor %}
+        {% for key, value in original_other_list.items %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value.pkwiu_code }}</td>
+            <td>{{ value.quantity }}</td>
+            <td>{{ value.price_gross }}</td>
+            <td>{{ value.net_price }}</td>
+            <td>{{ value.net_value }}</td>
+            <td>{{ value.vat_rate }}</td>
+            <td>{{ value.vat_amount }}</td>
+            <td>{{ value.gross_value }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>Łącznie:</strong></td>
+            <td id="totalVal"><strong>{{ original_total_value }}</strong></td>
+        </tr>
+    </tbody>
+</table>
+<br>
+
+<p>Po korekcie:</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa pozycji</th>
+            <th>PKWiU</th>
+            <th>ilość</th>
+            <th>Cena brutto</th>
+            <th>Cena netto</th>
+            <th>Wartość netto</th>
+            <th>Stawka VAT [%]</th>
+            <th>Kwota VAT</th>
+            <th>wartość brutto</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for key, value in ha_list.items %}
+        <tr>
+            <td>Aparat słuchowy {{ key }}</td>
+            <td>{{ value.pkwiu_code }}</td>
+            <td>{{ value.quantity }}</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>{{ value.vat_rate }}</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        {% endfor %}
+        {% for key, value in other_list.items %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value.pkwiu_code }}</td>
+            <td>{{ value.quantity }}</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>{{ value.vat_rate }}</td>
+            <td></td>
+            <td>0</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>Łącznie:</strong></td>
+            <td id="totalVal"><strong>0</strong></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>Korekta:</strong></td>
+            <td id="totalVal"><strong>-{{ total_value }}</strong></td>
+        </tr>
+    </tbody>
+</table>
+<p>Na kwotę: -{{ total_value }}</p>
+
+</section>
+
+{% if instance.note %}
+<section id="note">
+    <h4>Notatka:</h4>
+    <p>{{ instance.note }}</p>
+    <hr>
+</section>
+{% endif %}
+
+
+
+<button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj korektę</button>
+
+
+
+
+
+
+<!-- <a href="{% url 'crm:corrective_invoice_create' instance.id %}">
+    <div class="btn btn-outline-warning float-right mb-3">Faktura korekta</div>
+</a> -->
+<!-- <form action="{% url 'crm:invoice_detail' instance.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="inactivate" value="True">
+    <input class="btn btn-outline-danger float-right mb-3" type="submit" id="remove" value=Usuń fakturę>
+</form>
+
+<script>
+    var remove = document.getElementById('remove');
+    remove.addEventListener('click', function (event) {
+
+        var decission = confirm('Czy napewno chcesz usunąć fakturę?');
+        if (decission == false) {
+            event.preventDefault();
+        }
+    })
+</script> -->
+{% endblock content %}
