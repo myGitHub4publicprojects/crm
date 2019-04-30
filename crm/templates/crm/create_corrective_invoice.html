@@ -24,6 +24,23 @@
     {% endfor %}
 </table>
 
+<h4>Zaznacz inne do usunięcia:</h4>
+    <table class="table table-bordered">
+        {% for o in other_items %}
+        <tr>
+            <td>
+                {{ o }}
+            </td>
+            <td>
+                {{ o.price_gross }}
+            </td>
+            <td>
+                <input type="checkbox" name="other" id="o{{ o.id }}" value="{{ o.id }}" />
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
 <input type="submit" value="utwórz">
 </form>
 
