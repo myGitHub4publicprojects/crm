@@ -84,17 +84,18 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
             print('creating other item')
             print('Quant: ', form.cleaned_data['quantity'],)
             # how many to create: 'quantity'
-
-            Other_Item.objects.create(
-                patient=patient,
-                make=form.cleaned_data['make'],
-                family=form.cleaned_data['family'],
-                model=form.cleaned_data['model'],
-                price_gross=form.cleaned_data['price_gross'],
-                vat_rate=form.cleaned_data['vat_rate'],
-                pkwiu_code = form.cleaned_data['pkwiu_code'],
-                estimate=pcpr
-            )
+            quantity = int(form.cleaned_data['quantity'])
+            for i in range(quantity):
+                Other_Item.objects.create(
+                    patient=patient,
+                    make=form.cleaned_data['make'],
+                    family=form.cleaned_data['family'],
+                    model=form.cleaned_data['model'],
+                    price_gross=form.cleaned_data['price_gross'],
+                    vat_rate=form.cleaned_data['vat_rate'],
+                    pkwiu_code=form.cleaned_data['pkwiu_code'],
+                    estimate=pcpr
+                )
 
 
 def process_device_formset_invoice(formset, patient, invoice, today):
@@ -154,17 +155,18 @@ def process_device_formset_invoice(formset, patient, invoice, today):
             print('creating other item')
             print('Quant: ', form.cleaned_data['quantity'],)
             # how many to create: 'quantity'
-
-            Other_Item.objects.create(
-                patient=patient,
-                make=form.cleaned_data['make'],
-                family=form.cleaned_data['family'],
-                model=form.cleaned_data['model'],
-                price_gross=form.cleaned_data['price_gross'],
-                vat_rate=form.cleaned_data['vat_rate'],
-                pkwiu_code=form.cleaned_data['pkwiu_code'],
-                invoice=invoice
-            )
+            quantity = int(form.cleaned_data['quantity'])
+            for i in range(quantity):
+                Other_Item.objects.create(
+                    patient=patient,
+                    make=form.cleaned_data['make'],
+                    family=form.cleaned_data['family'],
+                    model=form.cleaned_data['model'],
+                    price_gross=form.cleaned_data['price_gross'],
+                    vat_rate=form.cleaned_data['vat_rate'],
+                    pkwiu_code=form.cleaned_data['pkwiu_code'],
+                    invoice=invoice
+                )
 
 
 def process_device_formset_proforma(formset, patient, proforma, today):
@@ -222,17 +224,18 @@ def process_device_formset_proforma(formset, patient, proforma, today):
             print('creating other item')
             print('Quant: ', form.cleaned_data['quantity'],)
             # how many to create: 'quantity'
-
-            Other_Item.objects.create(
-                patient=patient,
-                make=form.cleaned_data['make'],
-                family=form.cleaned_data['family'],
-                model=form.cleaned_data['model'],
-                price_gross=form.cleaned_data['price_gross'],
-                vat_rate=form.cleaned_data['vat_rate'],
-                pkwiu_code=form.cleaned_data['pkwiu_code'],
-                pro_forma=proforma
-            )
+            quantity = int(form.cleaned_data['quantity'])
+            for i in range(quantity):
+                Other_Item.objects.create(
+                    patient=patient,
+                    make=form.cleaned_data['make'],
+                    family=form.cleaned_data['family'],
+                    model=form.cleaned_data['model'],
+                    price_gross=form.cleaned_data['price_gross'],
+                    vat_rate=form.cleaned_data['vat_rate'],
+                    pkwiu_code=form.cleaned_data['pkwiu_code'],
+                    pro_forma=proforma
+                )
 
 def get_finance_context(instance):  			
     total_value = 0
