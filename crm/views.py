@@ -907,6 +907,8 @@ def invoice_create(request, patient_id):
 @login_required
 def invoice_detail(request, invoice_id):
 	invoice = get_object_or_404(Invoice, pk=invoice_id)
+	print('type: ', invoice.type)
+
 	if request.POST.get('inactivate'):
 		invoice.current = False
 		invoice.save()
@@ -914,6 +916,7 @@ def invoice_detail(request, invoice_id):
 		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
 		return redirect('crm:edit', invoice.patient.id)
 	context = get_finance_context(invoice)
+	context['cinvoices'] = invoice.corrective_invoice_set.all()
 	return render(request, 'crm/detail_invoice.html', context)
 
 

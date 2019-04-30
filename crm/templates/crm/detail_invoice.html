@@ -7,12 +7,20 @@
 {% block content %}
 
 <h1 id="documentType" class="text-center">Faktura VAT</h1>
-<a href="">Faktury korekty:</a>
 <p>
     <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
     Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
 </p>
 <p>Typ faktury: <span id="invoiceType" >{{ instance.type }}</span></p>
+
+{% if cinvoices %}
+<p>Faktury korekty:</p>
+<ul class="list-unstyled">
+    {% for c in cinvoices %}
+    <li><a href="">Korekta nr {{ c.timestamp|date:'d-m-Y' }} nr {{ c.id }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
 <a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>
 </a>
