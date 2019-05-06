@@ -6,7 +6,7 @@
 <p>Pacjent: {{ invoice.patient }}</p>
 
 <h4>Zaznacz aparaty do usunięcia:</h4>
-<form action="{% url 'crm:corrective_invoice_create' invoice.id %}" method="post">
+<form id="newCorrectiveInvoice" action="{% url 'crm:corrective_invoice_create' invoice.id %}" method="post">
 {% csrf_token %}
 <table class="table table-bordered">
     {% for ha in ha_list %}
@@ -40,6 +40,9 @@
         </tr>
         {% endfor %}
     </table>
+
+<p>Notatka do faktury korygującej:</p>
+<textarea form="newCorrectiveInvoice" name="note" class="w-100"></textarea>
 
 <input type="submit" value="utwórz">
 </form>

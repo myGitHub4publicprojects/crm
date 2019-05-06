@@ -944,7 +944,7 @@ def corrective_invoice_create(request, invoice_id):
 			device = Hearing_Aid.objects.filter(id=int(ha))
 			device.update(corrective_invoice=cinvoice)
 		for other in selected_other:
-			other = Other_Item.objects.filter(id=int(ha))
+			other = Other_Item.objects.filter(id=int(other))
 			other.update(corrective_invoice=cinvoice)
 
 		# redirect to detail view with a success message
