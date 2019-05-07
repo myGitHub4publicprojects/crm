@@ -9,6 +9,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
+from django.views.generic.edit import CreateView
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import (PatientForm, DeviceForm, InvoiceForm, Pro_Forma_InvoiceForm,
@@ -978,3 +981,14 @@ def corrective_invoice_detail(request, cinvoice_id):
 @login_required
 def corrective_invoice_update(request, cinvoice_id):
     	pass
+
+
+class HAStockCreate(CreateView):
+	model = Hearing_Aid_Stock
+	fields = ['make', 'family', 'model',
+              'pkwiu_code', 'vat_rate', 'price_gross']
+	template_name = 'crm/create_ha_stock.html'
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(HAStockCreate, self).dispatch(*args, **kwargs)

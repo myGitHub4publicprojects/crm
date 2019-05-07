@@ -77,12 +77,13 @@ class Corrective_Invoice(Finance):
 
 class Device(models.Model):
     '''Master class for all devices. Not to be used directly'''
-    make = models.CharField(max_length=50)
-    family = models.CharField(max_length=50)
-    model = models.CharField(max_length=50)
-    price_gross = models.DecimalField(max_digits=7, decimal_places=2, default=0)
-    vat_rate = models.IntegerField(default=8)
-    pkwiu_code = models.CharField(max_length=20)
+    make = models.CharField(max_length=50, verbose_name='marka')
+    family = models.CharField(max_length=50, verbose_name='rodzina')
+    model = models.CharField(max_length=50, verbose_name='model')
+    price_gross = models.DecimalField(
+    	max_digits=7, decimal_places=2, default=0, verbose_name='cena brutto')
+    vat_rate = models.IntegerField(default=8, verbose_name='stawka VAT')
+    pkwiu_code = models.CharField(max_length=20, verbose_name='kod PKWiU')
 
     class Meta:
     		abstract = True
