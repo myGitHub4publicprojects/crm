@@ -7,6 +7,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 
 
 class Patient(models.Model):
@@ -106,9 +107,17 @@ class Our_Device(models.Model):
 		abstract = True
 
 class Hearing_Aid_Stock(Device):
-    '''Company hearing aids that are offered or were offered'''
-    added = models.DateField(default=datetime.date.today())
+	'''Company hearing aids that are offered or were offered'''
+	added = models.DateField(default=datetime.date.today())
 
+	# def get_absolute_url(self):
+	# 		return '/'
+
+    # def get_absolute_url(self):
+    #     return u'/some_url/%d' % self.id 
+
+	def get_absolute_url(self):
+		return reverse('crm:edit_ha', kwargs={'pk': self.pk})
 
 class Hearing_Aid(Device, Our_Device):
 	ear = models.CharField(max_length=5, choices=(

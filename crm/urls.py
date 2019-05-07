@@ -51,4 +51,5 @@ urlpatterns = [
     url(r'^(?P<proforma_id>[0-9]+)/proforma_update/$',
         views.proforma_update, name='proforma_update'),
     url(r'^add_ha/$', views.HAStockCreate.as_view(), name='add_ha'),
+    url(r'^(?P<pk>[0-9]+)/edit_ha/$', views.HAStockUpdate.as_view(), name='edit_ha'),
 ]

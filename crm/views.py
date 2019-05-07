@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -992,3 +992,14 @@ class HAStockCreate(CreateView):
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(HAStockCreate, self).dispatch(*args, **kwargs)
+
+
+class HAStockUpdate(UpdateView):
+	model = Hearing_Aid_Stock
+	fields = ['make', 'family', 'model',
+           'pkwiu_code', 'vat_rate', 'price_gross']
+	template_name = 'crm/update_ha_stock.html'
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(HAStockUpdate, self).dispatch(*args, **kwargs)
