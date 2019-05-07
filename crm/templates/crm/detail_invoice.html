@@ -17,7 +17,7 @@
 <p>Faktury korekty:</p>
 <ul class="list-unstyled">
     {% for c in cinvoices %}
-    <li><a href="">Korekta nr {{ c.timestamp|date:'d-m-Y' }} nr {{ c.id }}</a></li>
+    <li><a href="{% url 'crm:corrective_invoice_detail' c.id %}">Korekta nr {{ c.timestamp|date:'d-m-Y' }} nr {{ c.id }}</a></li>
     {% endfor %}
 </ul>
 {% endif %}
