@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -22,7 +22,7 @@ from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_Proforma, Reminder_PCPR,  Reminder_NFZ_Confirmed,
                      Reminder_NFZ_New, Corrective_Invoice)
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
@@ -32,7 +32,6 @@ from .utils import (get_devices, process_device_formset_invoice,
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
-
 
 @login_required
 def index(request):
@@ -1005,4 +1004,9 @@ class HAStockUpdate(UpdateView):
 
 
 class HAStockList(ListView):
-    	model = Hearing_Aid_Stock
+    model = Hearing_Aid_Stock
+
+
+class HAStockDelete(DeleteView):
+    model = Hearing_Aid_Stock
+    success_url = reverse_lazy('crm:towary')

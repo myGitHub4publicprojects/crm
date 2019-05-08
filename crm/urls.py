@@ -55,4 +55,6 @@ urlpatterns = [
     url(r'^add_ha/$', views.HAStockCreate.as_view(), name='add_ha'),
     url(r'^(?P<pk>[0-9]+)/edit_ha/$', views.HAStockUpdate.as_view(), name='edit_ha'),
     url(r'^towary/$', TemplateView.as_view(template_name="crm/towary.html"), name='towary'),
+    url(r'^(?P<pk>[0-9]+)/delete_ha/$',
+        views.HAStockDelete.as_view(), name='delete_ha'),
 ]
