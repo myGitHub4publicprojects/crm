@@ -1004,9 +1004,17 @@ class HAStockUpdate(UpdateView):
 
 
 class HAStockList(ListView):
-    model = Hearing_Aid_Stock
+	model = Hearing_Aid_Stock
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(HAStockList, self).dispatch(*args, **kwargs)
 
 
 class HAStockDelete(DeleteView):
-    model = Hearing_Aid_Stock
-    success_url = reverse_lazy('crm:towary')
+	model = Hearing_Aid_Stock
+	success_url = reverse_lazy('crm:towary')
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(HAStockDelete, self).dispatch(*args, **kwargs)
