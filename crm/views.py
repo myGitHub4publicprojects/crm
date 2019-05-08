@@ -985,8 +985,7 @@ def corrective_invoice_update(request, cinvoice_id):
 
 class HAStockCreate(CreateView):
 	model = Hearing_Aid_Stock
-	fields = ['make', 'family', 'model',
-              'pkwiu_code', 'vat_rate', 'price_gross']
+	form_class = Hearing_Aid_StockForm
 	template_name = 'crm/create_ha_stock.html'
 
 	@method_decorator(login_required)
@@ -996,8 +995,6 @@ class HAStockCreate(CreateView):
 
 class HAStockUpdate(UpdateView):
 	model = Hearing_Aid_Stock
-	# fields = ['make', 'family', 'model',
-    #        'pkwiu_code', 'vat_rate', 'price_gross']
 	form_class = Hearing_Aid_StockForm
 	template_name = 'crm/update_ha_stock.html'
 
