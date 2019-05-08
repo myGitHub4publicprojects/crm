@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from . import views
+from django.views.generic import TemplateView
 
 app_name = 'crm'
 urlpatterns = [
@@ -53,4 +54,5 @@ urlpatterns = [
     url(r'^ha_list/$', views.HAStockList.as_view(), name='ha_list'),
     url(r'^add_ha/$', views.HAStockCreate.as_view(), name='add_ha'),
     url(r'^(?P<pk>[0-9]+)/edit_ha/$', views.HAStockUpdate.as_view(), name='edit_ha'),
+    url(r'^towary/$', TemplateView.as_view(template_name="crm/towary.html"), name='towary'),
 ]

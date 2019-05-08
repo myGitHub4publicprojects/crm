@@ -1,0 +1,13 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="m-2">
+    <h1 class="text-center">Wybierz</h1>
+    <ul class="list-unstyled">
+        <li><a href="">Faktury</a></li>
+        <li><a href="{% url 'crm:ha_list' %}">Aparaty</a></li>
+        <li><a href="">Inne towary</a></li>
+    </ul>
+</div>
+{% endblock content %}
