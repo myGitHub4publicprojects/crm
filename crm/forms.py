@@ -53,6 +53,15 @@ class Hearing_Aid_StockForm(forms.ModelForm):
                 'pkwiu_code', 'vat_rate', 'price_gross']
 
 	def clean(self):
-		self.cleaned_data['make'] = self.cleaned_data['make'].capitalize()
-		self.cleaned_data['family'] = self.cleaned_data['family'].capitalize()
-		self.cleaned_data['model'] = self.cleaned_data['model'].capitalize()
+    	# save only capitalized make, family and model names
+		make = self.cleaned_data['make'] = self.cleaned_data['make'].capitalize()
+		family = self.cleaned_data['family'] = self.cleaned_data['family'].capitalize()
+		model = self.cleaned_data['model'] = self.cleaned_data['model'].capitalize()
+
+		# prevent adding objects with names that already exists in a db
+		existing = Hearing_Aid_Stock.objects.filter(make__iexact=make,
+                                              family__iexact=family,
+                                              model__iexact=model)
+		existing = existing.exclude(id=self.instance.id)
+		if existing.exists():
+			raise forms.ValidationError("Jest już aparat o takiej nazwie")
