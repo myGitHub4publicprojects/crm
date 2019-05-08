@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from .models import Patient, Invoice, Pro_Forma_Invoice, PCPR_Estimate
+from .models import Patient, Invoice, Pro_Forma_Invoice, PCPR_Estimate, Hearing_Aid_Stock
 
 class PatientForm(forms.ModelForm):
 	class Meta:
@@ -44,3 +44,15 @@ class DeviceForm(forms.Form):
 	quantity = forms.IntegerField()
 	ear = forms.ChoiceField(choices=(
 		('left', 'left'), ('right', 'right'), ('both', 'both')))
+
+
+class Hearing_Aid_StockForm(forms.ModelForm):
+	class Meta:
+		model = Hearing_Aid_Stock
+		fields = ['make', 'family', 'model',
+                'pkwiu_code', 'vat_rate', 'price_gross']
+
+	def clean(self):
+		self.cleaned_data['make'] = self.cleaned_data['make'].capitalize()
+		self.cleaned_data['family'] = self.cleaned_data['family'].capitalize()
+		self.cleaned_data['model'] = self.cleaned_data['model'].capitalize()

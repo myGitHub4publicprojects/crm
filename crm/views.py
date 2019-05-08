@@ -15,7 +15,7 @@ from django.utils.decorators import method_decorator
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import (PatientForm, DeviceForm, InvoiceForm, Pro_Forma_InvoiceForm,
-					PCPR_EstimateForm)
+                    PCPR_EstimateForm, Hearing_Aid_StockForm)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
@@ -996,8 +996,9 @@ class HAStockCreate(CreateView):
 
 class HAStockUpdate(UpdateView):
 	model = Hearing_Aid_Stock
-	fields = ['make', 'family', 'model',
-           'pkwiu_code', 'vat_rate', 'price_gross']
+	# fields = ['make', 'family', 'model',
+    #        'pkwiu_code', 'vat_rate', 'price_gross']
+	form_class = Hearing_Aid_StockForm
 	template_name = 'crm/update_ha_stock.html'
 
 	@method_decorator(login_required)
