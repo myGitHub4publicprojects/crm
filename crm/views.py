@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -1001,3 +1002,7 @@ class HAStockUpdate(UpdateView):
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(HAStockUpdate, self).dispatch(*args, **kwargs)
+
+
+class HAStockList(ListView):
+    	model = Hearing_Aid_Stock
