@@ -1,0 +1,14 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="m-2">
+    <h1 class="text-center">Lista faktur</h1>
+    <ul class="list-unstyled">
+        {% for i in object_list %}
+        <li><a href="{% url 'crm:invoice_detail' i.id %}">Faktura nr {{ i.id }}, 
+            z dnia {{ i.timestamp|date }} dla {{ i.patient }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}

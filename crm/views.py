@@ -926,6 +926,13 @@ def invoice_detail(request, invoice_id):
 def invoice_update(request, invoice_id):
     	pass
 
+class InvoiceList(ListView):
+	model = Invoice
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(InvoiceList, self).dispatch(*args, **kwargs)
+
 
 @login_required
 def corrective_invoice_create(request, invoice_id):
@@ -980,6 +987,15 @@ def corrective_invoice_detail(request, cinvoice_id):
 @login_required
 def corrective_invoice_update(request, cinvoice_id):
     	pass
+
+class CorrectiveInvoiceDelete(DeleteView):
+	model = Corrective_Invoice
+	success_url = reverse_lazy('crm:index')
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(CorrectiveInvoiceDelete, self).dispatch(*args, **kwargs)
+
 
 
 class HAStockCreate(CreateView):

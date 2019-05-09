@@ -185,32 +185,10 @@
 </section>
 {% endif %}
 
-
-
 <button class="btn btn-outline-primary mb-3" onclick="printDiv()">Drukuj korektę</button>
 
+<a href="{% url 'crm:delete_corrective_invoice' instance.id %}">
+    <div class="btn btn-danger float-right mb-3">Usuń</div>
+</a>
 
-
-
-
-
-<!-- <a href="{% url 'crm:corrective_invoice_create' instance.id %}">
-    <div class="btn btn-outline-warning float-right mb-3">Faktura korekta</div>
-</a> -->
-<!-- <form action="{% url 'crm:invoice_detail' instance.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="inactivate" value="True">
-    <input class="btn btn-outline-danger float-right mb-3" type="submit" id="remove" value=Usuń fakturę>
-</form>
-
-<script>
-    var remove = document.getElementById('remove');
-    remove.addEventListener('click', function (event) {
-
-        var decission = confirm('Czy napewno chcesz usunąć fakturę?');
-        if (decission == false) {
-            event.preventDefault();
-        }
-    })
-</script> -->
 {% endblock content %}

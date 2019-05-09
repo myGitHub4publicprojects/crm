@@ -30,6 +30,7 @@ urlpatterns = [
 	    views.invoice_detail, name='invoice_detail'),
     url(r'^(?P<invoice_id>[0-9]+)/invoice_update/$',
         views.invoice_update, name='invoice_update'),
+    url(r'^invoice_list/$', views.InvoiceList.as_view(), name='invoice_list'),
 
     url(r'^(?P<invoice_id>[0-9]+)/corrective_invoice_create/$',
             views.corrective_invoice_create, name='corrective_invoice_create'),
@@ -37,6 +38,8 @@ urlpatterns = [
         views.corrective_invoice_detail, name='corrective_invoice_detail'),
     url(r'^(?P<cinvoice_id>[0-9]+)/corrective_invoice_update/$',
         views.corrective_invoice_update, name='corrective_invoice_update'),
+    url(r'^(?P<pk>[0-9]+)/delete_corrective_invoice/$',
+        views.CorrectiveInvoiceDelete.as_view(), name='delete_corrective_invoice'),
 
     url(r'^(?P<patient_id>[0-9]+)/pcpr_create/$',
         views.pcpr_create, name='pcpr_create'),
