@@ -35,7 +35,6 @@ ears = ['left', 'right']
 
 @login_required
 def index(request):
-	print(Other_Item_Stock.objects.all().count())
 	order_by = request.GET.get('order_by','last_name')
 	if order_by == 'last_name' or order_by == 'first_name':
 		patient_list = Patient.objects.all().order_by(Lower(order_by))

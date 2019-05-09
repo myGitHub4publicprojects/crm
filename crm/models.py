@@ -15,7 +15,7 @@ class Patient(models.Model):
 	last_name = models.CharField(max_length=120)
 	date_of_birth = models.DateField(
 		auto_now=False, auto_now_add=False, null=True, blank=True)
-	locations = ["Poznań", "Rakoniewice", "Wolsztyn",
+	locations = ["Poznań", "Rakoniewice", "Wolsztyn", "Stęszew",
               "Puszczykowo", "Mosina", "Chodzież", "Trzcianka", "nie podano"]
 	location = models.CharField(max_length=120, default='nie podano')
 	phone_no = models.IntegerField(default=0)
