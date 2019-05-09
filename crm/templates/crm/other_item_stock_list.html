@@ -1,0 +1,16 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="m-2">
+    <h1 class="text-center">Lista innych towarów (nie aparatów)</h1>
+    <a href="{% url 'crm:add_other' %}">
+        <div class="btn btn-primary mb-3">Dodaj inny towar (nie aparat)</div>
+    </a>
+    <ul class="list-unstyled">
+        {% for ha in object_list %}
+        <li><a href="{% url 'crm:edit_other' ha.id %}">{{ ha }} {{ ha.price_gross }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}

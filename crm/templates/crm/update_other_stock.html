@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="m-2">
-    <h1 class="text-center">Edytuj aparat</h1>
+    <h1 class="text-center">Edytuj towar</h1>
 
     {% if error_message %}
     <p>
@@ -15,8 +15,8 @@
         {{ form.as_p }}
         <input class="btn btn-primary" type="submit" value="Zmieniam" />
     </form>
-    <a href="{% url 'crm:delete_ha' object.id %}">
-        <div class="btn btn-danger float-right mb-3">Usuń aparat</div>
+    <a href="{% url 'crm:delete_other' object.id %}">
+        <div class="btn btn-danger float-right mb-3">Usuń towar</div>
     </a>
 </div>
 {% endblock content %}

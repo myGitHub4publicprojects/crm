@@ -3,20 +3,17 @@
 
 {% block content %}
 <div class="m-2">
-    <h1 class="text-center">Edytuj aparat</h1>
+    <h1 class="text-center">Dodaj towar</h1>
 
     {% if error_message %}
     <p>
         <strong>{{ error_message }}</strong>
     </p>{% endif %}
-
-    <form method="post">
+    <p>Np. Marka: Audioservice, Rodzina: Wkładka uszna, Model: Twarda</p>
+    <form action="{% url 'crm:add_other' %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input class="btn btn-primary" type="submit" value="Zmieniam" />
+        <input class="btn btn-primary" type="submit" value="Zatwierdzam" />
     </form>
-    <a href="{% url 'crm:delete_ha' object.id %}">
-        <div class="btn btn-danger float-right mb-3">Usuń aparat</div>
-    </a>
 </div>
 {% endblock content %}

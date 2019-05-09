@@ -110,12 +110,6 @@ class Hearing_Aid_Stock(Device):
 	'''Company hearing aids that are offered or were offered'''
 	added = models.DateField(default=datetime.date.today())
 
-	# def get_absolute_url(self):
-	# 		return '/'
-
-    # def get_absolute_url(self):
-    #     return u'/some_url/%d' % self.id 
-
 	def get_absolute_url(self):
 		return reverse('crm:edit_ha', kwargs={'pk': self.pk})
 
@@ -130,8 +124,11 @@ class Hearing_Aid(Device, Our_Device):
 
 
 class Other_Item_Stock(Device):
-    '''Company devices that are offered or were offered'''
-    added = models.DateField(default=datetime.date.today())
+	'''Company devices that are offered or were offered'''
+	added = models.DateField(default=datetime.date.today())
+
+	def get_absolute_url(self):
+		return reverse('crm:edit_other', kwargs={'pk': self.pk})
 
 
 class Other_Item(Device, Our_Device):

@@ -16,7 +16,7 @@ from django.utils.decorators import method_decorator
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import (PatientForm, DeviceForm, InvoiceForm, Pro_Forma_InvoiceForm,
-                    PCPR_EstimateForm, Hearing_Aid_StockForm)
+                    PCPR_EstimateForm, Hearing_Aid_StockForm, Other_Item_StockForm)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
@@ -35,7 +35,7 @@ ears = ['left', 'right']
 
 @login_required
 def index(request):
-	#x = Lower('last_name')
+	print(Other_Item_Stock.objects.all().count())
 	order_by = request.GET.get('order_by','last_name')
 	if order_by == 'last_name' or order_by == 'first_name':
 		patient_list = Patient.objects.all().order_by(Lower(order_by))
@@ -1018,3 +1018,39 @@ class HAStockDelete(DeleteView):
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(HAStockDelete, self).dispatch(*args, **kwargs)
+
+
+class OtherStockCreate(CreateView):
+	model = Other_Item_Stock
+	form_class = Other_Item_StockForm
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(OtherStockCreate, self).dispatch(*args, **kwargs)
+
+
+class OtherStockUpdate(UpdateView):
+	model = Other_Item_Stock
+	form_class = Other_Item_StockForm
+	template_name = 'crm/update_other_stock.html'
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(OtherStockUpdate, self).dispatch(*args, **kwargs)
+
+
+class OtherStockList(ListView):
+	model = Other_Item_Stock
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(OtherStockList, self).dispatch(*args, **kwargs)
+
+
+class OtherStockDelete(DeleteView):
+	model = Other_Item_Stock
+	success_url = reverse_lazy('crm:towary')
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(OtherStockDelete, self).dispatch(*args, **kwargs)
