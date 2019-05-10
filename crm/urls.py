@@ -1,6 +1,8 @@
 from django.conf.urls import url
 from . import views
 from django.views.generic import TemplateView
+from django.contrib.auth.decorators import login_required
+
 
 app_name = 'crm'
 urlpatterns = [
@@ -54,7 +56,8 @@ urlpatterns = [
         views.proforma_detail, name='proforma_detail'),
     url(r'^(?P<proforma_id>[0-9]+)/proforma_update/$',
         views.proforma_update, name='proforma_update'),
-    url(r'^towary/$', TemplateView.as_view(template_name="crm/towary.html"), name='towary'),
+    url(r'^towary/$', login_required(TemplateView.as_view(
+        template_name="crm/towary.html")), name='towary'),
     url(r'^ha_list/$', views.HAStockList.as_view(), name='ha_list'),
     url(r'^add_ha/$', views.HAStockCreate.as_view(), name='add_ha'),
     url(r'^(?P<pk>[0-9]+)/edit_ha/$', views.HAStockUpdate.as_view(), name='edit_ha'),
