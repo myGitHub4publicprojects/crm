@@ -896,7 +896,15 @@ def invoice_create(request, patient_id):
     		
 	else:
 		form = InvoiceForm()
-    	
+	prototype = request.GET.get('prototype')
+	if prototype:
+		document_type, document_number = prototype.split('_')
+		if document_type == 'pcpr':
+			original_document = PCPR_Estimate.objects.get(id=document_number)
+		if document_type == 'proforma':
+			original_document = Pro_Forma_Invoice.objects.get(id=document_number)
+		existing_ha = 1
+		exosting_other = 1
 	context = {	'patient': patient,
 				'ha_list': ha_list,
 				"json_ha_list": json_ha_list,
