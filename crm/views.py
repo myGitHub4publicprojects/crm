@@ -1021,6 +1021,22 @@ class HAStockUpdate(UpdateView):
 class HAStockList(ListView):
 	model = Hearing_Aid_Stock
 
+	def get(self, request, *args, **kwargs):
+		self.results = Hearing_Aid_Stock.objects.all()
+		query = request.GET.get('q', '')
+		if query:
+			qs = Hearing_Aid_Stock.objects.filter(
+                            Q(make__icontains=query) |
+                            Q(family__icontains=query) |
+                            Q(model__icontains=query)
+                        ).distinct()
+			self.results = qs
+
+		return super(HAStockList, self).get(request, *args, **kwargs)
+
+	def get_context_data(self, **kwargs):
+		return super(HAStockList, self).get_context_data(results=self.results, **kwargs)
+
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(HAStockList, self).dispatch(*args, **kwargs)
@@ -1056,6 +1072,21 @@ class OtherStockUpdate(UpdateView):
 
 class OtherStockList(ListView):
 	model = Other_Item_Stock
+	def get(self, request, *args, **kwargs):
+		self.results = Other_Item_Stock.objects.all()
+		query = request.GET.get('q', '')
+		if query:
+			qs = Other_Item_Stock.objects.filter(
+				Q(make__icontains=query) |
+				Q(family__icontains=query) |
+				Q(model__icontains=query)
+				).distinct()
+			self.results = qs
+
+		return super(OtherStockList, self).get(request, *args, **kwargs)
+
+	def get_context_data(self, **kwargs):
+		return super(OtherStockList, self).get_context_data(results=self.results, **kwargs)
 
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
