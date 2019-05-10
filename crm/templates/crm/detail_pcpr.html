@@ -38,7 +38,7 @@
     </div>
 </div>
 
-<a href="{% url 'crm:invoice_create' instance.patient.id %}?prototype=pcpr_{{ instance.id }}">
+<a href="{% url 'crm:invoice_create' instance.patient.id %}?prototype={{ instance.id }}">
     <div class="btn btn-primary float-right mb-3">Utwórz fakturę</div>
 </a>
 <hr>

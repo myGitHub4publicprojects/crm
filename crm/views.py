@@ -896,23 +896,24 @@ def invoice_create(request, patient_id):
     		
 	else:
 		form = InvoiceForm()
-	prototype = request.GET.get('prototype')
-	if prototype:
-		document_type, document_number = prototype.split('_')
-		if document_type == 'pcpr':
-			original_document = PCPR_Estimate.objects.get(id=document_number)
-		if document_type == 'proforma':
-			original_document = Pro_Forma_Invoice.objects.get(id=document_number)
-		existing_ha = 1
-		exosting_other = 1
+	
 	context = {	'patient': patient,
 				'ha_list': ha_list,
 				"json_ha_list": json_ha_list,
             	'json_other_devices': json_other_devices,
 				'form': form,
 				'formset': InvoiceFormSet()}
-	return render(request, 'crm/create_invoice.html', context)
 
+	prototype = request.GET.get('prototype')
+	if prototype:
+		pcpr = PCPR_Estimate.objects.get(id=prototype)
+		existing_ha = Hearing_Aid.objects.filter(estimate=pcpr)
+		existing_other = Other_Item.objects.filter(estimate=pcpr)
+		if existing_ha:
+			context['existing_ha'] = existing_ha
+		if existing_other:
+			context['existing_other'] = existing_other	
+	return render(request, 'crm/create_invoice.html', context)
 
 @login_required
 def invoice_detail(request, invoice_id):
