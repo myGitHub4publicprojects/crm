@@ -26,9 +26,9 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-from .utils import (get_devices, process_device_formset_invoice,
+from .utils import (get_devices, get_ha_from_qs, process_device_formset_invoice,
                     process_device_formset_pcpr, process_device_formset_proforma,
-                    get_finance_context)
+                    get_finance_context, get_other_from_qs)
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -910,9 +910,14 @@ def invoice_create(request, patient_id):
 		existing_ha = Hearing_Aid.objects.filter(estimate=pcpr)
 		existing_other = Other_Item.objects.filter(estimate=pcpr)
 		if existing_ha:
-			context['existing_ha'] = existing_ha
+			# print(existing_ha.values())
+			existing_ha = list(existing_ha.values())
+			context['existing_ha'] = json.dumps(existing_ha, cls=DjangoJSONEncoder)
 		if existing_other:
-			context['existing_other'] = existing_other	
+			# print(existing_other.values())
+			# print(type(list(existing_other.values())))
+			existing_other = list(existing_other.values())
+			context['existing_other'] = json.dumps(existing_other, cls=DjangoJSONEncoder)
 	return render(request, 'crm/create_invoice.html', context)
 
 @login_required

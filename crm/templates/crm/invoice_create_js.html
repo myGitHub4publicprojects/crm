@@ -8,7 +8,8 @@
     var hearingAids = {{ json_ha_list | safe }};
     var other_devices = {{ json_other_devices | safe }};
     var devices = {};
-    // var currentDeviceType = '';
+    var existingHA = {{ existing_ha | safe }};
+    var existingOther = {{ existing_other | safe }};
     var currentMake = '';
     var currentFamily = '';
     var selectDeviceType = document.getElementById('selectDeviceType');
@@ -34,6 +35,47 @@
     haQuantity.addEventListener('change', selectedQuantity);
     acceptItem.addEventListener('click', processItem);
     enableNote.addEventListener('click', addNote);
+
+    for (var i=0; i < existingHA.length; i++){
+        // console.log(existingHA[i]);
+        // console.log(existingHA[i].make)
+        addFromPCPR(existingHA[i])
+    }
+
+    function addFromPCPR(ha) {
+        // set devices type (ha or other)
+        devices = hearingAids
+        console.log(ha)
+        selectDeviceType.value = 'ha';
+        // set make input value
+        selectMake.remove(0)
+        var opt = document.createElement('option');
+        opt.value = ha.make;
+        opt.innerHTML = ha.make;
+        selectMake.appendChild(opt);
+        // set family input value
+        var opt = document.createElement('option');
+        opt.value = ha.family;
+        opt.innerHTML = ha.family;
+        haSelectFamily.appendChild(opt);
+        // set model input value
+        var opt = document.createElement('option');
+        opt.value = ha.model;
+        opt.innerHTML = ha.model;
+        selectModel.appendChild(opt);
+        // set side input value
+        var side = document.createElement("option");
+        side.value = ha.ear;
+        selectSide.appendChild(side);
+
+
+        console.log('selectSide.value: ', selectSide.value)
+        console.log('selectDeviceType.value: ', selectDeviceType.value)
+        console.log('selectMake.value: ', selectMake.value)
+        console.log('selectFamily.value: ', selectFamily.value)
+        console.log('selectModel.value: ', selectModel.value)
+        processItem()
+    }
 
     function showForm() {
         document.getElementById('newItem').style.display = 'block';
@@ -249,8 +291,6 @@
     }
 
     function selectedFamily() {
-        console.log('family: ', this.value);
-        console.log('devices: ', devices);
         // reset select element - useful when user changed his mind
         selectModel.innerHTML = '<option disabled selected value> -- wybierz -- </option>'
 
@@ -273,8 +313,6 @@
     }
 
     function selectedModel() {
-        console.log(this.value);
-        console.log(devices[currentMake][currentFamily]);
         selectedPrice.innerText = devices[currentMake][currentFamily][this.value]["price"];
         selectedPrice.style.display = 'inline';
         currentItemPrice.style.display = 'inline';
