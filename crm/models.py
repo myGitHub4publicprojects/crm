@@ -61,10 +61,6 @@ class PCPR_Estimate(Finance):
     pass
 
 
-class Pro_Forma_Invoice(Finance):
-    pass
-
-
 class Invoice(Finance):
 	payed = models.BooleanField(default=False)
 	# change this to True once payment received and HA dispenced
@@ -98,8 +94,6 @@ class Our_Device(models.Model):
 		Invoice, on_delete=models.CASCADE, null=True, blank=True)
 	corrective_invoice = models.ForeignKey(
             Corrective_Invoice, on_delete=models.CASCADE, null=True, blank=True)
-	pro_forma = models.ForeignKey(
-		Pro_Forma_Invoice, on_delete=models.CASCADE, null=True, blank=True)
 	estimate = models.ForeignKey(
 		PCPR_Estimate, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -191,10 +185,6 @@ class Reminder_NFZ_Confirmed(Reminder):
 
 class Reminder_PCPR(Reminder):
 	pcpr = models.ForeignKey(PCPR_Estimate, on_delete=models.CASCADE)
-
-
-class Reminder_Proforma(Reminder):
-	proforma = models.ForeignKey(Pro_Forma_Invoice, on_delete=models.CASCADE)
 
 
 class Reminder_Invoice(Reminder):

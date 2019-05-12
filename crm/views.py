@@ -15,20 +15,19 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import (PatientForm, DeviceForm, InvoiceForm, Pro_Forma_InvoiceForm,
+from .forms import (PatientForm, DeviceForm, InvoiceForm,
                     PCPR_EstimateForm, Hearing_Aid_StockForm, Other_Item_StockForm)
-from .models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
+from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
-                     Reminder_Proforma, Reminder_PCPR,  Reminder_NFZ_Confirmed,
+                	Reminder_PCPR,  Reminder_NFZ_Confirmed,
                      Reminder_NFZ_New, Corrective_Invoice)
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
 from .utils import (get_devices, process_device_formset_invoice,
-                    process_device_formset_pcpr, process_device_formset_proforma,
-                    get_finance_context)
+                    process_device_formset_pcpr, get_finance_context)
 import json, decimal
 today = datetime.date.today()
 ears = ['left', 'right']
@@ -189,12 +188,6 @@ def edit(request, patient_id):
 		PCPR_estimate_all = PCPR_estimate_all.exclude(
 			id=PCPR_estimate_last_active.id)
 
-	Proforma_all = Pro_Forma_Invoice.objects.filter(
-		patient=patient).order_by('timestamp')
-	Proforma_last_active = Proforma_all.filter(current=True).last()
-	if Proforma_last_active != None:
-		Proforma_all = Proforma_all.exclude(id=Proforma_last_active.id)
-
 	Invoice_all = Invoice.objects.filter(
 		patient=patient).order_by('timestamp')
 	Invoice_last_active = Invoice_all.filter(current=True).last()
@@ -234,8 +227,6 @@ def edit(request, patient_id):
 			
 			'PCPR_estimate_all': PCPR_estimate_all,
 			'PCPR_estimate': PCPR_estimate_last_active,
-			'Proforma_all': Proforma_all,
-			'Proforma': Proforma_last_active,
 
 			'invoice_all': Invoice_all,
 			'invoice': Invoice_last_active,
@@ -535,18 +526,6 @@ def updating(request, patient_id):
 		reminder.active = False
 		reminder.save()
 
-
-		# remove proforma from currently active
-	if request.POST.get('proforma_inactivate'):
-		last_proforma = Pro_Forma_Invoice.objects.filter(
-			patient=patient).last()
-		last_proforma.current = False
-		last_proforma.save()
-		new_action.append('Zdezaktywowano proformę z datą ' + str(last_proforma.timestamp.date()) + '.')
-		reminder = Reminder_Proforma.objects.get(proforma=last_proforma)
-		reminder.active = False
-		reminder.save()
-
 		# remove invoice from currently active
 	if request.POST.get('invoice_inactivate'):
 		last_invoice = Invoice.objects.filter(
@@ -758,7 +737,7 @@ def pcpr_create(request, patient_id):
 			previous_pcpr = PCPR_Estimate.objects.filter(patient=patient)
 			previous_pcpr.update(current=False)
 
-    		# create proforma instance
+    		# create pcpr instance
 			pcpr = form.save(commit=False)
 			pcpr.patient = patient
 			pcpr.note = pcpr.note.replace('\r\n', '<br>')
@@ -799,68 +778,6 @@ def pcpr_detail(request, pcpr_id):
     	
 @login_required
 def pcpr_update(request, pcpr_id):
-    pass
-
-
-@login_required
-def proforma_create(request, patient_id):
-	patient = get_object_or_404(Patient, pk=patient_id)
-	ha_list = get_devices(Hearing_Aid_Stock)
-	other_items = get_devices(Other_Item_Stock)
-	json_ha_list = json.dumps(ha_list, cls=DjangoJSONEncoder)
-	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
-	ProFormaFormSet = formset_factory(DeviceForm, extra=1)
-	if request.method == 'POST':
-		form = Pro_Forma_InvoiceForm(request.POST)
-		formset = ProFormaFormSet(request.POST)
-		if form.is_valid() and formset.is_valid():
-
-			# inactivate prevoius proforma (current=False)
-			previous_proforma = Pro_Forma_Invoice.objects.filter(patient=patient)
-			previous_proforma.update(current=False)
-
-    		# create proforma instance			    		
-			proforma = form.save(commit=False)
-			proforma.patient = patient
-			proforma.note = proforma.note.replace('\r\n', '<br>')
-			proforma.save()
-
-    		# process devices in a formset
-			process_device_formset_proforma(formset, patient, proforma, today)
-
-			# redirect to detail view with a success message
-			messages.success(request, 'Utworzono nową pro formę.')
-			return redirect('crm:proforma_detail', proforma.id)
-		else:
-		    	# redispaly with message
-			messages.warning(request, 'Niepoprawne dane, popraw.')
-	else:
-		form = Pro_Forma_InvoiceForm()
-
-	context = {	'patient': patient,
-             'ha_list': ha_list,
-             "json_ha_list": json_ha_list,
-             'json_other_devices': json_other_devices,
-			 'form': form,
-             'formset': ProFormaFormSet()}
-	return render(request, 'crm/create_proforma.html', context)
-
-
-@login_required
-def proforma_detail(request, proforma_id):
-	proforma = get_object_or_404(Pro_Forma_Invoice, pk=proforma_id)
-	if request.POST.get('inactivate'):
-		proforma.current = False
-		proforma.save()
-		# redirect to edit view with a success message
-		messages.success(request, 'Pro forma została przeniesiona do nieaktywnych.')
-		return redirect('crm:edit', proforma.patient.id)
-	context = get_finance_context(proforma)
-	return render(request, 'crm/detail_proforma.html', context)
-
-
-@login_required
-def proforma_update(request, pcpr_id):
     pass
 
 @login_required

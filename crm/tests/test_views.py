@@ -11,7 +11,7 @@ import pytest
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice, Pro_Forma_Invoice,
+from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New)
