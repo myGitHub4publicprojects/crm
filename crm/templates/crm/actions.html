@@ -209,55 +209,6 @@
 		</div>
 	</div>
 	
-	<!-- pro forma -->
-	<div class="col-lg">
-		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#proforma" aria-expanded="false"
-		 aria-controls="proforma">pro forma</div>
-		<div class="collapse" id="proforma">
-			<div class="card card-body">
-				<div class="card-body">
-					{% if Proforma.current %}
-					<a href="{% url 'crm:proforma_detail' Proforma.id %}">
-						{{ Proforma.timestamp|date:'d-m-Y' }}:
-					</a>
-					<ul class="list-unstyled">
-						{% for h in Proforma.hearing_aid_set.all %}
-						<li>
-							<small>{{ h }}, {{ h.ear }}</small>
-						</li>
-					</ul>
-					{% endfor %}
-	
-					<div class="w-50 p-3 float-right">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#proforma_remove" aria-expanded="false">Anuluj</div>
-						<div class="collapse" id="proforma_remove">
-							<input type="radio" name="proforma_inactivate" id="proforma_remove" />
-							<label for="proforma_remove">Anuluj</label>
-						</div>
-					</div>
-					{% else %}
-					<a href="{% url 'crm:proforma_create' patient.id %}" class="btn btn-secondary finance">dodaj pro formę</a>
-					{% endif %}
-				</div>
-	
-				{% if Proforma_all %}
-				<p>Poprzednie proformy:</p>
-				<ul class="list-unstyled">
-					{% for i in Proforma_all %}
-					<li>
-						<a href="{% url 'crm:proforma_detail' i.id %}">
-							<small>{{ i.timestamp|date:'d-m-Y' }}</small>
-						</a>
-						<hr>
-					</li>
-					{% endfor %}
-				</ul>
-				{% endif %}
-			</div>
-	
-		</div>
-	</div>
-
 	<!-- faktura -->
 	<div class="col-lg">
 		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#invoice" aria-expanded="false"
