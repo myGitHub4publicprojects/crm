@@ -37,45 +37,12 @@
     enableNote.addEventListener('click', addNote);
 
     for (var i=0; i < existingHA.length; i++){
-        // console.log(existingHA[i]);
-        // console.log(existingHA[i].make)
-        addFromPCPR(existingHA[i])
+        addHAFromPCPR(existingHA[i])
     }
 
-    function addFromPCPR(ha) {
-        // set devices type (ha or other)
-        devices = hearingAids
-        console.log(ha)
-        selectDeviceType.value = 'ha';
-        // set make input value
-        selectMake.remove(0)
-        var opt = document.createElement('option');
-        opt.value = ha.make;
-        opt.innerHTML = ha.make;
-        selectMake.appendChild(opt);
-        // set family input value
-        var opt = document.createElement('option');
-        opt.value = ha.family;
-        opt.innerHTML = ha.family;
-        haSelectFamily.appendChild(opt);
-        // set model input value
-        var opt = document.createElement('option');
-        opt.value = ha.model;
-        opt.innerHTML = ha.model;
-        selectModel.appendChild(opt);
-        // set side input value
-        var side = document.createElement("option");
-        side.value = ha.ear;
-        selectSide.appendChild(side);
-
-
-        console.log('selectSide.value: ', selectSide.value)
-        console.log('selectDeviceType.value: ', selectDeviceType.value)
-        console.log('selectMake.value: ', selectMake.value)
-        console.log('selectFamily.value: ', selectFamily.value)
-        console.log('selectModel.value: ', selectModel.value)
-        processItem()
-    }
+    for (var i = 0; i < existingOther.length; i++) {
+            addOtherFromPCPR(existingOther[i])
+        }
 
     function showForm() {
         document.getElementById('newItem').style.display = 'block';
@@ -367,4 +334,58 @@
         invoiceNote.innerHTML = autoNote;
     }
 
+    function setValuesFromPCPR(ha) {
+        // set quantity input value
+        haQuantity.value = 1;
+        // set make input value
+        selectMake.remove(0)
+        var opt = document.createElement('option');
+        opt.value = ha.make;
+        opt.innerHTML = ha.make;
+        selectMake.appendChild(opt);
+        // set family input value
+        var opt = document.createElement('option');
+        opt.value = ha.family;
+        opt.innerHTML = ha.family;
+        haSelectFamily.appendChild(opt);
+        // set model input value
+        var opt = document.createElement('option');
+        opt.value = ha.model;
+        opt.innerHTML = ha.model;
+        selectModel.appendChild(opt);
+
+        console.log('selectSide.value: ', selectSide.value)
+        console.log('selectDeviceType.value: ', selectDeviceType.value)
+        console.log('selectMake.value: ', selectMake.value)
+        console.log('selectFamily.value: ', selectFamily.value)
+        console.log('selectModel.value: ', selectModel.value)
+    }
+
+    function addHAFromPCPR(ha) {
+        // set devices type (ha or other)
+        devices = hearingAids
+        selectDeviceType.value = 'ha';
+        // set side input value
+        var side = document.createElement("option");
+        side.value = ha.ear;
+        selectSide.appendChild(side);
+        setValuesFromPCPR(ha);
+        processItem()
+        // reset fields
+        selectMake.remove(0)
+        haSelectFamily.remove(0)
+        selectModel.remove(0)
+    }
+
+    function addOtherFromPCPR(other) {
+        // set devices type (ha or other)
+        devices = other_devices
+        selectDeviceType.value = 'other';
+        // set side input value
+        var side = document.createElement("option");
+        side.value = 'left';
+        selectSide.appendChild(side);
+        setValuesFromPCPR(other);
+        processItem()
+    }
 </script>

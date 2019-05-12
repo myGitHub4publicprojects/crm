@@ -26,59 +26,6 @@ def get_devices(model):
 
     return items
 
-
-def get_ha_from_qs(queryset):
-    """ returns a dict of devices in the following form:
-    {make1_name:{family1_name:{model1_name:
-    {'price': price, 'pkwiu': pkwiu, 'vat': vat, 'ear': ear}}}} """
-    items = {}
-    for i in queryset:
-        make = i.make
-        family = i.family
-        model = i.model
-        price = i.price_gross
-        pkwiu = i.pkwiu_code
-        vat = i.vat_rate
-        ear = i.ear
-
-        if make not in items:
-            items[make] = {}
-
-        if items[make].get(family):
-            items[make][family].update({
-                model: {'price': price, 'pkwiu': pkwiu, 'vat': vat}})
-        else:
-            items[make][family] = {
-                model: {'price': price, 'pkwiu': pkwiu, 'vat': vat, 'ear': ear}}
-
-    return items
-
-def get_other_from_qs(queryset):
-    """ returns a dict of devices in the following form:
-    {make1_name:{family1_name:{model1_name:
-    {'price': price, 'pkwiu': pkwiu, 'vat': vat, 'ear': ear}}}} """
-    items = {}
-    for i in queryset:
-        make = i.make
-        family = i.family
-        model = i.model
-        price = i.price_gross
-        pkwiu = i.pkwiu_code
-        vat = i.vat_rate
-
-        if make not in items:
-            items[make] = {}
-
-        if items[make].get(family):
-            items[make][family].update({
-                model: {'price': price, 'pkwiu': pkwiu, 'vat': vat}})
-        else:
-            items[make][family] = {
-                model: {'price': price, 'pkwiu': pkwiu, 'vat': vat}}
-
-    return items
-
-
 def process_device_formset_pcpr(formset, patient, pcpr, today):
     for form in formset:
         # if hearing aid
