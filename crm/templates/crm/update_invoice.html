@@ -1,0 +1,19 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="m-2">
+    <h1 class="text-center">Edytuj fakturę</h1>
+
+    {% if error_message %}
+    <p>
+        <strong>{{ error_message }}</strong>
+    </p>{% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input class="btn btn-primary" type="submit" value="Zmieniam" />
+    </form>
+</div>
+{% endblock content %}

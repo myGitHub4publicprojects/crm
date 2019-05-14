@@ -50,8 +50,8 @@ class Finance(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True, auto_now_add=False)
-	current = models.BooleanField(default=True)
-	note = models.CharField(max_length=200, null=True, blank=True)
+	current = models.BooleanField(default=True, verbose_name='aktualna')
+	note = models.CharField(max_length=200, null=True, blank=True, verbose_name='notatka')
 
 	class Meta:
 		abstract = True
@@ -62,11 +62,12 @@ class PCPR_Estimate(Finance):
 
 
 class Invoice(Finance):
-	payed = models.BooleanField(default=False)
+	payed = models.BooleanField(default=False, verbose_name='zapłacona')
 	# change this to True once payment received and HA dispenced
 	type = models.CharField(max_length=8, choices=(
-		('transfer', 'transfer'), ('cash', 'cash')))
-
+		('transfer', 'transfer'), ('cash', 'cash')), verbose_name='rodzaj płatności')
+	def get_absolute_url(self):
+		return reverse('crm:invoice_update', kwargs={'pk': self.pk})
 
 class Corrective_Invoice(Finance):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)

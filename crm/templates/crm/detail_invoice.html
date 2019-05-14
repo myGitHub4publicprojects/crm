@@ -121,6 +121,9 @@
 <a href="{% url 'crm:corrective_invoice_create' instance.id %}">
     <div class="btn btn-outline-warning float-right mb-3">Faktura korekta</div>
 </a>
+<a href="{% url 'crm:invoice_update' instance.id %}">
+    <div class="btn btn-outline-warning float-right mb-3">Edytuj fakturę</div>
+</a>
 <form action="{% url 'crm:invoice_detail' instance.id %}" method="post">
     {% csrf_token %}
     <input type="hidden" name="inactivate" value="True">

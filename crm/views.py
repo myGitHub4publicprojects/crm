@@ -11,8 +11,9 @@ from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.forms.widgets import Textarea
+from django.forms.models import modelform_factory
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import (PatientForm, DeviceForm, InvoiceForm,
@@ -854,9 +855,17 @@ def invoice_detail(request, invoice_id):
 	return render(request, 'crm/detail_invoice.html', context)
 
 
-@login_required
-def invoice_update(request, invoice_id):
-    	pass
+class InvoiceUpdate(UpdateView):
+	model = Invoice
+	form_class = modelform_factory(Invoice,
+                                fields=['note', 'current', 'payed', 'type'],
+                                widgets={"note": Textarea})
+
+	template_name = 'crm/update_invoice.html'
+
+	# @method_decorator(login_required)
+	# def dispatch(self, *args, **kwargs):
+	# 	return super(InvoiceUpdate, self).dispatch(*args, kwargs={'pk': self.id})
 
 class InvoiceList(ListView):
 	model = Invoice

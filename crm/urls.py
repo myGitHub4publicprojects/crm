@@ -30,8 +30,8 @@ urlpatterns = [
         views.invoice_create, name='invoice_create'),
 	url(r'^(?P<invoice_id>[0-9]+)/invoice_detail/$',
 	    views.invoice_detail, name='invoice_detail'),
-    url(r'^(?P<invoice_id>[0-9]+)/invoice_update/$',
-        views.invoice_update, name='invoice_update'),
+    url(r'^(?P<pk>[0-9]+)/invoice_update/$',
+        views.InvoiceUpdate.as_view(), name='invoice_update'),
     url(r'^invoice_list/$', views.InvoiceList.as_view(), name='invoice_list'),
 
     url(r'^(?P<invoice_id>[0-9]+)/corrective_invoice_create/$',
