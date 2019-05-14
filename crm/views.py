@@ -759,6 +759,8 @@ def pcpr_create(request, patient_id):
              'ha_list': ha_list,
              "json_ha_list": json_ha_list,
             'json_other_devices': json_other_devices,
+             'existing_ha': {},
+             'existing_other': {},
              'form': form,
              'formset': PCPRFormSet()}
 	return render(request, 'crm/create_pcpr.html', context)
@@ -818,6 +820,8 @@ def invoice_create(request, patient_id):
 				'ha_list': ha_list,
 				"json_ha_list": json_ha_list,
             	'json_other_devices': json_other_devices,
+				'existing_ha': {},
+             	'existing_other': {},
 				'form': form,
 				'formset': InvoiceFormSet()}
 

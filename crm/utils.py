@@ -176,7 +176,11 @@ def get_finance_context(instance):
         total_value += i.price_gross
         nfz_ha_refund += 700
         if str(i) not in ha_items:
-            net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+            if i.vat_rate=='Z':
+                vat_rate_value = 0
+            else:
+                vat_rate_value = int(i.vat_rate)
+            net_price = round(((i.price_gross*100)/(100 + vat_rate_value)), 2)
             ha_items[str(i)] = {
                             # 'name': str(i),
                                         'pkwiu_code': i.pkwiu_code,
@@ -199,7 +203,11 @@ def get_finance_context(instance):
     other_items = {}
     nfz_mold_refund = 0
     for i in other_devices:
-        net_price = round(((i.price_gross*100)/(100 + i.vat_rate)), 2)
+        if i.vat_rate=='Z':
+            vat_rate_value = 0
+        else:
+            vat_rate_value = int(i.vat_rate)
+        net_price = round(((i.price_gross*100)/(100 + vat_rate_value)), 2)
         vat_amount = round(i.price_gross - decimal.Decimal(net_price), 2)
         total_value += i.price_gross
         if 'WKŁADKA' in str(i):

@@ -60,7 +60,11 @@
         var pkwiuCode = devices[selectMake.value][selectFamily.value][selectModel.value]['pkwiu'];
         var vatRate = devices[selectMake.value][selectFamily.value][selectModel.value]['vat'];
         var grossPrice = devices[selectMake.value][selectFamily.value][selectModel.value]['price'];
-        var netPrice = ((grossPrice * 100) / (100 + vatRate)).toFixed(2);
+        var vatRateValue = 0;
+        if (vatRate!='Z'){
+            vatRateValue = parseInt(vatRate)
+        }
+        var netPrice = ((grossPrice * 100) / (100 + vatRateValue)).toFixed(2);
 
         // add new row
         var newRow = tbody.insertRow(-1);
