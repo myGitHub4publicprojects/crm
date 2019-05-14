@@ -35,7 +35,7 @@ class DeviceForm(forms.Form):
  	# eg. ROGER CLIP-ON MIC + 2, twarda, 102
 	price_gross = forms.DecimalField(max_digits=8, decimal_places=2)
 	VAT_RATE_CHOICES = (
-                    ('Z', 'zwolniona'),
+                    ('zwolniona', 'zwolniona'),
                     ('0', '0'),
                     ('5', '5'),
                     ('8', '8'),

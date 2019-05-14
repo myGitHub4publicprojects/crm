@@ -176,7 +176,7 @@ def get_finance_context(instance):
         total_value += i.price_gross
         nfz_ha_refund += 700
         if str(i) not in ha_items:
-            if i.vat_rate=='Z':
+            if i.vat_rate == 'zwolniona':
                 vat_rate_value = 0
             else:
                 vat_rate_value = int(i.vat_rate)
@@ -203,7 +203,7 @@ def get_finance_context(instance):
     other_items = {}
     nfz_mold_refund = 0
     for i in other_devices:
-        if i.vat_rate=='Z':
+        if i.vat_rate == 'zwolniona':
             vat_rate_value = 0
         else:
             vat_rate_value = int(i.vat_rate)

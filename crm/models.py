@@ -81,13 +81,13 @@ class Device(models.Model):
 		max_digits=7, decimal_places=2, default=0, verbose_name='cena brutto')
 
 	VAT_RATE_CHOICES = (
-		('Z', 'zwolniona'),
+		('zwolniona', 'zwolniona'),
 		('0', '0'),
 		('5', '5'),
 		('8', '8'),
 		('23', '23')
 		)
-	vat_rate = models.CharField(max_length=1,
+	vat_rate = models.CharField(max_length=9,
                               choices=VAT_RATE_CHOICES,
 							  default='8',
 							  verbose_name='stawka VAT')

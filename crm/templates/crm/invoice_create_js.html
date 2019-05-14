@@ -61,7 +61,7 @@
         var vatRate = devices[selectMake.value][selectFamily.value][selectModel.value]['vat'];
         var grossPrice = devices[selectMake.value][selectFamily.value][selectModel.value]['price'];
         var vatRateValue = 0;
-        if (vatRate!='Z'){
+        if (vatRate!='zwolniona'){
             vatRateValue = parseInt(vatRate)
         }
         var netPrice = ((grossPrice * 100) / (100 + vatRateValue)).toFixed(2);
@@ -102,7 +102,7 @@
         // VAT rate
         cell8.innerHTML = vatRate;
         // VAT amount
-        cell9.innerHTML = ((haQuantity.value * netPrice) * (vatRate / 100)).toFixed(2);
+        cell9.innerHTML = ((haQuantity.value * netPrice) * (vatRateValue / 100)).toFixed(2);
         // gross value (gross price*quantity)
         cell10.innerHTML = haQuantity.value * grossPrice;
 
