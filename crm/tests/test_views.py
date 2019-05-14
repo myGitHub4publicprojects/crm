@@ -1960,7 +1960,7 @@ class TestInvoiceCreateView(TestCase):
             'form-0-family': 'WIN',
             'form-0-model': '102',
             'form-0-price_gross': 107,
-            'form-0-vat_rate': 7,
+            'form-0-vat_rate': '8',
             'form-0-pkwiu_code': '11.22',
             'form-0-quantity': 1,
             'form-0-ear': 'right',
@@ -2017,7 +2017,7 @@ class TestInvoiceCreateView(TestCase):
             'form-0-family': 'WIN',
             'form-0-model': '102',
             'form-0-price_gross': 107,
-            'form-0-vat_rate': 7,
+            'form-0-vat_rate': '8',
             'form-0-ear': 'right',
         }
         response = self.client.post(url, data, follow=True)
@@ -2061,7 +2061,7 @@ class TestInvoiceCreateView(TestCase):
             'form-0-family': 'wkładka uszna',
             'form-0-model': 'twarda',
             'form-0-price_gross': 17,
-            'form-0-vat_rate': 7,
+            'form-0-vat_rate': '8',
             'form-0-pkwiu_code': '11.22',
             'form-0-quantity': 1,
             'form-0-ear': 'right',  # this will not be saved anywhere, but requred
