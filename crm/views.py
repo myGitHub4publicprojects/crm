@@ -859,7 +859,7 @@ class InvoiceUpdate(UpdateView):
 	model = Invoice
 	form_class = modelform_factory(Invoice,
                                 fields=['note', 'current', 'payed', 'type'],
-                                widgets={"note": Textarea})
+                                widgets={"note": Textarea(attrs={'class': 'w-100'})})
 
 	template_name = 'crm/update_invoice.html'
 
