@@ -10,10 +10,69 @@
         <strong>{{ error_message }}</strong>
     </p>{% endif %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input class="btn btn-primary" type="submit" value="Zmieniam" />
-    </form>
+    <p>Pacjent: {{ instance.patient }}</p>
+    <p>Adres: {{ instance.patient.get_address }}</p>
+
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa pozycji</th>
+            <th>PKWiU</th>
+            <th>ilość</th>
+            <th>Cena brutto</th>
+            <th>Cena netto</th>
+            <th>Wartość netto</th>
+            <th>Stawka VAT [%]</th>
+            <th>Kwota VAT</th>
+            <th>wartość brutto</th>
+        </tr>
+    </thead>
+
+<tbody>
+    {% for key, value in ha_list.items %}
+    <tr>
+        <td>Aparat słuchowy {{ key }}</td>
+        <td>{{ value.pkwiu_code }}</td>
+        <td>{{ value.quantity }}</td>
+        <td>{{ value.price_gross }}</td>
+        <td>{{ value.net_price }}</td>
+        <td>{{ value.net_value }}</td>
+        <td>{{ value.vat_rate }}</td>
+        <td>{{ value.vat_amount }}</td>
+        <td>{{ value.gross_value }}</td>
+    </tr>
+    {% endfor %}
+    {% for key, value in other_list.items %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>{{ value.pkwiu_code }}</td>
+        <td>{{ value.quantity }}</td>
+        <td>{{ value.price_gross }}</td>
+        <td>{{ value.net_price }}</td>
+        <td>{{ value.net_value }}</td>
+        <td>{{ value.vat_rate }}</td>
+        <td>{{ value.vat_amount }}</td>
+        <td>{{ value.gross_value }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><strong>Łącznie:</strong></td>
+        <td id="totalVal"><strong>{{ total_value }}</strong></td>
+    </tr>
+</tbody>
+</table>
 </div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input class="btn btn-primary" type="submit" value="Zmieniam" />
+</form>
 {% endblock content %}

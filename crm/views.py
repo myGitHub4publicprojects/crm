@@ -858,14 +858,23 @@ def invoice_detail(request, invoice_id):
 class InvoiceUpdate(UpdateView):
 	model = Invoice
 	form_class = modelform_factory(Invoice,
-                                fields=['note', 'current', 'payed', 'type'],
-                                widgets={"note": Textarea(attrs={'class': 'w-100'})})
+		fields=['note', 'current', 'payed', 'type'],
+		widgets={"note": Textarea(attrs={'class': 'w-100', 'rows': '5'})})
 
 	template_name = 'crm/update_invoice.html'
 
-	# @method_decorator(login_required)
-	# def dispatch(self, *args, **kwargs):
-	# 	return super(InvoiceUpdate, self).dispatch(*args, kwargs={'pk': self.id})
+	def get_context_data(self, **kwargs):
+		context = super(InvoiceUpdate, self).get_context_data(**kwargs)
+		finance_data = get_finance_context(self.get_object())
+		context.update(finance_data)
+		return context
+	
+	def get_success_url(self):
+		return reverse('crm:invoice_detail', kwargs={'invoice_id': self.get_object().id})
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(InvoiceUpdate, self).dispatch(*args, **kwargs)
 
 class InvoiceList(ListView):
 	model = Invoice

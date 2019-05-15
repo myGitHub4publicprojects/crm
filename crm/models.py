@@ -30,6 +30,14 @@ class Patient(models.Model):
 	city = models.CharField(max_length=120, null=True, blank=True)
 	zip_code = models.CharField(max_length=6, null=True, blank=True)
 
+	def get_address(self):
+		number = self.house_number
+		if self.apartment_number:
+			number += '/'+self.apartment_number
+		if not self.street:
+			return '{city} {number}, {zip_code} {city}'.format(city=self.city, number=number, zip_code=self.zip_code)
+		return '{street} {number}, {zip_code} {city}'.format(street=self.street, city=self.city, number=number, zip_code=self.zip_code)
+
 	def __unicode__(self):
 		return self.first_name + ' ' + self.last_name
 
