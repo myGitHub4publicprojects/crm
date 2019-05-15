@@ -798,10 +798,6 @@ def invoice_create(request, patient_id):
 		form = InvoiceForm(request.POST)
 		formset = InvoiceFormSet(request.POST)
 		if form.is_valid() and formset.is_valid():
-			# inactivate prevoius invoices (current=False)
-			previous_inv = Invoice.objects.filter(patient=patient)
-			previous_inv.update(current=False)
-
     		# create invoice instance
 			invoice = form.save(commit=False)
 			invoice.patient = patient
