@@ -16,7 +16,7 @@ class PatientForm(forms.ModelForm):
 class InvoiceForm(forms.ModelForm):
     class Meta:
     	model = Invoice
-    	fields = ['note', 'type']
+    	fields = ['note', 'type', 'current']
 
 
 class PCPR_EstimateForm(forms.ModelForm):

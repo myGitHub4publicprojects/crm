@@ -12,6 +12,9 @@
     Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
 </p>
 <p>Typ faktury: <span id="invoiceType" >{{ instance.type }}</span></p>
+{% if instance.current %}
+    <p>Aktywna</p>
+{% endif %}
 
 {% if cinvoices %}
 <p>Faktury korekty:</p>
