@@ -23,9 +23,9 @@
 	</div>
 {% endif %}
 
-{% if invoice %}
+{% if invoice_active %}
 <div class="btn btn-sm btn-danger">
-	<small>Faktura: {{ invoice.timestamp|date:'d-m-Y' }}
+	<small>Faktura
 	</small>
 </div>
 {% endif %}

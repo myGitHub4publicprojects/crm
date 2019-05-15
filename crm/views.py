@@ -190,10 +190,13 @@ def edit(request, patient_id):
 			id=PCPR_estimate_last_active.id)
 
 	Invoice_all = Invoice.objects.filter(
-		patient=patient).order_by('timestamp')
-	Invoice_last_active = Invoice_all.filter(current=True).last()
-	if Invoice_last_active != None:
-		Invoice_all = Invoice_all.exclude(id=Invoice_last_active.id)
+		patient=patient,
+		current=False
+		).order_by('timestamp')
+	Invoice_active = Invoice.objects.filter(
+		patient=patient,
+		current=True
+        ).order_by('timestamp')
 
 	audiometrists = User.objects.all()
 
@@ -230,7 +233,7 @@ def edit(request, patient_id):
 			'PCPR_estimate': PCPR_estimate_last_active,
 
 			'invoice_all': Invoice_all,
-			'invoice': Invoice_last_active,
+			'invoice_active': Invoice_active,
 			}
 
 	return render(request, 'crm/edit.html', context)
