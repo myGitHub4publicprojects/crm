@@ -11,9 +11,8 @@
 					<div class="w-50 p-3 float-left">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#new_nfz_left" aria-expanded="false" aria-controls="new_nfz_left">Zmień</div>
 						<div class="collapse" id="new_nfz_left">
-							<p>Zmieniam datę odebrania tego wniosku na:
-								<p/>
-								<input type="date" name="new_NFZ_left">
+							<p>Zmieniam datę odebrania tego wniosku na:</p>
+							<input type="date" name="new_NFZ_left">
 						</div>
 					</div>
 					<div class="w-50 p-3 float-right">
@@ -36,9 +35,8 @@
 					<div class="w-50 p-3 float-left">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#new_nfz_right" aria-expanded="false" aria-controls="new_nfz_right">Zmień</div>
 						<div class="collapse" id="new_nfz_right">
-							<p>Zmieniam datę odebrania tego wniosku na:
-								<p/>
-								<input type="date" name="new_NFZ_right">
+							<p>Zmieniam datę odebrania tego wniosku na:</p>
+							<input type="date" name="new_NFZ_right">
 						</div>
 					</div>
 					<div class="w-50 p-3 float-right">
@@ -91,7 +89,7 @@
 						<div class="w-50 p-3 float-left">
 							<div class="btn btn-secondary" data-toggle="collapse" data-target="#nfz_left" aria-expanded="false" aria-controls="nfz_left">Zmień</div>
 							<div class="collapse" id="nfz_left">
-								<p>Zmieniam datę odebrania tego wniosku na:<p/>
+								<p>Zmieniam datę odebrania tego wniosku na:</p>>
 								<input type="date" name="NFZ_left">
 							</div>
 						</div>
@@ -116,7 +114,7 @@
 						<div class="w-50 p-3 float-left">
 							<div class="btn btn-secondary" data-toggle="collapse" data-target="#nfz_right" aria-expanded="false" aria-controls="nfz_right">Zmień</div>
 							<div class="collapse" id="nfz_right">
-								<p>Zmieniam datę odebrania tego wniosku na:<p/>
+								<p>Zmieniam datę odebrania tego wniosku na:</p>>
 								<input type="date" name="NFZ_right">
 							</div>
 						</div>
@@ -217,16 +215,13 @@
 			<div class="card card-body">
 				<div class="card-body">
 					{% if invoice.current %}
-					<a href="{% url 'crm:invoice_detail' invoice.id %}">
-						{{ invoice.timestamp|date:'d-m-Y' }}:
-					</a>
-					<ul class="list-unstyled">
-						{% for h in invoice.hearing_aid_set.all %}
-						<li>
-							<small>{{ h }}, {{ h.ear }}</small>
-						</li>
-					</ul>
-					{% endfor %}
+						<a 
+						{% if invoice.corrective_invoice_set.all %}
+						class='btn-outline-danger'
+						{% endif %}
+						href="{% url 'crm:invoice_detail' invoice.id %}">
+							{{ invoice.timestamp|date:'d-m-Y' }} nr: {{ invoice.id }}
+						</a>
 	
 					<div class="w-50 p-3 float-right">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#invoice_remove" aria-expanded="false">Anuluj</div>
@@ -245,8 +240,12 @@
 				<ul class="list-unstyled">
 					{% for i in invoice_all %}
 					<li>
-						<a href="{% url 'crm:invoice_detail' i.id %}">
-							<small>{{ i.timestamp|date:'d-m-Y' }}</small>
+						<a 
+						{% if i.corrective_invoice_set.all %}
+						class='btn-outline-danger'
+						{% endif %}
+						href="{% url 'crm:invoice_detail' i.id %}">
+							<small>{{ i.timestamp|date:'d-m-Y' }} nr: {{ i.id }}</small>
 						</a>
 						<hr>
 					</li>
