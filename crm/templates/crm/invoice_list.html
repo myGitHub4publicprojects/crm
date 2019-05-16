@@ -4,11 +4,37 @@
 {% block content %}
 <div class="m-2">
     <h1 class="text-center">Lista faktur</h1>
-    <ul class="list-unstyled">
-        {% for i in object_list %}
-        <li><a href="{% url 'crm:invoice_detail' i.id %}">Faktura nr {{ i.id }}, 
-            z dnia {{ i.timestamp|date }} dla {{ i.patient }}</a></li>
-        {% endfor %}
-    </ul>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Numer</th>
+                <th>Data</th>
+                <th>Imię i nazwisko</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in object_list %}
+            <tr class="hooverable">
+                <td><a href="{% url 'crm:invoice_detail' i.id %}"
+                    {% if i.corrective_invoice_set.all %}
+                    class="btn-outline-danger"
+                    {% endif %}
+                    >{{ i.id }}</a>
+                </td>
+                <td><a href="{% url 'crm:invoice_detail' i.id %}"
+                    {% if i.corrective_invoice_set.all %}
+                    class="btn-outline-danger"
+                    {% endif %}
+                    >{{ i.timestamp|date }}</a>
+                </td>
+                <td><a href="{% url 'crm:invoice_detail' i.id %}"
+                    {% if i.corrective_invoice_set.all %}
+                    class="btn-outline-danger"
+                    {% endif %}>{{ i.patient }}</a>
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
 </div>
 {% endblock content %}

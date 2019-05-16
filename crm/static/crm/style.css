@@ -27,6 +27,18 @@
     display: none;
 }
 
+.hooverable:hover {
+    background-color: #f2f2f5;
+}
+
+.hooverable td {
+    padding: 0;
+}
+
+.hooverable td a {
+    display: block;
+}
+
 
 /* for js print without page title and date */
 @page { 
