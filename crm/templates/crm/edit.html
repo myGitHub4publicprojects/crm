@@ -61,11 +61,21 @@
 				class="font-weight-bold">
 			</div>
 			<div class="col-xl">
+				<div class="row">
+				<div class="col-xl">
 				<small class="text-muted">Kod pocztowy: </small>
 				<br>
 				<input type="text" name="zip_code"
 					{% if patient.zip_code %} value="{{ patient.zip_code }}" {% endif %}
-				class="font-weight-bold">
+				class="font-weight-bold w-75">
+				</div>
+				<div class="col-xl">
+				<small class="text-muted">NIP: </small>
+				<br>
+				<input type="text" name="NIP" {% if patient.NIP %} value="{{ patient.NIP }}" {% endif %}
+				class="font-weight-bold w-100">
+				</div>
+				</div>
 			</div>
 		</div>
 		<hr>

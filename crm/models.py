@@ -29,6 +29,7 @@ class Patient(models.Model):
 	apartment_number = models.CharField(max_length=6, null=True, blank=True)
 	city = models.CharField(max_length=120, null=True, blank=True)
 	zip_code = models.CharField(max_length=6, null=True, blank=True)
+	NIP = models.CharField(max_length=20, null=True, blank=True)
 
 	def get_address(self):
 		number = self.house_number

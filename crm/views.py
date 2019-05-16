@@ -248,7 +248,12 @@ def store(request):
 		phone_no=request.POST['usrtel'],
 		audiometrist = request.user,
 		location = request.POST['location'],
-        notes = request.POST.get('note')
+        notes = request.POST.get('note'),
+        street=request.POST.get('street'),
+        house_number=request.POST.get('house_number'),
+		apartment_number=request.POST.get('apartment_number'),
+		city=request.POST.get('city'),
+        NIP=request.POST.get('NIP')
 		)
 	patient.save()
 
@@ -318,9 +323,10 @@ def updating(request, patient_id):
 	patient.apartment_number = request.POST['apartment_number']
 	patient.city = request.POST['city']
 	patient.zip_code = request.POST['zip_code']
+	patient.NIP = request.POST['NIP']
 
 	update_list = ['first_name', 'last_name', 'phone_no', 'location', 'notes',
-                'street', 'house_number', 'apartment_number', 'zip_code', 'city']
+                'street', 'house_number', 'apartment_number', 'zip_code', 'city', 'NIP']
 	if request.POST.get('bday'):
 		patient.date_of_birth=request.POST['bday']
 		update_list.append('date_of_birth')
