@@ -253,6 +253,7 @@ def store(request):
         house_number=request.POST.get('house_number'),
 		apartment_number=request.POST.get('apartment_number'),
 		city=request.POST.get('city'),
+        zip_code=request.POST.get('zip_code'),
         NIP=request.POST.get('NIP')
 		)
 	patient.save()

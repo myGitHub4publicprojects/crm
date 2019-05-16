@@ -48,10 +48,14 @@
 
     <!-- invoice current -->
     <p>
-        <label for="id_current">Aktualna:</label>
-        <input checked="checked" id="id_current" name="current" type="checkbox" />
+        <label for="id_current">Aktywna:</label>
+        <select id="id_current" name="current" required>
+            <option value="" selected="selected" disabled>---------</option>
+            <option value="True">tak</option>
+            <option value="False">nie</option>
+        </select>
     </p>
-    
+
     <table id='currentItems' class="table table-bordered">
         <thead>
             <tr>
