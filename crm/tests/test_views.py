@@ -566,7 +566,7 @@ class TestEditView(TestCase):
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
 
         self.assertEqual(len(response.context['invoice_all']), 3)
-        self.assertIsNone(response.context['invoice'])
+        self.assertEqual(len(response.context['invoice_active']), 0)
 
     def test_patient_with_one_active_and_two_inactive_Invoice(self):
         ''' scenario with one active and two inactive (current=False)
@@ -584,7 +584,7 @@ class TestEditView(TestCase):
             current=True)
 
         response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
-        self.assertEqual(response.context['invoice'], invoice3)
+        self.assertEqual(response.context['invoice_active'].count(), 1)
         self.assertEqual(response.context['invoice_all'].count(), 2)
 
 
@@ -685,7 +685,8 @@ class TestUpdatingView(TestCase):
             'house_number': '1',
             'apartment_number': '2',
             'city': 'some_city',
-            'zip_code': 'zip_c'
+            'zip_code': 'zip_c',
+            'NIP': '223322332'
             }
     def setUp(self):
         user_john = create_user()
@@ -1937,7 +1938,6 @@ class TestInvoiceCreateView(TestCase):
         invoice type should be 'transfer',
         invoice note: 'test note',
         should also:
-        inactivate prevous invoices (current=False)
         redirect to detail view'''
         Invoice.objects.create(patient=Patient.objects.get(id=1))
         Invoice.objects.create(patient=Patient.objects.get(id=1))
@@ -1948,6 +1948,7 @@ class TestInvoiceCreateView(TestCase):
             # form data
             'type': 'transfer',
             'note': 'test note',
+            'current': True,
 
             # formset data
             # these are needed for formset to work
@@ -1982,11 +1983,6 @@ class TestInvoiceCreateView(TestCase):
         self.assertEqual(ha.invoice, invoice)
         # hearing aid make should be 'Bernafon'
         self.assertEqual(ha.make, 'Bernafon')
-        # previous invoices should be inactivated (current=False)
-        invoice1 = Invoice.objects.get(pk=1)
-        self.assertFalse(invoice1.current)
-        invoice2 = Invoice.objects.get(pk=1)
-        self.assertFalse(invoice2.current)
         # new invoice should be active (current=True)
         self.assertTrue(invoice.current)
         # new invoice should have a type of 'transfer'
