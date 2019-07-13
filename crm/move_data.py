@@ -3,8 +3,8 @@ import psycopg2
 from sonovoxcrm.settings import postres_pass
 from crm.ha_list import ha_list, other
 
-param_source_db = "dbname=crm_db2_copy user=postgres password=%s" % postres_pass
-param_target_db = "dbname=crm_db2 user=postgres password=%s" % postres_pass
+param_source_db = "dbname=crm_db3 user=postgres password=%s" % postres_pass
+param_target_db = "dbname=crm_db4 user=postgres password=%s" % postres_pass
 
 def connect_db(f):
     '''connects to source and target db, executes function f, closes connections'''
@@ -26,6 +26,69 @@ def connect_db(f):
     conn2.close()
     print('connection tagret closed')
 
+
+def patient(conn1, cur1, conn2, cur2):
+    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT * FROM crm_patient")
+    rows = cur.fetchall()
+    """ get data from old db from model Patient
+    columns in old db crm_patient: 
+    id|first_name|last_name|date_of_birth|location|phone_no|invoice_date|create_date
+    noachcreatedate|noachID|notes|audiometrist_id"""
+    for row in rows:
+        id = str(row['id'])
+        first_name = row['first_name']
+        last_name = row['last_name']
+        date_of_birth = row['date_of_birth']
+        location = row['location']
+        phone_no = row['phone_no']
+        create_date = row['create_date']
+        notes = row['notes']
+        audiometrist_id = str(row['audiometrist_id'])
+
+        """create new Patient in new db with id same as old Patient
+        columns in new database:
+        id|first_name|last_name|date_of_birth|location|phone_no|create_date|notes
+        audiometrist_id|apartment_number|city|house_number|street|zip_code|NIP"""
+
+        # instert to new db
+        l = [id, first_name, last_name, date_of_birth, location, phone_no, create_date,
+        notes, audiometrist_id]
+        values = ', '.join(l)
+        print(values)
+        fields = "id, first_name, last_name, date_of_birth, location, phone_no, create_date, notes, audiometrist_id"
+        sql = "INSERT INTO crm_patient (%s) VALUES (%s);" % (
+            fields, values)
+        cur2.execute(sql)
+        conn2.commit()
+
+
+def newinfo(conn1, cur1, conn2, cur2):
+    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT * FROM crm_newinfo")
+    rows = cur.fetchall()
+    """ get data from old db from model NewInfo
+    columns in old db crm_newinfo: 
+    id|timestamp|note|audiometrist_id|patient_id"""
+    for row in rows:
+        id = str(row['id'])
+        timestamp = row['timestamp']
+        note = row['note']
+        audiometrist_id = str(row['audiometrist_id'])
+        patient_id = str(row['patient_id'])
+
+        """create new NewInfo in new db with id same as old NewInfo
+        columns in new database: id|timestamp|note|audiometrist_id|patient_id"""
+
+        # instert to new db
+        l = [id, timestamp, note, audiometrist_id, patient_id]
+        values = ', '.join(l)
+        print(values)
+        fields = "id, timestamp, note, audiometrist_id, patient_id"
+        sql = "INSERT INTO crm_newinfo (%s) VALUES (%s);" % (
+            fields, values)
+        cur2.execute(sql)
+        conn2.commit()
 
 def ha_stock(conn1, cur1, conn2, cur2):
     id = 1
@@ -482,3 +545,9 @@ def reminder_collection(conn1, cur1, conn2, cur2):
         print(sql)
         cur2.execute(sql, data)
         conn2.commit()
+
+def run_all():
+    functions = (patient, newinfo, ha_stock, pcpr, invoice, ha, other_stock, nfz_new, nfz_conf,
+                 reminder_new, reminder_conf, reminder_pcpr, reminder_invoice, reminder_collection)
+    for f in functions:
+        connect_db(f)
