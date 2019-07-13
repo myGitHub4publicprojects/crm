@@ -1,10 +1,10 @@
 import datetime as dt
 import psycopg2
-from sonovoxcrm.settings import postres_pass
+from sonovoxcrm.settings import postgres_user, postres_pass
 from crm.ha_list import ha_list, other
 
-param_source_db = "dbname=crm_db3 user=postgres password=%s" % postres_pass
-param_target_db = "dbname=crm_db4 user=postgres password=%s" % postres_pass
+param_source_db = "dbname=crm_db3 user=%s password=%s" % (postgres_user, postres_pass)
+param_target_db = "dbname=crm_db4 user=%s password=%s" % (postgres_user, postres_pass)
 
 def connect_db(f):
     '''connects to source and target db, executes function f, closes connections'''
