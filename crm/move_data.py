@@ -43,9 +43,12 @@ def patient(conn1, cur1, conn2, cur2):
         date_of_birth = str(row['date_of_birth'])
         location = row['location']
         phone_no = str(row['phone_no'])
-        create_date = row['create_date'].strftime('%Y-%m-%d')
-        notes = str(row['notes'])
+        create_date = row['create_date']
+        notes = row['notes']
         audiometrist_id = str(row['audiometrist_id'])
+
+        create_date = "'" + create_date + "'"
+        notes = "'" + notes + "'"
 
         """create new Patient in new db with id same as old Patient
         columns in new database:
