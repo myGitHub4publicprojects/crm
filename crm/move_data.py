@@ -1,5 +1,6 @@
 import datetime as dt
 import psycopg2
+from psycopg2 import extras
 from sonovoxcrm.settings import postgres_user, postres_pass
 from crm.ha_list import ha_list, other
 
@@ -28,7 +29,7 @@ def connect_db(f):
 
 
 def patient(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_patient")
     rows = cur.fetchall()
     """ get data from old db from model Patient
@@ -64,7 +65,7 @@ def patient(conn1, cur1, conn2, cur2):
 
 
 def newinfo(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_newinfo")
     rows = cur.fetchall()
     """ get data from old db from model NewInfo
@@ -109,7 +110,7 @@ def ha_stock(conn1, cur1, conn2, cur2):
 
 
 def pcpr(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_pcpr_estimate")
     rows = cur.fetchall()
     # get data from PCPR_Estimate and Hearing_Aid_Main
@@ -187,7 +188,7 @@ def pcpr(conn1, cur1, conn2, cur2):
 
 
 def invoice(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_ha_invoice")
     rows = cur.fetchall()
     # get data from HA_Invoice and Hearing_Aid_Main
@@ -267,7 +268,7 @@ def invoice(conn1, cur1, conn2, cur2):
 
 
 def ha(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_hearing_aid")
     rows = cur.fetchall()
     # get data from Hearing_Aid and Hearing_Aid_Main
@@ -342,7 +343,7 @@ def other_stock(conn1, cur1, conn2, cur2):
 
 
 def nfz_new(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_nfz_new")
     rows = cur.fetchall()
     # get data from NFZ_New and NFZ
@@ -380,7 +381,7 @@ def nfz_new(conn1, cur1, conn2, cur2):
 
 
 def nfz_conf(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_nfz_confirmed")
     rows = cur.fetchall()
     # get data from NFZ_Confirmed and NFZ
@@ -418,7 +419,7 @@ def nfz_conf(conn1, cur1, conn2, cur2):
 
 
 def reminder_new(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_reminder WHERE nfz_new_id is not NULL")
     rows = cur.fetchall()
     # get data from Reminder
@@ -444,7 +445,7 @@ def reminder_new(conn1, cur1, conn2, cur2):
 
 
 def reminder_conf(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_reminder WHERE nfz_confirmed_id is not NULL")
     rows = cur.fetchall()
     # get data from Reminder
@@ -470,7 +471,7 @@ def reminder_conf(conn1, cur1, conn2, cur2):
 
 
 def reminder_pcpr(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_reminder WHERE pcpr_id is not NULL")
     rows = cur.fetchall()
     # get data from Reminder
@@ -496,7 +497,7 @@ def reminder_pcpr(conn1, cur1, conn2, cur2):
 
 
 def reminder_invoice(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_reminder WHERE invoice_id is not NULL")
     rows = cur.fetchall()
     # get data from Reminder
@@ -522,7 +523,7 @@ def reminder_invoice(conn1, cur1, conn2, cur2):
 
 
 def reminder_collection(conn1, cur1, conn2, cur2):
-    cur = conn1.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn1.cursor(cursor_factory=extras.DictCursor)
     cur.execute("SELECT * FROM crm_reminder WHERE ha_id is not NULL")
     rows = cur.fetchall()
     # get data from Reminder
