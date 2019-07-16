@@ -43,7 +43,7 @@ def patient(conn1, cur1, conn2, cur2):
         date_of_birth = str(row['date_of_birth'])
         location = row['location']
         phone_no = str(row['phone_no'])
-        create_date = str(row['create_date'])
+        create_date = row['create_date'].strftime('%Y-%m-%d')
         notes = row['notes']
         audiometrist_id = str(row['audiometrist_id'])
 
