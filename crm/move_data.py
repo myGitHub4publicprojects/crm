@@ -47,7 +47,7 @@ def patient(conn1, cur1, conn2, cur2):
         notes = row['notes']
         audiometrist_id = str(row['audiometrist_id'])
 
-        create_date = "'" + create_date + "'"
+        create_date = "'" + str(create_date) + "'"
         notes = "'" + notes + "'"
 
         """create new Patient in new db with id same as old Patient
