@@ -40,10 +40,10 @@ def patient(conn1, cur1, conn2, cur2):
         id = str(row['id'])
         first_name = row['first_name']
         last_name = row['last_name']
-        date_of_birth = row['date_of_birth']
+        date_of_birth = str(row['date_of_birth'])
         location = row['location']
-        phone_no = row['phone_no']
-        create_date = row['create_date']
+        phone_no = str(row['phone_no'])
+        create_date = str(row['create_date'])
         notes = row['notes']
         audiometrist_id = str(row['audiometrist_id'])
 
@@ -73,7 +73,7 @@ def newinfo(conn1, cur1, conn2, cur2):
     id|timestamp|note|audiometrist_id|patient_id"""
     for row in rows:
         id = str(row['id'])
-        timestamp = row['timestamp']
+        timestamp = str(row['timestamp'])
         note = row['note']
         audiometrist_id = str(row['audiometrist_id'])
         patient_id = str(row['patient_id'])
@@ -115,10 +115,10 @@ def pcpr(conn1, cur1, conn2, cur2):
     rows = cur.fetchall()
     # get data from PCPR_Estimate and Hearing_Aid_Main
     for row in rows:
-        date = row['date']
+        date = str(row['date'])
         in_progress = row['in_progress']
-        patient_id = row['patient_id']
-        ha_main_id = row[0]
+        patient_id = str(row['patient_id'])
+        ha_main_id = str(row[0])
         print(row)
         sql = "SELECT * FROM crm_hearing_aid_main WHERE id=%s" % ha_main_id
         cur.execute(sql)
