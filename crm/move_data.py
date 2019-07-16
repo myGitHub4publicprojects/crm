@@ -44,7 +44,7 @@ def patient(conn1, cur1, conn2, cur2):
         location = row['location']
         phone_no = str(row['phone_no'])
         create_date = row['create_date'].strftime('%Y-%m-%d')
-        notes = row['notes']
+        notes = str(row['notes'])
         audiometrist_id = str(row['audiometrist_id'])
 
         """create new Patient in new db with id same as old Patient
@@ -57,6 +57,7 @@ def patient(conn1, cur1, conn2, cur2):
         notes, audiometrist_id]
         values = ', '.join(l)
         print(values)
+        print('notes: ', notes)
         fields = "id, first_name, last_name, date_of_birth, location, phone_no, create_date, notes, audiometrist_id"
         sql = "INSERT INTO crm_patient (%s) VALUES (%s);" % (
             fields, values)
