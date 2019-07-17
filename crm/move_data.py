@@ -47,7 +47,13 @@ def patient(conn1, cur1, conn2, cur2):
         notes = row['notes']
         audiometrist_id = str(row['audiometrist_id'])
 
+        first_name = "'" + first_name + "'"
+        last_name = "'" + last_name + "'"
+        date_of_birth = "'" + date_of_birth + "'"
+        location = "'" + location + "'"
         create_date = "'" + str(create_date) + "'"
+        # remove ' from notes and replace them with *
+        notes = notes.replace("'", "*")
         notes = "'" + notes + "'"
 
         """create new Patient in new db with id same as old Patient
@@ -64,6 +70,7 @@ def patient(conn1, cur1, conn2, cur2):
         fields = "id, first_name, last_name, date_of_birth, location, phone_no, create_date, notes, audiometrist_id"
         sql = "INSERT INTO crm_patient (%s) VALUES (%s);" % (
             fields, values)
+        print('sql: ', sql)
         cur2.execute(sql)
         conn2.commit()
 
@@ -81,6 +88,11 @@ def newinfo(conn1, cur1, conn2, cur2):
         note = row['note']
         audiometrist_id = str(row['audiometrist_id'])
         patient_id = str(row['patient_id'])
+
+        timestamp = "'" + timestamp + "'"
+        # remove ' from note and replace them with *
+        note = note.replace("'", "*")
+        note = "'" + note + "'"
 
         """create new NewInfo in new db with id same as old NewInfo
         columns in new database: id|timestamp|note|audiometrist_id|patient_id"""
