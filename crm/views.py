@@ -175,8 +175,9 @@ def create(request):
 def edit(request, patient_id):
 	# displays form for upadating patient details
 	patient = get_object_or_404(Patient, pk=patient_id)
-	right_hearing_aid = patient.hearing_aid_set.filter(ear="right").last()
-	left_hearing_aid = patient.hearing_aid_set.filter(ear="left").last()
+	right_hearing_aid = patient.hearing_aid_set.filter(ear="right", current=True).last()
+	left_hearing_aid = patient.hearing_aid_set.filter(
+		ear="left", current=True).last()
 	nfz_new_left_qs = patient.nfz_new_set.filter(side='left')
 	nfz_new_right_qs = patient.nfz_new_set.filter(side='right')
 	nfz_confirmed_left_qs = patient.nfz_confirmed_set.filter(side='left')
