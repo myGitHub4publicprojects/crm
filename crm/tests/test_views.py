@@ -1489,7 +1489,8 @@ class TestUpdatingView(TestCase):
         self.assertEqual(reminders.count(), 1)
         self.assertFalse(reminders.last().active)
 
-    def test_collection_procedure(self):
+    def test_collection_procedure_with_1_active_invoice(self):
+        # there is one active invoice
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         new1 = NFZ_New.objects.create(patient=patient1,
@@ -1675,6 +1676,189 @@ class TestUpdatingView(TestCase):
         self.assertEqual(collection_reminders.count(), 2)
         self.assertTrue(collection_reminders.first().active)
         self.assertTrue(collection_reminders.last().active)
+
+
+# def test_collection_procedure_with_2_active_invoices(self):
+#         # there are 2 active invoices
+#         self.client.login(username='john', password='glassonion')
+#         patient1 = Patient.objects.get(id=1)
+       
+#         i1 = Invoice.objects.create(
+#             patient=patient1,
+#             current=True)
+#         i2 = Invoice.objects.create(
+#             patient=patient1,
+#             current=True)
+#         Hearing_Aid.objects.create(patient=patient1,
+#                                    ear='left',
+#                                    make='m',
+#                                    family='f',
+#                                    model='m1',
+#                                    pkwiu_code='26.60.14',
+#                                    estimate=p1,
+#                                    invoice=i1,
+#                                    purchase_date='2000-01-02',
+#                                    our=False,
+#                                    current=False)
+#         Hearing_Aid.objects.create(patient=patient1,
+#                                    ear='right',
+#                                    make='m',
+#                                    family='f',
+#                                    model='m2',
+#                                    pkwiu_code='26.60.14',
+#                                    estimate=p1,
+#                                    invoice=i1,
+#                                    purchase_date='2000-01-02',
+#                                    our=False,
+#                                    current=False)
+#         Hearing_Aid.objects.create(patient=patient1,
+#                                    ear='left',
+#                                    make='m',
+#                                    family='f',
+#                                    model='m1old',
+#                                    pkwiu_code='26.60.14',
+#                                    purchase_date='2000-01-02',
+#                                    our=False,
+#                                    current=True)
+#         Hearing_Aid.objects.create(patient=patient1,
+#                                    ear='right',
+#                                    make='m',
+#                                    family='f',
+#                                    model='m2old',
+#                                    pkwiu_code='26.60.14',
+#                                    purchase_date='2000-01-02',
+#                                    our=False,
+#                                    current=True)
+#         Other_Item.objects.create(patient=patient1,                        
+#                                    make='o',
+#                                    family='fo',
+#                                    model='mo',
+#                                    pkwiu_code='26.60.14',
+#                                    invoice=i2,
+#                                    purchase_date='2000-01-02')
+#         Reminder_NFZ_New.objects.create(nfz_new=new1, activation_date=today)
+#         Reminder_NFZ_New.objects.create(nfz_new=new2, activation_date=today)
+#         Reminder_NFZ_Confirmed.objects.create(
+#             nfz_confirmed=n1, activation_date=today)
+#         Reminder_NFZ_Confirmed.objects.create(
+#             nfz_confirmed=n2, activation_date=today)
+#         Reminder_PCPR.objects.create(pcpr=p1, activation_date=today)
+#         Reminder_Invoice.objects.create(invoice=i1, activation_date=today)
+#         data = self.data.copy()
+#         data['collection_confirm'] = True
+#         data['collection_date'] = '2000-01-02'
+
+#         url = reverse('crm:updating', args=(patient1.id,))
+#         expected_url = reverse('crm:edit', args=(1,))
+#         response = self.client.post(url, data, follow=True)
+
+#         # should modify left and right Hearing_Aid instance that were on the invoice
+#         left_ha = Hearing_Aid.objects.filter(
+#             patient=patient1, ear='left').first()
+#         self.assertEqual(left_ha.model, 'm1')
+#         self.assertEqual(str(left_ha.purchase_date), '2000-01-02')
+#         self.assertTrue(left_ha.our)
+#         self.assertTrue(left_ha.current)
+
+#         right_ha = Hearing_Aid.objects.filter(
+#             patient=patient1, ear='right').first()
+#         self.assertEqual(right_ha.model, 'm2')
+#         self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
+#         self.assertTrue(right_ha.our)
+#         self.assertTrue(right_ha.current)
+
+#         # should inactivate previous hearing aids (current=false)
+#         previous_left = Hearing_Aid.objects.get(model='m1old')
+#         self.assertFalse(previous_left.current)
+#         previous_right = Hearing_Aid.objects.get(model='m2old')
+#         self.assertFalse(previous_right.current)
+
+#         # should set NFZ New if any to inactive
+#         left_nfz_all = NFZ_New.objects.filter(
+#             patient=patient1, side='left')
+#         right_nfz_all = NFZ_New.objects.filter(
+#             patient=patient1, side='right')
+#         self.assertFalse(left_nfz_all.last().in_progress)
+#         self.assertFalse(right_nfz_all.last().in_progress)
+
+#         # should set NFZ confirmed to inactive
+#         left_nfz_all = NFZ_Confirmed.objects.filter(
+#             patient=patient1, side='left')
+#         right_nfz_all = NFZ_Confirmed.objects.filter(
+#             patient=patient1, side='right')
+#         self.assertFalse(left_nfz_all.last().in_progress)
+#         self.assertFalse(right_nfz_all.last().in_progress)
+
+#         # should set last PCPR estimate to inactive
+#         pcpr_all = PCPR_Estimate.objects.filter(
+#             patient=patient1)
+#         self.assertFalse(pcpr_all.last().current)
+
+#         # should set all invoices to inactive
+#         invoice_all = Invoice.objects.filter(
+#             patient=patient1, current=True)
+#         self.assertFalse(invoice_all)
+
+#         # should create a new info to show in history of actions
+#         new_info = NewInfo.objects.get(id=1)
+#         expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-02. ' + \
+#                         'Odebrano prawy aparat m f m2, z datą 2000-01-02.'
+#         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+#         # reminders
+#         # there should be 2 Reminder_NFZ_New (one for each side), both inactive
+#         left_nfz_new_all = NFZ_New.objects.filter(
+#             patient=patient1, side='left')
+#         right_nfz_new_all = NFZ_New.objects.filter(
+#             patient=patient1, side='right')
+#         left_new_nfz = left_nfz_new_all[0]
+#         right_new_nfz = right_nfz_new_all[0]
+#         left_new_reminders = Reminder_NFZ_New.objects.filter(
+#             nfz_new=left_new_nfz)
+#         self.assertEqual(left_new_reminders.count(), 1)
+#         right_new_reminders = Reminder_NFZ_New.objects.filter(
+#             nfz_new=right_new_nfz)
+#         self.assertEqual(right_new_reminders.count(), 1)
+#         self.assertFalse(left_new_reminders.last().active)
+#         self.assertFalse(right_new_reminders.last().active)
+
+#         # there should be 2 Reminder_NFZ_Confirmed (one for each side), both inactive
+#         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+#             patient=patient1, side='left')
+#         right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+#             patient=patient1, side='right')
+#         left_confirmed_nfz = left_nfz_confirmed_all[0]
+#         right_confirmed_nfz = right_nfz_confirmed_all[0]
+#         left_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+#             nfz_confirmed=left_confirmed_nfz)
+#         self.assertEqual(left_confirmed_reminders.count(), 1)
+#         right_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+#             nfz_confirmed=right_confirmed_nfz)
+#         self.assertEqual(right_confirmed_reminders.count(), 1)
+#         self.assertFalse(left_confirmed_reminders.last().active)
+#         self.assertFalse(right_confirmed_reminders.last().active)
+
+#         # there should be one Reminder_PCPR, inactive
+#         pcpr_all = PCPR_Estimate.objects.filter(
+#             patient=patient1)
+#         pcpr_reminders = Reminder_PCPR.objects.filter(
+#             pcpr=pcpr_all.last())
+#         self.assertEqual(pcpr_reminders.count(), 1)
+#         self.assertFalse(pcpr_reminders.last().active)
+
+#         # there should be two Reminder_Invoice, inactive
+#         invoice_all = Invoice.objects.filter(
+#             patient=patient1)
+#         invoice_reminders = Reminder_Invoice.objects.filter(
+#             invoice=invoice_all.last())
+#         self.assertEqual(invoice_reminders.count(), 2)
+#         self.assertFalse(invoice_reminders.last().active)
+
+#         # there should be 2 Reminder_Collection instances, both active
+#         collection_reminders = Reminder_Collection.objects.all()
+#         self.assertEqual(collection_reminders.count(), 2)
+#         self.assertTrue(collection_reminders.first().active)
+#         self.assertTrue(collection_reminders.last().active)
 
 
 class TestDeleteView(TestCase):

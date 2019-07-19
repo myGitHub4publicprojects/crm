@@ -464,8 +464,10 @@ def updating(request, patient_id):
 		
 	# collection procedure
 	if request.POST.get('collection_confirm'):
-		current_invoice = Invoice.objects.get(patient=patient, current=True)
-		invoiced_ha = Hearing_Aid.objects.filter(invoice=current_invoice)
+		# current_invoice = Invoice.objects.get(patient=patient, current=True)
+		current_invoices = Invoice.objects.filter(patient=patient, current=True)
+		
+		invoiced_ha = Hearing_Aid.objects.filter(invoice__in=current_invoices)
 		date = request.POST.get('collection_date') or str(today)
 		for ha in invoiced_ha:
     		# inactivate previous hearing aids (current=False)
@@ -487,11 +489,12 @@ def updating(request, patient_id):
 			ha=ha, activation_date=today+datetime.timedelta(days=365))
 
 		# inactivate Invoice and its reminder
-		current_invoice.current = False
-		current_invoice.save()
-		reminder = Reminder_Invoice.objects.get(invoice=current_invoice)
-		reminder.active = False
-		reminder.save()
+		for current_invoice in current_invoices:
+			current_invoice.current = False
+			current_invoice.save()
+			reminder = Reminder_Invoice.objects.get(invoice=current_invoice)
+			reminder.active = False
+			reminder.save()
 
 		# inactivate PCPR_Estimate and its reminder 
 		pcpr_estimate = PCPR_Estimate.objects.filter(patient=patient, current=True).last()
@@ -809,6 +812,9 @@ def invoice_create(request, patient_id):
 			invoice = form.save(commit=False)
 			invoice.patient = patient
 			invoice.save()
+
+			# create reminder
+			Reminder_Invoice.objects.create(invoice=invoice)
 
     		# process devices in a formset
 			process_device_formset_invoice(formset, patient, invoice, today)
