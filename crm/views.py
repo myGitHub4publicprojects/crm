@@ -814,6 +814,13 @@ def invoice_create(request, patient_id):
 			invoice.patient = patient
 			invoice.save()
 
+			# create newinfo
+			note = 'Dodano fakturę nr: %s' % invoice.id
+			NewInfo.objects.create(
+				patient=patient,
+				note=note,
+				audiometrist=request.user)
+
 			# create reminder
 			Reminder_Invoice.objects.create(invoice=invoice)
 
