@@ -46,7 +46,8 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                     vat_rate=form.cleaned_data['vat_rate'],
                     pkwiu_code = form.cleaned_data['pkwiu_code'],
                     ear = ear,
-                    estimate=pcpr
+                    estimate=pcpr,
+                    current=False
                 )
             elif quantity==2 and ear=='both':
                     for i in ['left', 'right']:
@@ -60,7 +61,8 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                             vat_rate=form.cleaned_data['vat_rate'],
                             pkwiu_code = form.cleaned_data['pkwiu_code'],
                             ear = i,
-                            estimate=pcpr
+                            estimate=pcpr,
+                            current=False
                         )
 
             elif quantity > 1:
@@ -75,7 +77,8 @@ def process_device_formset_pcpr(formset, patient, pcpr, today):
                             vat_rate=form.cleaned_data['vat_rate'],
                             pkwiu_code = form.cleaned_data['pkwiu_code'],
                             ear = ear,
-                            estimate=pcpr
+                            estimate=pcpr,
+                            current=False
                         )
         
         # if other device
@@ -117,7 +120,8 @@ def process_device_formset_invoice(formset, patient, invoice, today):
                     vat_rate=form.cleaned_data['vat_rate'],
                     pkwiu_code=form.cleaned_data['pkwiu_code'],
                     ear=ear,
-                    invoice=invoice
+                    invoice=invoice,
+                    current=False
                 )
             elif quantity == 2 and ear == 'both':
                     for i in ['left', 'right']:
@@ -131,7 +135,8 @@ def process_device_formset_invoice(formset, patient, invoice, today):
                             vat_rate=form.cleaned_data['vat_rate'],
                             pkwiu_code=form.cleaned_data['pkwiu_code'],
                             ear=i,
-                            invoice=invoice
+                            invoice=invoice,
+                            current=False
                         )
 
             elif quantity > 1:
@@ -146,7 +151,8 @@ def process_device_formset_invoice(formset, patient, invoice, today):
                             vat_rate=form.cleaned_data['vat_rate'],
                             pkwiu_code=form.cleaned_data['pkwiu_code'],
                             ear=ear,
-                            invoice=invoice
+                            invoice=invoice,
+                            current=False
                         )
 
         # if other device

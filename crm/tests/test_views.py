@@ -1955,7 +1955,7 @@ class TestInvoiceCreateView(TestCase):
 
     def test_logged_in_with_valid_data_for_ha(self):
         '''should create:
-        one hearing aid,
+        one hearing aid (current=False),
         one invoice instance with one position - hearing aid,
         for a given patient,
         invoice type should be 'transfer',
@@ -2000,6 +2000,8 @@ class TestInvoiceCreateView(TestCase):
         ha = Hearing_Aid.objects.get(pk=1)
         # should create only one Hearing_Aid obj
         self.assertEqual(Hearing_Aid.objects.all().count(), 1)
+        # created HA should not be active
+        self.assertFalse(ha.current)
         # should create one new invoice obj (there are also 2 old)
         self.assertEqual(Invoice.objects.all().count(), 3)
         # this invoice should be tied to hearing aid
