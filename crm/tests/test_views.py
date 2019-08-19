@@ -2191,3 +2191,63 @@ class TestInvoiceCreateView(TestCase):
         self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
 
 
+class TestInvoiceUpdateView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        create_patient(user_john)
+
+    def test_anonymous(self):
+        '''should redirect to login'''
+        url = reverse('crm:invoice_update', args=(1,))
+        expected_url = reverse('login') + '?next=/1/invoice_update/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_logged_in_with_valid_data(self):
+        '''should modify:
+        note, current, payed, type, date
+        redirect to invoice detail view'''
+        i = Invoice.objects.create(
+            patient=Patient.objects.get(id=1),
+            type='transfer',
+            current=True,
+            payed=False,
+            note='test note óŹł'    
+        )
+        i.timestamp = datetime.now() - timedelta(days=1)
+        i.save()
+
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:invoice_update', args=(1,))
+        expected_url = reverse('crm:invoice_detail', args=(1,))
+        data = {
+            # form data
+            'type': 'cash',
+            'note': 'test note',
+            'current': False,
+            'payed': True,
+            'date': today
+        }
+
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        # should be one Invoice
+        self.assertEqual(Invoice.objects.all().count(), 1)
+        # should modify invoice type to be 'cash'
+        invoice = Invoice.objects.all().first()
+        self.assertEqual(invoice.type, 'cash')
+        # should modify invoice current to be False
+        self.assertEqual(invoice.current, False)
+        # should modify invoice payed to be True
+        self.assertEqual(invoice.payed, True)
+        # should modify invoice note to be 'test note'
+        self.assertEqual(invoice.note, 'test note')
+        # should modify invoice date (timestamp) to be today
+        self.assertEqual(invoice.timestamp.date(), today)
