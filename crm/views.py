@@ -898,7 +898,7 @@ class InvoiceUpdate(UpdateView):
 
 class InvoiceList(ListView):
 	model = Invoice
-	ordering = ['-timestamp']
+	ordering = ['-date']
 
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):

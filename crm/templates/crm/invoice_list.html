@@ -25,7 +25,7 @@
                     {% if i.corrective_invoice_set.all %}
                     class="btn-outline-danger"
                     {% endif %}
-                    >{{ i.timestamp|date }}</a>
+                    >{{ i.date|date:'d-m-Y' }}</a>
                 </td>
                 <td><a href="{% url 'crm:invoice_detail' i.id %}"
                     {% if i.corrective_invoice_set.all %}
