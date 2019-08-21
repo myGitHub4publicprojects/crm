@@ -193,11 +193,11 @@ def edit(request, patient_id):
 	Invoice_all = Invoice.objects.filter(
 		patient=patient,
 		current=False
-		).order_by('-timestamp')
+		).order_by('-date')
 	Invoice_active = Invoice.objects.filter(
 		patient=patient,
 		current=True
-        ).order_by('-timestamp')
+        ).order_by('-date')
 
 	audiometrists = User.objects.all()
 
