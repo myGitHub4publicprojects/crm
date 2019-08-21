@@ -4,7 +4,6 @@ import datetime
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
-from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -75,6 +74,7 @@ class Invoice(Finance):
 	# change this to True once payment received and HA dispenced
 	type = models.CharField(max_length=8, choices=(
 		('transfer', 'transfer'), ('cash', 'cash')), verbose_name='rodzaj płatności')
+	date = models.DateField(default=datetime.date.today())
 	def get_absolute_url(self):
 		return reverse('crm:invoice_update', kwargs={'pk': self.pk})
 

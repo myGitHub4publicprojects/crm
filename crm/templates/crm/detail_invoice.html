@@ -8,7 +8,8 @@
 
 <h1 id="documentType" class="text-center">Faktura VAT</h1>
 <p>
-    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
+    <span id="date">Wystawiona: {{ instance.date|date:'d-m-Y' }}</span>, 
+    <span>utworzona: {{ instance.timestamp }}</span>, 
     Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
 </p>
 <p>Typ faktury: <span id="invoiceType" >{{ instance.type }}</span></p>

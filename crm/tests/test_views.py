@@ -2215,10 +2215,9 @@ class TestInvoiceUpdateView(TestCase):
             type='transfer',
             current=True,
             payed=False,
-            note='test note óŹł'    
+            note='test note óŹł',
+            date = datetime.now() - timedelta(days=1)
         )
-        i.timestamp = datetime.now() - timedelta(days=1)
-        i.save()
 
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:invoice_update', args=(1,))
@@ -2249,5 +2248,5 @@ class TestInvoiceUpdateView(TestCase):
         self.assertEqual(invoice.payed, True)
         # should modify invoice note to be 'test note'
         self.assertEqual(invoice.note, 'test note')
-        # should modify invoice date (timestamp) to be today
-        self.assertEqual(invoice.timestamp.date(), today)
+        # should modify invoice date to be today
+        self.assertEqual(invoice.date, today)
