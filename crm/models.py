@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import datetime
+import datetime, os
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -216,3 +216,26 @@ class Reminder_Invoice(Reminder):
 class Reminder_Collection(Reminder):
 	''' Remind that HA collection took place in the past - ask for visit'''
 	ha = models.ForeignKey(Hearing_Aid, on_delete=models.CASCADE)
+
+
+class SZOI_File(models.Model):
+	'''File uploaded from SZOI and containing all stock approved by NFZ'''
+	file = models.FileField(upload_to='documents/')
+	uploaded_at = models.DateTimeField(auto_now_add=True)
+
+	def filename(self):
+		return os.path.basename(self.file.name)
+
+	def __unicode__(self):
+		return self.filename + ' ' + self.uploaded_at
+
+
+# class SZOI_File_Usage(models.Model):
+# 	'''when was the uploaded file used what was produced'''
+# 	szoi_file = models.ForeignKey(SZOI_File)
+# 	used = models.DateTimeField(auto_now_add=True)
+# 	created_HA_Stock - one to many, all hearing aids created with this file
+# 	updated_HA - one to many, all hearing aids updated with this file
+# 	created_Other - one to many, all other devices created with this file
+# 	updated_Other - one to many, all other devices updated with this file
+# 	error_log = models.TextField()
