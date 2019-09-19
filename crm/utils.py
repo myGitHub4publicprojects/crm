@@ -245,3 +245,158 @@ def get_finance_context(instance):
                 'instance': instance,
 				'total_value': total_value}
     return context
+
+
+def stock_update(instance):
+    '''accepts SZOI_File instance, on the basis of its file field:
+    create new Hearing_Aid_Stock and Other_Item_Stock instances,
+    upadates price for devices that are already in stock,
+    returns a dict with created HA and Other:
+    {'ha': [<instance1>, <instance2], 'other': [<instance1>, <instance2>]}'''
+    res = {'ha':[], 'other':[]}
+    file_path = instance.file.path
+    f = open(file_path)
+    for i in f:
+        line = i.split(';')
+        print(line)
+        if 'APARAT SŁUCHOWY' in line[7]:
+            # Audibel
+            # START 1200  RIC 312T; START WIRELESS 1200I RIC 312; START WIRELESS 1200I RIC 312;
+            # ARIES; A4 PLATINUM WIRELESS IIC;
+            if 'STARKEY' in line[1]:
+                make = 'Audibel'
+                family_model = line[2].split()
+                if len(family_model) > 1:
+                    # there is a type in one of the registered names, hence:
+                    if 'SILVERTRIC' in family_model:
+                        family_model.remove('WRLS')
+                        family = 'A4I SILVER'
+                        model = 'WRLS ' + ' '.join(family_model[2:])
+                        continue
+
+                    if 'WIRELESS' in family_model:
+                        family_model.remove('WIRELESS')
+                        family = ' '.join(family_model[:2])
+                        model = 'WRLS ' + ' '.join(family_model[2:])
+
+                    if 'WRLS' in family_model:
+                        family_model.remove('WRLS')
+                        family = ' '.join(family_model[:2])
+                        model = 'WRLS ' + ' '.join(family_model[2:])
+
+                    else:
+                        family = ' '.join(family_model[:2])
+                        model = ' '.join(family_model[2:])
+                else:
+                    family = family_model[0]
+                    model = family_model[0]
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # Bernafon
+            if 'BERNAFON' in line[1]:
+                make = 'Bernafon'
+                family_model = line[2].split()  # ZERENA 5 B 105; WIN 102
+                family = family_model[0]
+                if len(family_model) > 2:
+                    family += ' ' + family_model[1]
+                    model = ' '.join(family_model[2:])
+                else:
+                    model = family_model[1]
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # Phonak
+            # in some Phonak/Sonova products name includes a brand
+            # ie: PHONAK NAIDA B50-UP
+            # ie: BOLERO B 30 M
+            if ('PHONAK' in line[1] or 'SONOVA' in line[1]):
+                make = 'Audibel'
+                family_model = line[2].split()
+                if 'PHONAK' in family_model[0]:
+                    family = family_model[1]
+                    model = ' '.join(family_model[2:])
+                else:
+                    family = family_model[0]
+                    model = ' '.join(family_model[1:])
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # Oticon
+            if 'OTICON' in line[1]:
+                make = 'Audibel'
+                family_model = line[2].split()  # HIT PRO BTE POWER
+                family = family_model[0]
+                model = ' '.join(family_model[1:])
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # Audioservice
+            if 'AUDIO SERVICE' in line[1]:
+                make = 'Audibel'
+                family_model = line[2].split()  # SINA HYPE 12 G4
+                family = family_model[0]
+                model = ' '.join(family_model[1:])
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # Interton
+            if 'INTERTON' in line[1]:
+                make = 'Audibel'
+                family_model = line[2].split()
+                family = family_model[0]
+                model = ' '.join(family_model[1:]) + ' ' + line[5]
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # Siemens
+            if 'SIEMENS' in line[1]:
+                make = 'Audibel'
+                family_model = line[2].split()
+                family = family_model[0]
+                model = ' '.join(family_model[1:])
+                price = line[8].split('.')
+                price = int(price[0])
+
+            # BHM
+            if 'BHM TECH' in line[1]:
+                make = 'Audibel'
+                family_model = line[2].split()
+                family = family_model[0]
+                model = ' '.join(family_model[1:])
+                if not 'WYŁĄCZENIEM APARATÓW' in line[8]:
+                    price = line[8].split('.')
+                else:
+                    price = line[9].split('.')
+                price = int(price[0])
+
+            # check for existing Hearing_Aid_Stock instance with same make, family and model
+            existing = Hearing_Aid_Stock.objects.filter(
+                make=make,
+                family=family,
+                model=model,
+            )
+
+            # update price of the HA if needed
+            if existing.exists():
+                for ha in existing:
+                    if ha.price != price:
+                        ha.price = price
+                        ha.save()
+                        
+            else:
+                # create Hearing_Aid_Stock instance
+                ha = Hearing_Aid_Stock.objects.create(
+                    make=make,
+                    family=family,
+                    model=model,
+                    price_gross=price,
+                    vat_rate=8,
+                    pkwiu_code='26.60.14'
+                )
+
+            # update res
+            res['ha'].append(ha)
+
+    f.close()
+    return res
