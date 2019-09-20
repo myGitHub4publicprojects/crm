@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import decimal
-from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item
+from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item, Other_Item_Stock
 
 def get_devices(model):
     """ returns a dict of devices in the following form:
@@ -269,6 +269,11 @@ def stock_update(instance):
 
     for i in lines_over_8(f):
         line = i.split(';')
+        
+        # assume price for adults and children are the same, avoid duplicates
+        if 'PACJENCI DO UKOŃCZENIA 26 RŻ.' in line[7]:
+            continue
+            
         if 'APARAT SŁUCHOWY' in line[7]:
             # Audibel
             # START 1200  RIC 312T; START WIRELESS 1200I RIC 312; START WIRELESS 1200I RIC 312;
@@ -326,7 +331,7 @@ def stock_update(instance):
             # ie: PHONAK NAIDA B50-UP
             # ie: BOLERO B 30 M
             if ('PHONAK' in line[1] or 'SONOVA' in line[1]):
-                make = 'Audibel'
+                make = 'Phonak'
                 family_model = line[2].split()
                 if 'PHONAK' in family_model[0]:
                     family = family_model[1]
@@ -339,7 +344,7 @@ def stock_update(instance):
 
             # Oticon
             if 'OTICON' in line[1]:
-                make = 'Audibel'
+                make = 'Oticon'
                 family_model = line[2].split()  # HIT PRO BTE POWER
                 family = family_model[0]
                 model = ' '.join(family_model[1:])
@@ -348,7 +353,7 @@ def stock_update(instance):
 
             # Audioservice
             if 'AUDIO SERVICE' in line[1]:
-                make = 'Audibel'
+                make = 'Audioservice'
                 family_model = line[2].split()  # SINA HYPE 12 G4
                 family = family_model[0]
                 model = ' '.join(family_model[1:])
@@ -357,7 +362,7 @@ def stock_update(instance):
 
             # Interton
             if 'INTERTON' in line[1]:
-                make = 'Audibel'
+                make = 'Interton'
                 family_model = line[2].split()
                 family = family_model[0]
                 model = ' '.join(family_model[1:]) + ' ' + line[5]
@@ -366,7 +371,7 @@ def stock_update(instance):
 
             # Siemens
             if 'SIEMENS' in line[1]:
-                make = 'Audibel'
+                make = 'Siemens'
                 family_model = line[2].split()
                 family = family_model[0]
                 model = ' '.join(family_model[1:])
@@ -375,7 +380,7 @@ def stock_update(instance):
 
             # BHM
             if 'BHM TECH' in line[1]:
-                make = 'Audibel'
+                make = 'BHM TECH'
                 family_model = line[2].split()
                 family = family_model[0]
                 model = ' '.join(family_model[1:])
@@ -416,33 +421,65 @@ def stock_update(instance):
                 res['ha_new'].append(ha)
         
         # Other_Item_Stock
-        if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7]:
-            print(line)
-            make = line[1].split()
-            make = ''.join(make[:-1])
-            model = line[2]
-            price = line[8].split('.')
-            price = int(price[0])
+        if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
+            if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7]:
+                # make
+                if 'AUDIO SERVICE' in line[1]:
+                    make = 'Audioservice'
+                if 'OTICON' in line[1]:
+                    make = 'Oticon'
+                if 'BERNAFON' in line[1]:
+                    make = 'Bernafon'
+                if ('PHONAK' in line[1] or 'SONOVA' in line[1]):
+                    make = 'Phonak'
+                family = line[5]
+                model = line[2]
 
+            if 'WKŁADKA USZNA' in line[7]:
+                # make
+                if 'AUDIO SERVICE' in line[1]:
+                    make = 'Audioservice'
+                if 'OTICON' in line[1]:
+                    make = 'Oticon'
+                if 'BERNAFON' in line[1]:
+                    make = 'Bernafon'
+                if ('PHONAK' in line[1] or 'SONOVA' in line[1]):
+                    make = 'Phonak'
+                family = 'WKŁADKA USZNA'
+                model = line[2]
+                price = line[8].split('.')
+                price = int(price[0])
 
+            # check for existing Other_Item_Stock instance with same make, family and model
+            existing = Other_Item_Stock.objects.filter(
+                make=make,
+                family=family,
+                model=model,
+            )
 
-        if 'WKŁADKA USZNA' in line[7]:
-            # make
-            if 'AUDIO SERVICE' in line[1]:
-                make = 'AUDIO SERVICE'
-            if 'OTICON' in line[1]:
-                make = 'OTICON'
-            if 'BERNAFON' in line[1]:
-                make = 'BERNAFON'
-            if 'PHONAK' or 'SONOVA' in line[1]:
-                make = 'PHONAK'
+            # update price of the OI if needed
+            if existing.exists():
+                for o in existing:
+                    if o.price_gross != price:
+                        o.price_gross = price
+                        o.save()
+                        # update res
+                        res['other_update'].append(o)
 
-            family = 'WKŁADKA USZNA'
-            model = line[2]
-            price = line[8].split('.')
-            price = int(price[0])
+            else:
+                # create Other_Item_Stock instance
+                o = Other_Item_Stock.objects.create(
+                    make=make,
+                    family=family,
+                    model=model,
+                    price_gross=price,
+                    vat_rate=8,
+                    pkwiu_code='26.60.14'
+                )
 
-            
+                # update res
+                res['other_new'].append(o)
+
 
 
 # ['2468', 'AUDIO SERVICE GMBH', 'TWARDA', 'NIE', '2', 'WK\xc5\x81ADKA USZNA AUDIO SERVICE', 'P.086.01        ', 'WK\xc5\x81ADKA USZNA WYKONANA INDYWIDUALNIE - PACJENCI DO UKO\xc5\x83CZENIA 26 R\xc5\xbb.

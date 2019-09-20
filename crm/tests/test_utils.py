@@ -79,15 +79,20 @@ class Test_Stock_Update(TestCase):
 
         f.close()
 
-    def test_stock_update_create_10OtherDevices(self):
-        '''should create 10 Other_Item_Stock devices'''
-        
-        # # should create no Other_Item_Stock
-        # self.assertEqual(Other_Item_Stock.objects.all().count(), 10)
+    def test_stock_update_create_17OtherDevices(self):
+        '''should create 17 Other_Item_Stock devices'''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
+        f = open(test_file)
+        # create SZOI_File instance with the above file
+        s = SZOI_File.objects.create(file=File(f))
+        res = stock_update(s)
 
-        # # should return 10 Hearing_Aid_Stock instances
-        # self.assertEqual(len(res['ha_new']), 1130)
-        pass
+        # should create 17 Other_Item_Stock
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 17)
+
+        # should return 17 Other_Item_Stock instances
+        self.assertEqual(len(res['other_new']), 17)
+    
 
     def test_stock_update_update_existing_ha_prices(self):
         '''update price of 2 HA that are already in stock'''
