@@ -251,14 +251,24 @@ def stock_update(instance):
     '''accepts SZOI_File instance, on the basis of its file field:
     create new Hearing_Aid_Stock and Other_Item_Stock instances,
     upadates price for devices that are already in stock,
-    returns a dict with created HA and Other:
-    {'ha': [<instance1>, <instance2], 'other': [<instance1>, <instance2>]}'''
-    res = {'ha':[], 'other':[]}
+    returns a dict with created and updated HA and Other:
+    {'ha_new': [<instance1>, <instance2], 'other_new': [<instance1>, <instance2>],
+    'ha_update': [<instance1>, <instance2], 'other_update': [<instance1>, <instance2>]}'''
+    res = {'ha_new': [], 'other_new': [], 'ha_update': [], 'other_update': []}
     file_path = instance.file.path
     f = open(file_path)
-    for i in f:
+
+    def lines_over_8(f):
+        for ii,line in enumerate(f):
+            if ii>=8:
+                yield line
+
+    # f = open("big text file.txt", "r")
+    # for line in read_only_lines(f, 17, 34):
+    # print line
+
+    for i in lines_over_8(f):
         line = i.split(';')
-        print(line)
         if 'APARAT SŁUCHOWY' in line[7]:
             # Audibel
             # START 1200  RIC 312T; START WIRELESS 1200I RIC 312; START WIRELESS 1200I RIC 312;
@@ -294,10 +304,15 @@ def stock_update(instance):
                 price = int(price[0])
 
             # Bernafon
+            # there might be 2 typos in the file: JUNA7 NANO (JUNA 7) and ZERENA5 (ZERENA 5)
             if 'BERNAFON' in line[1]:
                 make = 'Bernafon'
                 family_model = line[2].split()  # ZERENA 5 B 105; WIN 102
                 family = family_model[0]
+                if family == 'ZERENA5':
+                    family = 'ZERENA 5'
+                if family == 'JUNA7':
+                    family = 'JUNA 7'
                 if len(family_model) > 2:
                     family += ' ' + family_model[1]
                     model = ' '.join(family_model[2:])
@@ -380,9 +395,11 @@ def stock_update(instance):
             # update price of the HA if needed
             if existing.exists():
                 for ha in existing:
-                    if ha.price != price:
-                        ha.price = price
+                    if ha.price_gross != price:
+                        ha.price_gross = price
                         ha.save()
+                        # update res
+                        res['ha_update'].append(ha)
                         
             else:
                 # create Hearing_Aid_Stock instance
@@ -395,8 +412,42 @@ def stock_update(instance):
                     pkwiu_code='26.60.14'
                 )
 
-            # update res
-            res['ha'].append(ha)
+                # update res
+                res['ha_new'].append(ha)
+        
+        # Other_Item_Stock
+        if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7]:
+            print(line)
+            make = line[1].split()
+            make = ''.join(make[:-1])
+            model = line[2]
+            price = line[8].split('.')
+            price = int(price[0])
+
+
+
+        if 'WKŁADKA USZNA' in line[7]:
+            # make
+            if 'AUDIO SERVICE' in line[1]:
+                make = 'AUDIO SERVICE'
+            if 'OTICON' in line[1]:
+                make = 'OTICON'
+            if 'BERNAFON' in line[1]:
+                make = 'BERNAFON'
+            if 'PHONAK' or 'SONOVA' in line[1]:
+                make = 'PHONAK'
+
+            family = 'WKŁADKA USZNA'
+            model = line[2]
+            price = line[8].split('.')
+            price = int(price[0])
+
+            
+
+
+# ['2468', 'AUDIO SERVICE GMBH', 'TWARDA', 'NIE', '2', 'WK\xc5\x81ADKA USZNA AUDIO SERVICE', 'P.086.01        ', 'WK\xc5\x81ADKA USZNA WYKONANA INDYWIDUALNIE - PACJENCI DO UKO\xc5\x83CZENIA 26 R\xc5\xbb.
+#  ['2469', 'OTICON A/S', 'RITE', 'NIE', '18', 'WK\xc5\x81ADKA', 'P.086.01        ', 'WK\xc5\x81ADKA USZNA WYKONANA INDYWIDUALNIE - PACJENCI DO UKO\xc5\x83CZENIA 26 R\xc5\xbb.
+# ['2470', 'PHONAK AG', 'ROGER CLIP-ON MIC + 2 X ROGER X (03)', 'NIE', '1678', 'PHONAK ROGER', 'P.087.01        ', 'SYSTEMY WSPOMAGAJ\xc4\x84CE S\xc5\x81YSZENIE
 
     f.close()
     return res

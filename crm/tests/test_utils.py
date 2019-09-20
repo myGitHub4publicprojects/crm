@@ -22,8 +22,8 @@ class Test_Stock_Update(TestCase):
         '''test file contains 10 lines with HA'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
         f = open(test_file)
-        # should be 10 lines in the file
-        self.assertEqual(sum(1 for line in f), 10)
+        # should be 18 lines in the file
+        self.assertEqual(sum(1 for line in f), 18)
         # create SZOI_File instance with the above file
         s = SZOI_File.objects.create(file=File(f))
 
@@ -35,15 +35,58 @@ class Test_Stock_Update(TestCase):
         self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
         # should return 10 Hearing_Aid_Stock instances
-        self.assertEqual(len(res['ha']), 10)
+        self.assertEqual(len(res['ha_new']), 10)
         
         f.close()
-        pass
-
 
 
     def test_stock_update_ignore_typos(self):
-        '''ignore typos in "ZERENA5", "Audibel SILVERTRIC" and "JUNA7 NANO"'''
+        '''handle typos in "ZERENA5", "Audibel SILVERTRIC" and "JUNA7 NANO"'''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
+        f = open(test_file)
+
+        # create SZOI_File instance with the above file
+        s = SZOI_File.objects.create(file=File(f))
+
+        res = stock_update(s)
+        
+        h_all = Hearing_Aid_Stock.objects.all()
+        # should create 1130 Hearing_Aid_Stock
+        self.assertEqual(h_all.count(), 1130)
+
+        # should not create invalid family name 'ZERENA5'
+        z5 = h_all.filter(family='ZERENA5')
+        self.assertFalse(z5.exists())
+
+        # should create valid family name 'ZERENA 5'
+        z_5 = h_all.filter(family='ZERENA 5')
+        self.assertTrue(z_5.exists())
+
+        # should not create invalid family name 'JUNA7'
+        j7 = h_all.filter(family='JUNA7')
+        self.assertFalse(j7.exists())
+
+        # should create valid family name 'JUNA 7'
+        j_7 = h_all.filter(family='JUNA 7')
+        self.assertTrue(j_7.exists())
+
+        # should not create invalid family name containing 'SILVERTRIC'
+        a_s = h_all.filter(family__icontains='SILVERTRIC')
+        self.assertFalse(a_s.exists())
+
+        # should return 10 Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 1130)
+
+        f.close()
+
+    def test_stock_update_create_10OtherDevices(self):
+        '''should create 10 Other_Item_Stock devices'''
+        
+        # # should create no Other_Item_Stock
+        # self.assertEqual(Other_Item_Stock.objects.all().count(), 10)
+
+        # # should return 10 Hearing_Aid_Stock instances
+        # self.assertEqual(len(res['ha_new']), 1130)
         pass
 
     def test_stock_update_update_existing_ha_prices(self):
