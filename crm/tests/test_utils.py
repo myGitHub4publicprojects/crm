@@ -77,6 +77,9 @@ class Test_Stock_Update(TestCase):
         # should return 10 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 1130)
 
+        # should return 1 updated Hearing_Aid_Stock instance as there is duplicated HA in file
+        self.assertEqual(len(res['ha_update']), 1)
+
         f.close()
 
     def test_stock_update_create_17OtherDevices(self):
@@ -92,6 +95,9 @@ class Test_Stock_Update(TestCase):
 
         # should return 17 Other_Item_Stock instances
         self.assertEqual(len(res['other_new']), 17)
+
+        # should return no upadted Other_Item_Stock instances
+        self.assertEqual(len(res['other_update']), 0)
     
 
     def test_stock_update_update_existing_ha_prices(self):

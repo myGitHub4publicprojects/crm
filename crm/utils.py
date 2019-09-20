@@ -273,7 +273,7 @@ def stock_update(instance):
         # assume price for adults and children are the same, avoid duplicates
         if 'PACJENCI DO UKOŃCZENIA 26 RŻ.' in line[7]:
             continue
-            
+
         if 'APARAT SŁUCHOWY' in line[7]:
             # Audibel
             # START 1200  RIC 312T; START WIRELESS 1200I RIC 312; START WIRELESS 1200I RIC 312;
@@ -414,7 +414,7 @@ def stock_update(instance):
                     model=model,
                     price_gross=price,
                     vat_rate=8,
-                    pkwiu_code='26.60.14'
+                    pkwiu_code='26.60.14.0'
                 )
 
                 # update res
@@ -434,6 +434,7 @@ def stock_update(instance):
                     make = 'Phonak'
                 family = line[5]
                 model = line[2]
+                pkwiu_code = '26.60.14.0'
 
             if 'WKŁADKA USZNA' in line[7]:
                 # make
@@ -449,6 +450,7 @@ def stock_update(instance):
                 model = line[2]
                 price = line[8].split('.')
                 price = int(price[0])
+                pkwiu_code = '32.50.23.0'
 
             # check for existing Other_Item_Stock instance with same make, family and model
             existing = Other_Item_Stock.objects.filter(
@@ -474,17 +476,11 @@ def stock_update(instance):
                     model=model,
                     price_gross=price,
                     vat_rate=8,
-                    pkwiu_code='26.60.14'
+                    pkwiu_code=pkwiu_code
                 )
 
                 # update res
                 res['other_new'].append(o)
-
-
-
-# ['2468', 'AUDIO SERVICE GMBH', 'TWARDA', 'NIE', '2', 'WK\xc5\x81ADKA USZNA AUDIO SERVICE', 'P.086.01        ', 'WK\xc5\x81ADKA USZNA WYKONANA INDYWIDUALNIE - PACJENCI DO UKO\xc5\x83CZENIA 26 R\xc5\xbb.
-#  ['2469', 'OTICON A/S', 'RITE', 'NIE', '18', 'WK\xc5\x81ADKA', 'P.086.01        ', 'WK\xc5\x81ADKA USZNA WYKONANA INDYWIDUALNIE - PACJENCI DO UKO\xc5\x83CZENIA 26 R\xc5\xbb.
-# ['2470', 'PHONAK AG', 'ROGER CLIP-ON MIC + 2 X ROGER X (03)', 'NIE', '1678', 'PHONAK ROGER', 'P.087.01        ', 'SYSTEMY WSPOMAGAJ\xc4\x84CE S\xc5\x81YSZENIE
 
     f.close()
     return res
