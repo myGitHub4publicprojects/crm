@@ -9,7 +9,7 @@ from django.conf import settings
 from django.test import TestCase
 from mixer.backend.django import mixer
 from django.core.files import File
-from crm.utils import stock_update
+from crm.stock_updater import stock_update
 from crm.models import SZOI_File, Hearing_Aid_Stock, Other_Item_Stock
 
 
