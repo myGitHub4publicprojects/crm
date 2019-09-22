@@ -82,7 +82,7 @@ class Test_Stock_Update(TestCase):
 
         f.close()
 
-    def test_stock_update_create_17OtherDevices(self):
+    def test_stock_update_create_17_OtherDevices(self):
         '''should create 17 Other_Item_Stock devices'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
         f = open(test_file)
@@ -98,16 +98,88 @@ class Test_Stock_Update(TestCase):
 
         # should return no upadted Other_Item_Stock instances
         self.assertEqual(len(res['other_update']), 0)
+
+        f.close()
     
 
     def test_stock_update_update_existing_ha_prices(self):
         '''update price of 2 HA that are already in stock'''
-        # should not create new Hearing_Aid_Stock
-        pass
+        mixer.blend('crm.Hearing_Aid_Stock',
+            make='Bernafon',
+            family='ZERENA 1',
+            model='B 105',
+            price_gross=1)
+        mixer.blend('crm.Hearing_Aid_Stock',
+            make='Bernafon',
+            family='ZERENA 5',
+            model='ITC',
+            price_gross=1)
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
+        f = open(test_file)
+        # create SZOI_File instance with the above file
+        s = SZOI_File.objects.create(file=File(f))
+        res = stock_update(s)
+
+        # should return 3 (there is one duplicate in the file) upadted Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_update']), 3)
+
+        # new price of ZERENA 1 B 105 should be 3
+        z1 = Hearing_Aid_Stock.objects.get(
+            make='Bernafon',
+            family='ZERENA 1',
+            model='B 105'
+        )
+        self.assertEqual(z1.price_gross, 3)
+
+        # new price of ZERENA 5 ITC should be 4
+        z5 = Hearing_Aid_Stock.objects.get(
+            make='Bernafon',
+            family='ZERENA 5',
+            model='ITC'
+        )
+        self.assertEqual(z5.price_gross, 4)
+
+        f.close()
+
 
     def test_stock_update_update_existing_other_prices(self):
         '''update price of 2 Other Devices that are already in stock'''
-        pass
+        mixer.blend('crm.Other_Item_Stock',
+            make='Audioservice',
+            family='WKŁADKA USZNA',
+            model='TWARDA',
+            price_gross=1)
+        mixer.blend('crm.Other_Item_Stock',
+            make='Phonak',
+            family='PHONAK ROGER',
+            model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
+            price_gross=1)
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
+        f = open(test_file)
+        # create SZOI_File instance with the above file
+        s = SZOI_File.objects.create(file=File(f))
+        res = stock_update(s)
+
+        # should return 2  upadted Other_Item_Stock instances
+        self.assertEqual(len(res['other_update']), 2)
+
+        # new price of Audioservice WKŁADKA USZNA MIĘKKA KOMFORT should be 3
+        a1 = Other_Item_Stock.objects.get(
+            make='Audioservice',
+            family='WKŁADKA USZNA',
+            model='MIĘKKA KOMFORT',
+        )
+        self.assertEqual(a1.price_gross, 3)
+
+        # new price of Phonak ROGER CLIP-ON MIC + 2 X ROGER X (03) should be 4
+        p1 = Other_Item_Stock.objects.get(
+            make='Phonak',
+            family='PHONAK ROGER',
+            model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
+        )
+        self.assertEqual(p1.price_gross, 4)
+
+        f.close()
 
 
     def tearDown(self):

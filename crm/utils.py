@@ -434,10 +434,14 @@ def stock_update(instance):
                     make = 'Phonak'
                 family = line[5]
                 model = line[2]
+                price = line[8].split('.')
+                price = int(price[0])
                 pkwiu_code = '26.60.14.0'
 
             if 'WKŁADKA USZNA' in line[7]:
                 # make
+                if 'STARKEY' in line[1]:
+                    make = 'Audibel'
                 if 'AUDIO SERVICE' in line[1]:
                     make = 'Audioservice'
                 if 'OTICON' in line[1]:
