@@ -51,8 +51,8 @@ class Test_Stock_Update(TestCase):
         res = stock_update(s)
         
         h_all = Hearing_Aid_Stock.objects.all()
-        # should create 1130 Hearing_Aid_Stock
-        self.assertEqual(h_all.count(), 1130)
+        # should create 1131 Hearing_Aid_Stock
+        self.assertEqual(h_all.count(), 1131)
 
         # should not create invalid family name 'ZERENA5'
         z5 = h_all.filter(family='ZERENA5')
@@ -74,8 +74,8 @@ class Test_Stock_Update(TestCase):
         a_s = h_all.filter(family__icontains='SILVERTRIC')
         self.assertFalse(a_s.exists())
 
-        # should return 10 Hearing_Aid_Stock instances
-        self.assertEqual(len(res['ha_new']), 1130)
+        # should return 1131 Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 1131)
 
         # should return 1 updated Hearing_Aid_Stock instance as there is duplicated HA in file
         self.assertEqual(len(res['ha_update']), 1)
