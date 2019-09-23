@@ -139,6 +139,8 @@ class Test_Stock_Update(TestCase):
         )
         self.assertEqual(z5.price_gross, 4)
 
+        # self.assertTrue(False)
+
         f.close()
 
 

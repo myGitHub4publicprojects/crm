@@ -145,6 +145,43 @@ def process_HA(line):
     res['price'] = price
     return res
 
+
+def update_or_create(HA):
+    '''updates existing instance of create a new one,
+    returns a dict with created and updated instances'''
+    res = {'new': None, 'update': None}
+    # check for existing instance with same make, family and model
+    existing = Hearing_Aid_Stock.objects.filter(
+        make=HA['make'],
+        family=HA['family'],
+        model=HA['model'],
+    )
+
+    # update price if needed
+    if existing.exists():
+        for ha in existing:
+            if ha.price_gross != HA['price']:
+                ha.price_gross = HA['price']
+                ha.save()
+                # update res
+                res['update'] = ha
+
+    else:
+        # create instance
+        ha = Hearing_Aid_Stock.objects.create(
+            make=HA['make'],
+            family=HA['family'],
+            model=HA['model'],
+            price_gross=HA['price'],
+            vat_rate=8,
+            pkwiu_code='26.60.14.0'
+        )
+
+        # update res
+        res['new'] = ha
+
+    return res
+
 def stock_update(instance):
     '''accepts SZOI_File instance, on the basis of its file field:
     create new Hearing_Aid_Stock and Other_Item_Stock instances,
@@ -165,36 +202,45 @@ def stock_update(instance):
 
         if 'APARAT SŁUCHOWY' in line[7]:
             HA = process_HA(line)
+            print('HA: ', HA)
 
-            # check for existing Hearing_Aid_Stock instance with same make, family and model
-            existing = Hearing_Aid_Stock.objects.filter(
-                make=HA['make'],
-                family=HA['family'],
-                model=HA['model'],
-            )
+            u = update_or_create(HA)
+            print('u: ', u)
+            
+            if u['new'] != None:
+                res['ha_new'].append(u['new'])
+            if u['update'] != None:
+                res['ha_update'].append(u['update'])
 
-            # update price of the HA if needed
-            if existing.exists():
-                for ha in existing:
-                    if ha.price_gross != HA['price']:
-                        ha.price_gross = HA['price']
-                        ha.save()
-                        # update res
-                        res['ha_update'].append(ha)
+            # # check for existing Hearing_Aid_Stock instance with same make, family and model
+            # existing = Hearing_Aid_Stock.objects.filter(
+            #     make=HA['make'],
+            #     family=HA['family'],
+            #     model=HA['model'],
+            # )
 
-            else:
-                # create Hearing_Aid_Stock instance
-                ha = Hearing_Aid_Stock.objects.create(
-                    make=HA['make'],
-                    family=HA['family'],
-                    model=HA['model'],
-                    price_gross=HA['price'],
-                    vat_rate=8,
-                    pkwiu_code='26.60.14.0'
-                )
+            # # update price of the HA if needed
+            # if existing.exists():
+            #     for ha in existing:
+            #         if ha.price_gross != HA['price']:
+            #             ha.price_gross = HA['price']
+            #             ha.save()
+            #             # update res
+            #             res['ha_update'].append(ha)
 
-                # update res
-                res['ha_new'].append(ha)
+            # else:
+            #     # create Hearing_Aid_Stock instance
+            #     ha = Hearing_Aid_Stock.objects.create(
+            #         make=HA['make'],
+            #         family=HA['family'],
+            #         model=HA['model'],
+            #         price_gross=HA['price'],
+            #         vat_rate=8,
+            #         pkwiu_code='26.60.14.0'
+            #     )
+
+            #     # update res
+            #     res['ha_new'].append(ha)
 
         # Other_Item_Stock
         if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
