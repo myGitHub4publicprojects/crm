@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from .models import (Patient, Invoice, PCPR_Estimate,
-                     Hearing_Aid_Stock, Other_Item_Stock)
+                     Hearing_Aid_Stock, Other_Item_Stock, SZOI_File_Usage)
 
 class PatientForm(forms.ModelForm):
 	class Meta:
@@ -88,3 +88,10 @@ class Other_Item_StockForm(forms.ModelForm):
 		existing = existing.exclude(id=self.instance.id)
 		if existing.exists():
 			raise forms.ValidationError("Jest już produkt o takiej nazwie")
+
+
+class SZOI_Usage_Form(forms.ModelForm):
+    # produce empty form - needed only to post request to server to proceed with a function
+    class Meta:
+    	model = SZOI_File_Usage
+    	fields = ['id']

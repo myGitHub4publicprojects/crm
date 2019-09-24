@@ -69,4 +69,8 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/szoi_detail/$',
         views.SZOIDetail.as_view(), name='szoi_detail'),
     url(r'^szoi_list/$', views.SZOIList.as_view(), name='szoi_list'),
+
+    url(r'^(?P<pk>[0-9]+)/szoi_usage_detail/$',
+        views.SZOI_UsageDetail.as_view(), name='szoi_usage_detail'),
+    # url(r'^szoi_usage_list/$', views.SZOI_UsageList.as_view(), name='szoi_usage_list'),
 ]

@@ -20,15 +20,17 @@ class SZOI_File(models.Model):
 		return reverse('crm:szoi_detail', kwargs={'pk': self.pk})
 
 	def __unicode__(self):
-		return self.filename + ' ' + self.uploaded_at
+		return self.filename() + ' ' + str(self.uploaded_at)
 
 
 class SZOI_File_Usage(models.Model):
 	'''when was the uploaded file used what was produced'''
 	szoi_file = models.ForeignKey(SZOI_File, on_delete=models.CASCADE)
 	used = models.DateTimeField(auto_now_add=True)
-
 	error_log = models.TextField(blank=True)
+
+	def get_absolute_url(self):
+		return reverse('crm:szoi_usage_detail', kwargs={'pk': self.pk})
 
 class Patient(models.Model):
 	first_name = models.CharField(max_length=120)

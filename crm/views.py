@@ -18,12 +18,13 @@ from django.forms.models import modelform_factory
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from .forms import (PatientForm, DeviceForm, InvoiceForm,
-                    PCPR_EstimateForm, Hearing_Aid_StockForm, Other_Item_StockForm)
+                    PCPR_EstimateForm, Hearing_Aid_StockForm, Other_Item_StockForm,
+                    SZOI_Usage_Form)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
-                     Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
-                     NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
-                	Reminder_PCPR,  Reminder_NFZ_Confirmed,
-                     Reminder_NFZ_New, Corrective_Invoice, SZOI_File)
+                    Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
+                    NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
+					Reminder_PCPR,  Reminder_NFZ_Confirmed,
+                    Reminder_NFZ_New, Corrective_Invoice, SZOI_File, SZOI_File_Usage)
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
@@ -1084,7 +1085,37 @@ class SZOICreate(CreateView):
 
 class SZOIDetail(DetailView):
 	model = SZOI_File
-	
+
+	def get_context_data(self, **kwargs):
+		context = super(SZOIDetail, self).get_context_data(**kwargs)
+		context['form'] = SZOI_Usage_Form
+		szoi_file = self.get_object()
+		context['szoi_usage_list'] = szoi_file.szoi_file_usage_set.all()
+		return context
+
+	def post(self, request, *args, **kwargs):
+		form = SZOI_Usage_Form(request.POST)
+		if form.is_valid():
+			print('valid form')
+			print(request.POST)
+			
+			s = SZOI_File_Usage.objects.create(
+				szoi_file=self.get_object()
+				)
+
+			# process csv file
+			# create SZOI_File_Usage instance
+			# add ha and other to SZOI_File_Usage instance
+			# if errors - add to SZOI_File_Usage.errors
+
+			return redirect('crm:szoi_usage_detail', s.id)
+
+		else:
+			self.object = self.get_object()
+			context = super(SZOIDetail, self).get_context_data(**kwargs)
+			context['form'] = form
+			return self.render_to_response( context=context)
+
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(SZOIDetail, self).dispatch(*args, **kwargs)
@@ -1095,3 +1126,18 @@ class SZOIList(ListView):
 
 	def dispatch(self, *args, **kwargs):
 		return super(SZOIList, self).dispatch(*args, **kwargs)
+
+
+class SZOI_UsageDetail(DetailView):
+	model = SZOI_File_Usage
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(SZOI_UsageDetail, self).dispatch(*args, **kwargs)
+
+
+# class SZOI_UsageList(ListView):
+# 	model = SZOI_File_Usage
+
+# 	def dispatch(self, *args, **kwargs):
+# 		return super(SZOI_UsageList, self).dispatch(*args, **kwargs)
