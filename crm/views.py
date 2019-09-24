@@ -11,6 +11,7 @@ from django.forms.formsets import formset_factory
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from django.utils.decorators import method_decorator
 from django.forms.widgets import Textarea
 from django.forms.models import modelform_factory
@@ -22,7 +23,7 @@ from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                 	Reminder_PCPR,  Reminder_NFZ_Confirmed,
-                     Reminder_NFZ_New, Corrective_Invoice)
+                     Reminder_NFZ_New, Corrective_Invoice, SZOI_File)
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
@@ -1071,3 +1072,26 @@ class OtherStockDelete(DeleteView):
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(OtherStockDelete, self).dispatch(*args, **kwargs)
+
+
+class SZOICreate(CreateView):
+	model = SZOI_File
+	fields = ['file']
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(SZOICreate, self).dispatch(*args, **kwargs)
+
+class SZOIDetail(DetailView):
+	model = SZOI_File
+	
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(SZOIDetail, self).dispatch(*args, **kwargs)
+
+
+class SZOIList(ListView):
+	model = SZOI_File
+
+	def dispatch(self, *args, **kwargs):
+		return super(SZOIList, self).dispatch(*args, **kwargs)

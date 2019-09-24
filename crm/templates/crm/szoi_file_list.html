@@ -1,0 +1,14 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+
+<h1>Zaimportowane pliki z SZOI</h1>
+<ul>
+    {% for f in object_list %}
+    <li>{{ f.filename }} - {{ f.uploaded_at }}</li>
+    {% empty %}
+    <li>Nie ma żadnych plików.</li>
+    {% endfor %}
+</ul>
+
+{% endblock content %}

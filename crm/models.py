@@ -226,16 +226,23 @@ class SZOI_File(models.Model):
 	def filename(self):
 		return os.path.basename(self.file.name)
 
+	def get_absolute_url(self):
+		return reverse('crm:szoi_detail', kwargs={'pk': self.pk})
+
 	def __unicode__(self):
 		return self.filename + ' ' + self.uploaded_at
 
 
 # class SZOI_File_Usage(models.Model):
 # 	'''when was the uploaded file used what was produced'''
-# 	szoi_file = models.ForeignKey(SZOI_File)
+# 	szoi_file = models.ForeignKey(SZOI_File, on_delete=models.CASCADE)
 # 	used = models.DateTimeField(auto_now_add=True)
-# 	created_HA_Stock - one to many, all hearing aids created with this file
+
+# 	szoi = models.ForeignKey(SZOI_File_Usage, on_delete=models.CASCADE)
+	
+# 	 - one to many, all hearing aids created with this file
 # 	updated_HA - one to many, all hearing aids updated with this file
 # 	created_Other - one to many, all other devices created with this file
 # 	updated_Other - one to many, all other devices updated with this file
-# 	error_log = models.TextField()
+
+# 	error_log = models.TextField(blank=True)

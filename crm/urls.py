@@ -63,4 +63,10 @@ urlpatterns = [
         views.OtherStockUpdate.as_view(), name='edit_other'),
     url(r'^(?P<pk>[0-9]+)/delete_other/$',
         views.OtherStockDelete.as_view(), name='delete_other'),
+    
+    url(r'^szoi_create/$',
+            views.SZOICreate.as_view(), name='szoi_create'),
+    url(r'^(?P<pk>[0-9]+)/szoi_detail/$',
+        views.SZOIDetail.as_view(), name='szoi_detail'),
+    url(r'^szoi_list/$', views.SZOIList.as_view(), name='szoi_list'),
 ]
