@@ -8,6 +8,27 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
+class SZOI_File(models.Model):
+	'''File uploaded from SZOI and containing all stock approved by NFZ'''
+	file = models.FileField(upload_to='documents/')
+	uploaded_at = models.DateTimeField(auto_now_add=True)
+
+	def filename(self):
+		return os.path.basename(self.file.name)
+
+	def get_absolute_url(self):
+		return reverse('crm:szoi_detail', kwargs={'pk': self.pk})
+
+	def __unicode__(self):
+		return self.filename + ' ' + self.uploaded_at
+
+
+class SZOI_File_Usage(models.Model):
+	'''when was the uploaded file used what was produced'''
+	szoi_file = models.ForeignKey(SZOI_File, on_delete=models.CASCADE)
+	used = models.DateTimeField(auto_now_add=True)
+
+	error_log = models.TextField(blank=True)
 
 class Patient(models.Model):
 	first_name = models.CharField(max_length=120)
@@ -122,9 +143,15 @@ class Our_Device(models.Model):
 	class Meta:
 		abstract = True
 
+
 class Hearing_Aid_Stock(Device):
 	'''Company hearing aids that are offered or were offered'''
 	added = models.DateField(default=datetime.date.today())
+	szoi_new = models.ForeignKey(
+            SZOI_File_Usage, related_name="ha_szoi_new", null=True, blank=True)
+	szoi_updated = models.ForeignKey(
+		SZOI_File_Usage, related_name="ha_szoi_updated", null=True, blank=True)
+
 
 	def get_absolute_url(self):
 		return reverse('crm:edit_ha', kwargs={'pk': self.pk})
@@ -142,6 +169,10 @@ class Hearing_Aid(Device, Our_Device):
 class Other_Item_Stock(Device):
 	'''Company devices that are offered or were offered'''
 	added = models.DateField(default=datetime.date.today())
+	szoi_new = models.ForeignKey(
+            SZOI_File_Usage, related_name="other_szoi_new", null=True, blank=True)
+	szoi_updated = models.ForeignKey(
+		SZOI_File_Usage, related_name="other_szoi_updated", null=True, blank=True)
 
 	def get_absolute_url(self):
 		return reverse('crm:edit_other', kwargs={'pk': self.pk})
@@ -218,31 +249,4 @@ class Reminder_Collection(Reminder):
 	ha = models.ForeignKey(Hearing_Aid, on_delete=models.CASCADE)
 
 
-class SZOI_File(models.Model):
-	'''File uploaded from SZOI and containing all stock approved by NFZ'''
-	file = models.FileField(upload_to='documents/')
-	uploaded_at = models.DateTimeField(auto_now_add=True)
 
-	def filename(self):
-		return os.path.basename(self.file.name)
-
-	def get_absolute_url(self):
-		return reverse('crm:szoi_detail', kwargs={'pk': self.pk})
-
-	def __unicode__(self):
-		return self.filename + ' ' + self.uploaded_at
-
-
-# class SZOI_File_Usage(models.Model):
-# 	'''when was the uploaded file used what was produced'''
-# 	szoi_file = models.ForeignKey(SZOI_File, on_delete=models.CASCADE)
-# 	used = models.DateTimeField(auto_now_add=True)
-
-# 	szoi = models.ForeignKey(SZOI_File_Usage, on_delete=models.CASCADE)
-	
-# 	 - one to many, all hearing aids created with this file
-# 	updated_HA - one to many, all hearing aids updated with this file
-# 	created_Other - one to many, all other devices created with this file
-# 	updated_Other - one to many, all other devices updated with this file
-
-# 	error_log = models.TextField(blank=True)
