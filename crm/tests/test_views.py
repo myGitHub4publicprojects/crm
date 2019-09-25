@@ -2275,7 +2275,7 @@ class TestSZOI_UsageCreate(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-    def test_szoi_detail_10HA(self):
+    def test_szoi_usage_10HA(self):
         '''there is 10 HA in a file, no preexisting'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
         # create SZOI_File instance with the above file
@@ -2295,8 +2295,33 @@ class TestSZOI_UsageCreate(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
+        szoi_all = SZOI_File_Usage.objects.all()
+        szoi = szoi_all.first()
         # should be one SZOI_File_Usage instance
-        self.assertEqual(SZOI_File_Usage.objects.all().count(), 1)
+        self.assertEqual(szoi_all.count(), 1)
+
+        # should be 10 HA Stock instances
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 10)
+
+        # should be 0 Other instances
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+
+        # there should be 10 new HA Stock associated with SZOI_File_Usage instance
+        self.assertEqual(szoi.ha_szoi_new.all().count(), 10)
+
+        # there should be no errors
+        self.assertEqual(szoi.error_log, '')
+
+
+    def test_szoi_usage_10HA_update(self):
+        pass
+    def test_szoi_usage_10HA_empty_file(self):
+        pass
+    def test_szoi_usage_10HA_errors(self):
+        pass
+    def test_szoi_usage_1131HA_17Other(self):
+        pass
+
 
     def tearDown(self):
         # Remove the directory after the test
