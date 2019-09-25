@@ -18,6 +18,25 @@ class Test_Stock_Update(TestCase):
         self.test_dir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.test_dir
 
+    def test_stock_update_empty(self):
+        '''test file is empty'''
+        test_file = os.getcwd() + '/crm/tests/test_files/empty.csv'
+        f = open(test_file)
+        # should be 0 lines in the file
+        self.assertEqual(sum(1 for line in f), 0)
+        # create SZOI_File instance with the above file
+        s = SZOI_File.objects.create(file=File(f))
+
+        res = stock_update(s)
+        # should create 0 Hearing_Aid_Stock
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 0)
+
+        # should create no Other_Item_Stock
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+
+        f.close()
+
+
     def test_stock_update_create_10HA(self):
         '''test file contains 10 lines with HA'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'

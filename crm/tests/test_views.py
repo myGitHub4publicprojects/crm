@@ -2315,8 +2315,6 @@ class TestSZOI_UsageCreate(TestCase):
 
     def test_szoi_usage_10HA_update(self):
         pass
-    def test_szoi_usage_10HA_empty_file(self):
-        pass
     def test_szoi_usage_10HA_errors(self):
         pass
     def test_szoi_usage_1131HA_17Other(self):
