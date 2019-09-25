@@ -7,14 +7,21 @@ from django.contrib import auth
 from django.core.paginator import Paginator
 from django.contrib.messages import get_messages
 
+import os
 import pytest
+import shutil
+import tempfile
+
+from django.conf import settings
+from django.core.files import File
 from datetime import datetime, timedelta
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
-                     Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New)
+                     Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New,
+                     SZOI_File, SZOI_File_Usage)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -2250,3 +2257,47 @@ class TestInvoiceUpdateView(TestCase):
         self.assertEqual(invoice.note, 'test note')
         # should modify invoice date to be today
         self.assertEqual(invoice.date, today)
+
+
+class TestSZOI_UsageCreate(TestCase):
+    def setUp(self):
+        create_user()
+        self.test_dir = tempfile.mkdtemp()
+        settings.MEDIA_ROOT = self.test_dir
+
+    def test_anonymous(self):
+        '''should redirect to login'''
+        url = reverse('crm:szoi_detail', args=(1,))
+        expected_url = reverse('login') + '?next=/1/szoi_detail/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_szoi_detail_10HA(self):
+        '''there is 10 HA in a file, no preexisting'''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
+        # create SZOI_File instance with the above file
+        s = SZOI_File.objects.create(file=File(open(test_file)))
+
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:szoi_usage_create')
+        expected_url = reverse('crm:szoi_usage_detail', args=(1,))
+        data = {
+            # form data
+            'szoi_file': s.id,
+        }
+
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        # should be one SZOI_File_Usage instance
+        self.assertEqual(SZOI_File_Usage.objects.all().count(), 1)
+
+    def tearDown(self):
+        # Remove the directory after the test
+        shutil.rmtree(self.test_dir)

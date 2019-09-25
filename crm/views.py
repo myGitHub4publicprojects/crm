@@ -1093,29 +1093,6 @@ class SZOIDetail(DetailView):
 		context['szoi_usage_list'] = szoi_file.szoi_file_usage_set.all()
 		return context
 
-	def post(self, request, *args, **kwargs):
-		form = SZOI_Usage_Form(request.POST)
-		if form.is_valid():
-			print('valid form')
-			print(request.POST)
-			
-			s = SZOI_File_Usage.objects.create(
-				szoi_file=self.get_object()
-				)
-
-			# process csv file
-			# create SZOI_File_Usage instance
-			# add ha and other to SZOI_File_Usage instance
-			# if errors - add to SZOI_File_Usage.errors
-
-			return redirect('crm:szoi_usage_detail', s.id)
-
-		else:
-			self.object = self.get_object()
-			context = super(SZOIDetail, self).get_context_data(**kwargs)
-			context['form'] = form
-			return self.render_to_response( context=context)
-
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(SZOIDetail, self).dispatch(*args, **kwargs)
@@ -1127,6 +1104,34 @@ class SZOIList(ListView):
 	def dispatch(self, *args, **kwargs):
 		return super(SZOIList, self).dispatch(*args, **kwargs)
 
+class SZOI_UsageCreate(CreateView):
+	model = SZOI_File_Usage
+
+	def post(self, request, *args, **kwargs):
+		form = SZOI_Usage_Form(request.POST)
+		if form.is_valid():
+			s = SZOI_File_Usage.objects.create(
+				szoi_file=form.cleaned_data['szoi_file']
+				)
+
+			# process csv file
+			# create SZOI_File_Usage instance
+			# add ha and other to SZOI_File_Usage instance
+			# if errors - add to SZOI_File_Usage.errors
+
+			return redirect('crm:szoi_usage_detail', s.id)
+
+			# return redirect('crm:szoi_detail', 1)
+
+		else:
+			self.object = self.get_object()
+			context = super(SZOI_UsageCreate, self).get_context_data(**kwargs)
+			context['form'] = form
+			return self.render_to_response( context=context)
+
+	@method_decorator(login_required)
+	def dispatch(self, *args, **kwargs):
+		return super(SZOI_UsageCreate, self).dispatch(*args, **kwargs)
 
 class SZOI_UsageDetail(DetailView):
 	model = SZOI_File_Usage

@@ -91,7 +91,6 @@ class Other_Item_StockForm(forms.ModelForm):
 
 
 class SZOI_Usage_Form(forms.ModelForm):
-    # produce empty form - needed only to post request to server to proceed with a function
     class Meta:
     	model = SZOI_File_Usage
-    	fields = ['id']
+    	fields = ['szoi_file']

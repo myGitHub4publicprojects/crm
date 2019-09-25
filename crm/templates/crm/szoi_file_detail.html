@@ -6,9 +6,8 @@
 <p>Zaimportowany: {{ object.uploaded_at }}</p>
 <p>Nazwa pliku: {{ object.filename }}</p>
 
-
-<form method="post">{% csrf_token %}
-    {{ form }}
+<form method="post" action="{% url 'crm:szoi_usage_create' %}">{% csrf_token %}
+    <input type="hidden" name="szoi_file" value="{{ object.id }}">
     <input type="submit" value="Rozpocznij aktualizację towarów">
 </form>
 
