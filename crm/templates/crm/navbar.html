@@ -32,6 +32,13 @@
                 <button class="btn btn-outline-success my-2 my-sm-0 text-white">TOWARY</button>
             </a>
         </li>
+        {% if request.user.is_superuser %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'crm:szoi_list' %}">
+                <button class="btn btn-outline-success my-2 my-sm-0 text-white">SZOI</button>
+            </a>
+        </li>
+        {% endif %}
         </ul>
 
         

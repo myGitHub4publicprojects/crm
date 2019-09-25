@@ -3,12 +3,24 @@
 {% block content %}
 
 <h1>Zaimportowane pliki z SZOI</h1>
+<a href="{% url 'crm:szoi_create' %}">
+    <div class="btn btn-primary mb-3">Dodaj nowy plik z SZOI</div>
+</a>
 <ul>
     {% for f in object_list %}
-    <li>{{ f.filename }} - {{ f.uploaded_at }}</li>
+    <li><a href="{% url 'crm:szoi_detail' f.id %}">
+        Nazwa: {{ f.filename }}, dodany: {{ f.uploaded_at }}</a></li>
     {% empty %}
     <li>Nie ma żadnych plików.</li>
     {% endfor %}
 </ul>
 
 {% endblock content %}
+
+
+<ul>
+    {% for i in szoi_usage_list %}
+    <li><a href="{% url 'crm:szoi_usage_detail' i.id %}">{{ i.used }}</a>
+        {% if i.error_log %}BŁĘDY!{% endif %}</li>
+    {% endfor %}
+</ul>
