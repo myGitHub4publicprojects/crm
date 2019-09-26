@@ -124,39 +124,42 @@ class Test_Stock_Update(TestCase):
     def test_stock_update_update_existing_ha_prices(self):
         '''update price of 2 HA that are already in stock'''
         mixer.blend('crm.Hearing_Aid_Stock',
-            make='Bernafon',
-            family='ZERENA 1',
-            model='B 105',
-            price_gross=1)
+                    make='Bernafon',
+                    family='ZERENA 9',
+                    model='B 105',
+                    price_gross=1)
         mixer.blend('crm.Hearing_Aid_Stock',
-            make='Bernafon',
-            family='ZERENA 5',
-            model='ITC',
-            price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
+                    make='Audibel',
+                    family='A4 IQ GOLD',
+                    model='ITE',
+                    price_gross=1)
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
         f = open(test_file)
         # create SZOI_File instance with the above file
         s = SZOI_File.objects.create(file=File(f))
         res = stock_update(s)
 
-        # should return 3 (there is one duplicate in the file) upadted Hearing_Aid_Stock instances
-        self.assertEqual(len(res['ha_update']), 3)
+        # should return 2 upadted Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_update']), 2)
 
-        # new price of ZERENA 1 B 105 should be 3
-        z1 = Hearing_Aid_Stock.objects.get(
+        # should return 8 new Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 8)
+
+        # new price of ZERENA 9 B 105 should be 8100
+        z9 = Hearing_Aid_Stock.objects.get(
             make='Bernafon',
-            family='ZERENA 1',
+            family='ZERENA 9',
             model='B 105'
         )
-        self.assertEqual(z1.price_gross, 3)
+        self.assertEqual(z9.price_gross, 8100)
 
-        # new price of ZERENA 5 ITC should be 4
-        z5 = Hearing_Aid_Stock.objects.get(
-            make='Bernafon',
-            family='ZERENA 5',
-            model='ITC'
+        # new price of Audibel A4 IQ GOLD ITE should be 5400
+        a4 = Hearing_Aid_Stock.objects.get(
+            make='Audibel',
+            family='A4 IQ GOLD',
+            model='ITE'
         )
-        self.assertEqual(z5.price_gross, 4)
+        self.assertEqual(a4.price_gross, 5400)
 
         # self.assertTrue(False)
 
