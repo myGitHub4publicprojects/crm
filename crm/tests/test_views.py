@@ -2385,6 +2385,69 @@ class TestSZOI_UsageCreate(TestCase):
 
         f.close()
 
+    def test_szoi_usage_update_other(self):
+        '''there are 2 preexisting other devices'''
+        mixer.blend('crm.Other_Item_Stock',
+                    make='Audioservice',
+                    family='WKŁADKA USZNA',
+                    model='TWARDA',
+                    price_gross=1)
+        mixer.blend('crm.Other_Item_Stock',
+                    make='Phonak',
+                    family='PHONAK ROGER',
+                    model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
+                    price_gross=1)
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
+        # create SZOI_File instance with the above file
+        f = open(test_file)
+        s = SZOI_File.objects.create(file=File(open(test_file)))
+
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:szoi_usage_create')
+        expected_url = reverse('crm:szoi_usage_detail', args=(1,))
+        data = {
+            # form data
+            'szoi_file': s.id,
+        }
+
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        # new price of Audioservice WKŁADKA USZNA MIĘKKA KOMFORT should be 3
+        a1 = Other_Item_Stock.objects.get(
+            make='Audioservice',
+            family='WKŁADKA USZNA',
+            model='MIĘKKA KOMFORT',
+        )
+        self.assertEqual(a1.price_gross, 3)
+
+        # new price of Phonak ROGER CLIP-ON MIC + 2 X ROGER X (03) should be 4
+        p1 = Other_Item_Stock.objects.get(
+            make='Phonak',
+            family='PHONAK ROGER',
+            model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
+        )
+        self.assertEqual(p1.price_gross, 4)
+
+        szoi_all = SZOI_File_Usage.objects.all()
+        szoi = szoi_all.first()
+
+        # should be 10 Other instances
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 17)
+
+        # there should be 15 new Other associated with SZOI_File_Usage instance
+        self.assertEqual(szoi.other_szoi_new.all().count(), 15)
+
+        # there should be 2 updated Other Stock associated with SZOI_File_Usage instance
+        self.assertEqual(szoi.other_szoi_updated.all().count(), 2)
+
+        # there should be no errors
+        self.assertEqual(szoi.error_log, '')
+
+        f.close()
 
     def test_szoi_usage_10HA_errors(self):
         pass
