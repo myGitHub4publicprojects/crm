@@ -10,7 +10,8 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 from django.core.files import File
 from crm.stock_updater import stock_update
-from crm.models import SZOI_File, Hearing_Aid_Stock, Other_Item_Stock
+from crm.models import (SZOI_File, Hearing_Aid_Stock, Other_Item_Stock, SZOI_File_Usage,
+    SZOI_Errors)
 
 
 class Test_Stock_Update(TestCase):
@@ -24,10 +25,11 @@ class Test_Stock_Update(TestCase):
         f = open(test_file)
         # should be 0 lines in the file
         self.assertEqual(sum(1 for line in f), 0)
-        # create SZOI_File instance with the above file
-        s = SZOI_File.objects.create(file=File(f))
+       # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
-        res = stock_update(s)
+        res = stock_update(szoi_file, szoi_file_usage)
         # should create 0 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 0)
 
@@ -43,10 +45,11 @@ class Test_Stock_Update(TestCase):
         f = open(test_file)
         # should be 18 lines in the file
         self.assertEqual(sum(1 for line in f), 18)
-        # create SZOI_File instance with the above file
-        s = SZOI_File.objects.create(file=File(f))
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
-        res = stock_update(s)
+        res = stock_update(szoi_file, szoi_file_usage)
         # should create 10 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 10)
 
@@ -58,16 +61,48 @@ class Test_Stock_Update(TestCase):
         
         f.close()
 
+    def test_stock_update_with_errors_in_file(self):
+        '''second and third lines in a file have only 2 items'''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
+        f = open(test_file)
+       
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
+
+        res = stock_update(szoi_file, szoi_file_usage)
+
+        # should create 8 Hearing_Aid_Stock
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 8)
+
+        # should create no Other_Item_Stock
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+
+        # should return 8 Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 8)
+
+        errors = SZOI_Errors.objects.all()
+        # should create 2 SZOI_Errors instances
+        self.assertEqual(errors.count(), 2)
+
+        error1 = errors[0]
+        error2 = errors[1]
+        self.assertEqual(error1.line, '2;BERNAFON AG;8100.00\n')
+        self.assertEqual(error2.line, '3;SONOVA AG;3100.00\n')
+        
+        f.close()
+
 
     def test_stock_update_ignore_typos(self):
         '''handle typos in "ZERENA5", "Audibel SILVERTRIC" and "JUNA7 NANO"'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
         f = open(test_file)
 
-        # create SZOI_File instance with the above file
-        s = SZOI_File.objects.create(file=File(f))
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
-        res = stock_update(s)
+        res = stock_update(szoi_file, szoi_file_usage)
         
         h_all = Hearing_Aid_Stock.objects.all()
         # should create 1131 Hearing_Aid_Stock
@@ -105,9 +140,11 @@ class Test_Stock_Update(TestCase):
         '''should create 17 Other_Item_Stock devices'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
         f = open(test_file)
-        # create SZOI_File instance with the above file
-        s = SZOI_File.objects.create(file=File(f))
-        res = stock_update(s)
+       # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
+
+        res = stock_update(szoi_file, szoi_file_usage)
 
         # should create 17 Other_Item_Stock
         self.assertEqual(Other_Item_Stock.objects.all().count(), 17)
@@ -135,9 +172,11 @@ class Test_Stock_Update(TestCase):
                     price_gross=1)
         test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
         f = open(test_file)
-        # create SZOI_File instance with the above file
-        s = SZOI_File.objects.create(file=File(f))
-        res = stock_update(s)
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
+
+        res = stock_update(szoi_file, szoi_file_usage)
 
         # should return 2 upadted Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_update']), 2)
@@ -180,10 +219,11 @@ class Test_Stock_Update(TestCase):
             price_gross=1)
         test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
         f = open(test_file)
-        # create SZOI_File instance with the above file
-        s = SZOI_File.objects.create(file=File(f))
-        res = stock_update(s)
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
+        res = stock_update(szoi_file, szoi_file_usage)
         # should return 2  upadted Other_Item_Stock instances
         self.assertEqual(len(res['other_update']), 2)
 

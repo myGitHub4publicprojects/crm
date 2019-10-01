@@ -2449,8 +2449,47 @@ class TestSZOI_UsageCreate(TestCase):
 
         f.close()
 
-    def test_szoi_usage_10HA_errors(self):
-        pass
+    # def test_szoi_usage_10HA_errors(self):
+    #     '''second and third lines in a file have only 2 items'''
+    #     test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
+    #     # create SZOI_File instance with the above file
+    #     f = open(test_file)
+    #     s = SZOI_File.objects.create(file=File(f))
+
+    #     self.client.login(username='john', password='glassonion')
+    #     url = reverse('crm:szoi_usage_create')
+    #     expected_url = reverse('crm:szoi_usage_detail', args=(1,))
+    #     data = {
+    #         # form data
+    #         'szoi_file': s.id,
+    #     }
+
+    #     response = self.client.post(url, data, follow=True)
+    #     # should give code 200 as follow is set to True
+    #     assert response.status_code == 200
+    #     self.assertRedirects(response, expected_url,
+    #                          status_code=302, target_status_code=200)
+
+    #     szoi_all = SZOI_File_Usage.objects.all()
+    #     szoi = szoi_all.first()
+    #     # should be one SZOI_File_Usage instance
+    #     self.assertEqual(szoi_all.count(), 1)
+
+    #     # should be 10 HA Stock instances
+    #     self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 8)
+
+    #     # should be 0 Other instances
+    #     self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+
+    #     # there should be 10 new HA Stock associated with SZOI_File_Usage instance
+    #     self.assertEqual(szoi.ha_szoi_new.all().count(), 8)
+
+    #     # there should be no errors
+    #     self.assertEqual(szoi.error_log, [])
+
+    #     f.close()
+
+
     def test_szoi_usage_1131HA_17Other(self):
         pass
 

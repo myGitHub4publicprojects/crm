@@ -1118,9 +1118,8 @@ class SZOI_UsageCreate(CreateView):
 				)
 
 			# process csv file
-			devices = stock_update(szoi_file)
+			devices = stock_update(szoi_file, s)
 
-			print('dev: ', devices)
 			
 			# add ha and other to SZOI_File_Usage instance
 			for ha_new in devices['ha_new']:
@@ -1136,9 +1135,30 @@ class SZOI_UsageCreate(CreateView):
 				o_update.szoi_updated = s
 				o_update.save()
 
-			# if errors - add to SZOI_File_Usage.error_log
-
 			return redirect('crm:szoi_usage_detail', s.id)
+
+
+			# # if file contains correct structure:
+			# try:
+			# 	# process csv file
+			# 	devices = stock_update(szoi_file)
+				
+			# 	# add ha and other to SZOI_File_Usage instance
+			# 	for ha_new in devices['ha_new']:
+			# 		ha_new.szoi_new = s
+			# 		ha_new.save()
+			# 	for ha_update in devices['ha_update']:
+			# 		ha_update.szoi_updated = s
+			# 		ha_update.save()
+			# 	for o_new in devices['other_new']:
+			# 		o_new.szoi_new = s
+			# 		o_new.save()
+			# 	for o_update in devices['other_update']:
+			# 		o_update.szoi_updated = s
+			# 		o_update.save()
+			# # if incorrect structure of the file:
+			# except Exception as e:
+			# 	print(e)
 
 
 		else:

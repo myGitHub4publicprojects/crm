@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item, Other_Item_Stock
+import traceback
+
+from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item, Other_Item_Stock, SZOI_Errors
 
 def lines_over_8(f):
     # enables to iterate over lines in a field starting from the 8th line, yields one line
@@ -219,47 +221,56 @@ def update_or_create(items_class, item):
 
     return res
 
-def stock_update(instance):
-    '''accepts SZOI_File instance, on the basis of its file field:
+
+def stock_update(szoi_file, x):
+    '''accepts SZOI_File and SZOI_File_Usage instance:
     create new Hearing_Aid_Stock and Other_Item_Stock instances,
     upadates price for devices that are already in stock,
+    if errors occure create SZOI_Error instance,
     returns a dict with created and updated HA and Other:
     {'ha_new': [<instance1>, <instance2], 'other_new': [<instance1>, <instance2>],
     'ha_update': [<instance1>, <instance2], 'other_update': [<instance1>, <instance2>]}'''
     res = {'ha_new': [], 'other_new': [], 'ha_update': [], 'other_update': []}
-    file_path = instance.file.path
+    file_path = szoi_file.file.path
     f = open(file_path)
 
     for i in lines_over_8(f):
         line = i.split(';')
+        try:
+            # assume price for adults and children are the same, avoid duplicates
+            if 'PACJENCI DO UKOŃCZENIA 26 RŻ.' in line[7]:
+                continue
 
-        # assume price for adults and children are the same, avoid duplicates
-        if 'PACJENCI DO UKOŃCZENIA 26 RŻ.' in line[7]:
-            continue
+            # Hearing_Aid_Stock
+            if 'APARAT SŁUCHOWY' in line[7]:
+                # create a dict from a line
+                HA = process_HA(line)
+                # update exisitng or create new HA instance
+                u = update_or_create(Hearing_Aid_Stock, HA)
 
-        # Hearing_Aid_Stock
-        if 'APARAT SŁUCHOWY' in line[7]:
-            # create a dict from a line
-            HA = process_HA(line)
-            # update exisitng or create new HA instance
-            u = update_or_create(Hearing_Aid_Stock, HA)
+                if u['new'] != None:
+                    res['ha_new'].append(u['new'])
+                if u['update'] != None:
+                    res['ha_update'].append(u['update'])
 
-            if u['new'] != None:
-                res['ha_new'].append(u['new'])
-            if u['update'] != None:
-                res['ha_update'].append(u['update'])
+            # Other_Item_Stock
+            if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
+                # create a dict from a line
+                other = process_Other(line)
+                # update existing or create new device instance
+                u = update_or_create(Other_Item_Stock, other)
 
-        # Other_Item_Stock
-        if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
-            # create a dict from a line
-            other = process_Other(line)
-            # update existing or create new device instance
-            u = update_or_create(Other_Item_Stock, other)
-
-            if u['new'] != None:
-                res['other_new'].append(u['new'])
-            if u['update'] != None:
-                res['other_update'].append(u['update'])
-
+                if u['new'] != None:
+                    res['other_new'].append(u['new'])
+                if u['update'] != None:
+                    res['other_update'].append(u['update'])
+        
+        except:
+            print('i: ', traceback.format_exc())
+            SZOI_Errors.objects.create(
+                szoi_file_usage=x,
+                error_log=traceback.format_exc(),
+                line = i
+            )
     f.close()
     return res
