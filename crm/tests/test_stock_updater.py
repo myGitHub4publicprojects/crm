@@ -62,7 +62,8 @@ class Test_Stock_Update(TestCase):
         f.close()
 
     def test_stock_update_with_errors_in_file(self):
-        '''second and third lines in a file have only 2 items'''
+        '''second and third lines in a file have only 2 items,
+        fourth line has none of the expected text'''
         test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
         f = open(test_file)
        
@@ -72,23 +73,54 @@ class Test_Stock_Update(TestCase):
 
         res = stock_update(szoi_file, szoi_file_usage)
 
-        # should create 8 Hearing_Aid_Stock
-        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 8)
+        # should create 7 Hearing_Aid_Stock
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 7)
 
         # should create no Other_Item_Stock
         self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
-        # should return 8 Hearing_Aid_Stock instances
-        self.assertEqual(len(res['ha_new']), 8)
+        # should return 7 Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 7)
 
         errors = SZOI_Errors.objects.all()
-        # should create 2 SZOI_Errors instances
-        self.assertEqual(errors.count(), 2)
+        # should create 3 SZOI_Errors instances
+        self.assertEqual(errors.count(), 3)
 
         error1 = errors[0]
         error2 = errors[1]
+        error3 = errors[2]
         self.assertEqual(error1.line, '2;BERNAFON AG;8100.00\n')
         self.assertEqual(error2.line, '3;SONOVA AG;3100.00\n')
+        self.assertEqual(error3.error_log,
+                         'Eight item in a line as other than expected text')
+        
+        f.close()
+
+
+
+    def test_stock_update_with_errors_in_file_ha(self):
+        '''HA name format is changed, HA name in line 2 is "test" '''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha_error_name.csv'
+        f = open(test_file)
+       
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
+
+        res = stock_update(szoi_file, szoi_file_usage)
+
+        # should create 9 Hearing_Aid_Stock
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 9)
+
+        # should create no Other_Item_Stock
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+
+        # should return 9 Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 9)
+
+        errors = SZOI_Errors.objects.all()
+        # should create 1 SZOI_Errors instances
+        self.assertEqual(errors.count(), 1)
         
         f.close()
 
