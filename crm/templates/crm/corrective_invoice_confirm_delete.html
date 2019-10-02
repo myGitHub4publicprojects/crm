@@ -6,7 +6,7 @@
     <h1 class="text-center">Usuń fakturę korektę</h1>
 
     <form method="post">{% csrf_token %}
-        <p>Czy napewno chcesz BEZPOWROTNIE usunąć fakturę korektę nr {{ object.id }} 
+        <p>Czy napewno chcesz BEZPOWROTNIE usunąć fakturę korektę nr {{ object.get_number }} 
             z dnia {{ object.timestamp|date }}?</p>
         <input type="submit" value="Potwierdzam">
     </form>

@@ -103,11 +103,16 @@ class Invoice(Finance):
 	type = models.CharField(max_length=8, choices=(
 		('transfer', 'transfer'), ('cash', 'cash')), verbose_name='rodzaj płatności')
 	date = models.DateField(default=datetime.date.today())
+
+	def get_number(self):
+		return str(self.pk) + self.timestamp.strftime("/%m/%d")
 	def get_absolute_url(self):
 		return reverse('crm:invoice_update', kwargs={'pk': self.pk})
 
 class Corrective_Invoice(Finance):
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+	def get_number(self):
+		return str(self.pk) + self.timestamp.strftime("/%m/%d")
 
 
 class Device(models.Model):

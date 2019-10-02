@@ -268,7 +268,7 @@ def stock_update(szoi_file, szoi_file_usage):
             else:
                 SZOI_Errors.objects.create(
                     szoi_file_usage=szoi_file_usage,
-                    error_log='Eight item in a line as other than expected text',
+                    error_log='Eight item in a line has unexpected text',
                     line=i
                 )
         

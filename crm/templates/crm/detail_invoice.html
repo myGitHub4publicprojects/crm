@@ -10,7 +10,7 @@
 <p>
     <span id="date">Wystawiona: {{ instance.date|date:'d-m-Y' }}</span>, 
     <span>utworzona: {{ instance.timestamp }}</span>, 
-    Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
+    Nr dokumentu: <span id="documentNo">{{ instance.get_number }}</span>
 </p>
 <p>Typ faktury: <span id="invoiceType" >{{ instance.type }}</span></p>
 {% if instance.current %}

@@ -92,7 +92,7 @@ class Test_Stock_Update(TestCase):
         self.assertEqual(error1.line, '2;BERNAFON AG;8100.00\n')
         self.assertEqual(error2.line, '3;SONOVA AG;3100.00\n')
         self.assertEqual(error3.error_log,
-                         'Eight item in a line as other than expected text')
+                         'Eight item in a line has unexpected text')
         
         f.close()
 

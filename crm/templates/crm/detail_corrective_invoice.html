@@ -8,11 +8,11 @@
 
 <h1 id="documentType" class="text-center">Faktura Korygująca</h1>
 <a id="originalDoc" href="{% url 'crm:invoice_detail' instance.invoice.id %}">
-    Korekta do faktury nr {{ instance.invoice.id }} z dnia {{ instance.timestamp|date:'d-m-Y' }}
+    Korekta do faktury nr {{ instance.invoice.get_number }} z dnia {{ instance.date|date:'d-m-Y' }}
 </a>
 <p>
     <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
-    Nr dokumentu: <span id="documentNo">{{ instance.id }}</span>
+    Nr dokumentu: <span id="documentNo">{{ instance.get_number }}</span>
 </p>
 <!-- <p>Typ faktury: <span id="invoiceType">{{ instance.type }}</span></p> -->
 <a href="{% url 'crm:edit' instance.patient.id %}">

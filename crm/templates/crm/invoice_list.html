@@ -19,7 +19,7 @@
                     {% if i.corrective_invoice_set.all %}
                     class="btn-outline-danger"
                     {% endif %}
-                    >{{ i.id }}</a>
+                    >{{ i.get_number }}</a>
                 </td>
                 <td><a href="{% url 'crm:invoice_detail' i.id %}"
                     {% if i.corrective_invoice_set.all %}
