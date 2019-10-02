@@ -222,7 +222,7 @@ def update_or_create(items_class, item):
     return res
 
 
-def stock_update(szoi_file, x):
+def stock_update(szoi_file, szoi_file_usage):
     '''accepts SZOI_File and SZOI_File_Usage instance:
     create new Hearing_Aid_Stock and Other_Item_Stock instances,
     upadates price for devices that are already in stock,
@@ -242,7 +242,7 @@ def stock_update(szoi_file, x):
                 continue
 
             # Hearing_Aid_Stock
-            if 'APARAT SŁUCHOWY' in line[7]:
+            elif 'APARAT SŁUCHOWY' in line[7]:
                 # create a dict from a line
                 HA = process_HA(line)
                 # update exisitng or create new HA instance
@@ -254,7 +254,7 @@ def stock_update(szoi_file, x):
                     res['ha_update'].append(u['update'])
 
             # Other_Item_Stock
-            if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
+            elif 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
                 # create a dict from a line
                 other = process_Other(line)
                 # update existing or create new device instance
@@ -264,11 +264,17 @@ def stock_update(szoi_file, x):
                     res['other_new'].append(u['new'])
                 if u['update'] != None:
                     res['other_update'].append(u['update'])
+            
+            else:
+                SZOI_Errors.objects.create(
+                    szoi_file_usage=szoi_file_usage,
+                    error_log=traceback.format_exc(),
+                    line=i
+                )
         
         except:
-            print('i: ', traceback.format_exc())
             SZOI_Errors.objects.create(
-                szoi_file_usage=x,
+                szoi_file_usage=szoi_file_usage,
                 error_log=traceback.format_exc(),
                 line = i
             )
