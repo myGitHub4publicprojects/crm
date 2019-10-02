@@ -22,7 +22,7 @@ from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New,
-                     SZOI_File, SZOI_File_Usage)
+                        SZOI_File, SZOI_File_Usage, SZOI_Errors)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -2311,8 +2311,9 @@ class TestSZOI_UsageCreate(TestCase):
         # there should be 10 new HA Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.ha_szoi_new.all().count(), 10)
 
-        # there should be no errors
-        self.assertEqual(szoi.error_log, '')
+        errors = SZOI_Errors.objects.all()
+        # should create 0 SZOI_Errors instances
+        self.assertEqual(errors.count(), 0)
 
         f.close()
 
@@ -2380,8 +2381,9 @@ class TestSZOI_UsageCreate(TestCase):
         # there should be 2 updated HA Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.ha_szoi_updated.all().count(), 2)
 
-        # there should be no errors
-        self.assertEqual(szoi.error_log, '')
+        errors = SZOI_Errors.objects.all()
+        # should create 0 SZOI_Errors instances
+        self.assertEqual(errors.count(), 0)
 
         f.close()
 
@@ -2444,50 +2446,53 @@ class TestSZOI_UsageCreate(TestCase):
         # there should be 2 updated Other Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.other_szoi_updated.all().count(), 2)
 
-        # there should be no errors
-        self.assertEqual(szoi.error_log, '')
+        errors = SZOI_Errors.objects.all()
+        # should create 0 SZOI_Errors instances
+        self.assertEqual(errors.count(), 0)
 
         f.close()
 
-    # def test_szoi_usage_10HA_errors(self):
-    #     '''second and third lines in a file have only 2 items'''
-    #     test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
-    #     # create SZOI_File instance with the above file
-    #     f = open(test_file)
-    #     s = SZOI_File.objects.create(file=File(f))
+    def test_szoi_usage_10HA_errors(self):
+        '''second and third lines in a file have only 2 items,
+        fourth line has none of the expected text'''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
+        # create SZOI_File instance with the above file
+        f = open(test_file)
+        s = SZOI_File.objects.create(file=File(f))
 
-    #     self.client.login(username='john', password='glassonion')
-    #     url = reverse('crm:szoi_usage_create')
-    #     expected_url = reverse('crm:szoi_usage_detail', args=(1,))
-    #     data = {
-    #         # form data
-    #         'szoi_file': s.id,
-    #     }
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:szoi_usage_create')
+        expected_url = reverse('crm:szoi_usage_detail', args=(1,))
+        data = {
+            # form data
+            'szoi_file': s.id,
+        }
 
-    #     response = self.client.post(url, data, follow=True)
-    #     # should give code 200 as follow is set to True
-    #     assert response.status_code == 200
-    #     self.assertRedirects(response, expected_url,
-    #                          status_code=302, target_status_code=200)
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
-    #     szoi_all = SZOI_File_Usage.objects.all()
-    #     szoi = szoi_all.first()
-    #     # should be one SZOI_File_Usage instance
-    #     self.assertEqual(szoi_all.count(), 1)
+        szoi_all = SZOI_File_Usage.objects.all()
+        szoi = szoi_all.first()
+        # should be one SZOI_File_Usage instance
+        self.assertEqual(szoi_all.count(), 1)
 
-    #     # should be 10 HA Stock instances
-    #     self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 8)
+        # should be 7 HA Stock instances
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 7)
 
-    #     # should be 0 Other instances
-    #     self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+        # should be 0 Other instances
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
-    #     # there should be 10 new HA Stock associated with SZOI_File_Usage instance
-    #     self.assertEqual(szoi.ha_szoi_new.all().count(), 8)
+        # there should be 7 new HA Stock associated with SZOI_File_Usage instance
+        self.assertEqual(szoi.ha_szoi_new.all().count(), 7)
 
-    #     # there should be no errors
-    #     self.assertEqual(szoi.error_log, [])
+        errors = SZOI_Errors.objects.all()
+        # should create 3 SZOI_Errors instances
+        self.assertEqual(errors.count(), 3)
 
-    #     f.close()
+        f.close()
 
 
     def test_szoi_usage_1131HA_17Other(self):
