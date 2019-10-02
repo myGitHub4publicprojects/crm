@@ -21,6 +21,6 @@
 <ul>
     {% for i in szoi_usage_list %}
     <li><a href="{% url 'crm:szoi_usage_detail' i.id %}">{{ i.used }}</a>
-        {% if i.error_log %}BŁĘDY!{% endif %}</li>
+        {% if i.szoi_errors_set %}BŁĘDY!{% endif %}</li>
     {% endfor %}
 </ul>

@@ -5,14 +5,55 @@
 <h1>Użycia pliku SZOI</h1>
 <p>Obiekt z plikiem: {{ object.szoi_file.filename }}</p>
 <p>Czas użycia pliku: {{ object.used }}</p>
-<p>Błędy: {{ object.error_log }}</p>
+<hr>
+<p>Błędy:</p>
+<ul>
+{% for e in object.szoi_errors_set.all %}
+    <li>
+        Linia: {{ e.line }}
+    </li>
+    <li>
+        Traceback: {{ e.error_log }}
+    </li>
+{% empty %}
+<p>Nie było błędów</p>
+{% endfor %}
+</ul>
+
 <p>Dodane aparaty:</p>
 <ul>
-    {% for i in ha_szoi_new %}
+    {% for i in object.ha_szoi_new.all %}
     <li>{{ i }}</li>
+    {% empty %}
+    <p>Nie dodano aparatów</p>
     {% endfor %}
 </ul>
-<p>Czas: {{ object.used }}</p>
-<p>Czas: {{ object.used }}</p>
-
+<hr>
+<p>Zaktualizowane aparaty:</p>
+<ul>
+    {% for i in object.ha_szoi_updated.all %}
+    <li>{{ i }}</li>
+    {% empty %}
+    <p>Nie zaktualizowano aparatów</p>
+    {% endfor %}
+</ul>
+<hr>
+<p>Dodane inne produkty:</p>
+<ul>
+    {% for i in object.other_szoi_new.all %}
+    <li>{{ i }}</li>
+    {% empty %}
+    <p>Nie dodano innych produktów</p>
+    {% endfor %}
+</ul>
+<hr>
+<p>Zaktualizowane inne produkty:</p>
+<ul>
+    {% for i in object.other_szoi_updated.all %}
+    <li>{{ i }}</li>
+    {% empty %}
+    <p>Nie zaktualizowano innych produktów</p>
+    {% endfor %}
+</ul>
+<hr>
 {% endblock content %}
