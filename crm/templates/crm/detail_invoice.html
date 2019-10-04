@@ -6,13 +6,18 @@
 {% endblock scripts %}
 {% block content %}
 
-<h1 id="documentType" class="text-center">Faktura VAT</h1>
-<p>
-    <span id="date">Wystawiona: {{ instance.date|date:'d-m-Y' }}</span>, 
-    <span>utworzona: {{ instance.timestamp }}</span>, 
-    Nr dokumentu: <span id="documentNo">{{ instance.get_number }}</span>
-</p>
-<p>Typ faktury: <span id="invoiceType" >{{ instance.type }}</span></p>
+<h1 id="documentType" class="text-center">
+    Faktura VAT nr <span id="documentNo">{{ instance.get_number }}</span>
+</h1>
+<p>Czas powstania dokumentu: {{ instance.timestamp }} (tylko dla nas widoczne)</p>
+<p id="date">Data wystawienia: {{ instance.date|date:'d-m-Y' }}</p>
+<p id="saleDate">Data sprzedaży: {{ instance.date|date:'d-m-Y' }}</p>
+<p>Typ faktury: <span id="invoiceType" >
+    {% if instance.type == 'transfer' %}przelew{% else %}gotówka{% endif %}
+    </span></p>
+
+    <p id="paymentDate">{% if instance.type == 'transfer' %}Termin płatności: 30 dni{% endif %}</p>
+
 {% if instance.current %}
     <p>Aktywna</p>
 {% endif %}
