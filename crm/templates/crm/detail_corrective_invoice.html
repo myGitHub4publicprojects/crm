@@ -9,13 +9,14 @@
 {% endblock scripts %}
 {% block content %}
 
-<h1 id="documentType" class="text-center">Faktura Korygująca</h1>
+<h1 id="documentType" class="text-center">
+    Faktura Korygująca nr <span id="documentNo">{{ instance.get_number }}</span>
+</h1>
 <a id="originalDoc" href="{% url 'crm:invoice_detail' instance.invoice.id %}">
-    Korekta do faktury nr {{ instance.invoice.get_number }} z dnia {{ instance.date|date:'d-m-Y' }}
+    Korekta do faktury nr {{ instance.invoice.get_number }} z dnia {{ instance.invoice.date|date:'d-m-Y' }}
 </a>
 <p>
-    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>,
-    Nr dokumentu: <span id="documentNo">{{ instance.get_number }}</span>
+    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>
 </p>
 <a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>

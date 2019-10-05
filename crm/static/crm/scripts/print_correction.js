@@ -1,40 +1,52 @@
 function printDiv() {
     var style = '<div style="padding: 50px;">';
-    var date = document.getElementById('date');
-    date = date.innerText.substring(12);
-    date = '<p style="text-align:right;">Data: ' + date + '</p>';
-
-    var sVox = '<p><small>SONOVOX<br>Aparaty Słuchowe<br>';
+    var date = document.getElementById('date').innerText;
+    
+    var sVox = '<p style="padding-left: 20%;"><small>SONOVOX<br>Aparaty Słuchowe<br>';
     var sVox1 = 'Barbara Golon-Szczepaniak<br>';
     var sVox2 = 'ul. Wagi 6 m 1, 61-244 Poznań<br>';
     var sVox3 = 'NIP 782-137-75-19, Regon 302634863<br>';
     var sVox4 = 'tel. 721 210 180</small></p>';
-    var sonovox = sVox + sVox1 + sVox2 + sVox3 + sVox4;
+    var headDivLeft = '<div style="width: 50%; float: left;">'
+    var sonovox = headDivLeft + sVox + sVox1 + sVox2 + sVox3 + sVox4 + '</div>';
     var documentType = document.getElementById('documentType').innerText;
-    if (documentType.startsWith('Faktura')) {
-        documentType += ' nr: ' + document.getElementById('documentNo').innerText;
-    }
-    var documentTitle = '<h1 style="text-align:center;">' + documentType + '</h1>';
+    var documentTitle = '<h1 style="text-align:center; clear:both;">' + documentType + '</h1>';
     var originalDoc = document.getElementById('originalDoc').innerText;
-    
-    var head = style + date + sonovox + documentTitle + originalDoc;
+    originalDoc = '<p>' + originalDoc + '</p>';
+    var h3Seller = '<h3 style="text-align:center;">Sprzedawca</h3>'
+    var seller = headDivLeft + h3Seller + '<hr>' + sVox + sVox1 + sVox2 + sVox3 + '</div>';
 
+    var h3Buyer = '<h3 style="text-align:center;">Nabywca</h3>'
     var patientName = document.getElementById('patientName');
-    var name = '<p>Imię i Nazwisko: ' + patientName.innerText + '</p><hr>';
+    var name = '<p style="padding-left: 20%;">Nazwa: ' + patientName.innerText + '<br>';
 
     var address1 = document.getElementById('address1').innerText;
     var address2 = document.getElementById('address2').innerText;
-    var address = "<p>Adres zamieszkania: " + address1 + ', ' + address2 + "</p><hr>";
+    var address = "Adres: " + address1 + ', ' + address2;
+    if (nip) {
+        address += '<br>NIP: ' + nip;
+    }
+
+    var buyer = headDivLeft + h3Buyer + '<hr>' + name + address + '</p></div>';
 
     var tables = document.getElementById('tables');
-    var patient = name + address;
-    var printContents = head + patient + tables.outerHTML;
+
+
+    var headDivRight = '<div style="width: 50%; float: right;">'
+    var invoiceDetailsDiv = headDivRight + '<p style="padding-left: 20%;">' + date + '</p></div>';
+
+    var head = style + sonovox + invoiceDetailsDiv + documentTitle + originalDoc + seller + buyer;
+    var items = '<h2 style="text-align:center; clear:both;">Pozycje</h2>' + tables.outerHTML;
+
+    var printContents =  head + items;
+
     var invoiceNote = document.getElementById('note');
     if (invoiceNote) {
         invoiceNote = invoiceNote.innerHTML;
         printContents += invoiceNote;
     }
-    printContents += '</div>';
+    var footer = '<br><p style="float: right;">Osoba upoważniona do wystawienia dokumentu:</p></div>';
+    printContents += footer;
 
     var originalContents = document.body.innerHTML;
 

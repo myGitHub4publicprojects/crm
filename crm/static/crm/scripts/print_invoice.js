@@ -36,7 +36,6 @@ function printDiv() {
     var buyer = headDivLeft + h3Buyer + '<hr>' + name + address + '</p></div>';
 
     var table = document.getElementsByClassName('table')[0];
-    var patient = name + address;
 
     var headDivRight = '<div style="width: 50%; float: right;">'
     var invoiceDetailsDiv = headDivRight + '<p style="padding-left: 20%;">' + invoiceDetails + '</p></div>';
