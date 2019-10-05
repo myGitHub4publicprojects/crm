@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block scripts %}
+<script>
+    var nip = "{{ instance.patient.NIP }}"
+</script>
 <script src="{% static 'crm/scripts/print_invoice.js' %}"></script>
 {% endblock scripts %}
 {% block content %}

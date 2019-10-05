@@ -28,9 +28,12 @@ function printDiv() {
 
     var address1 = document.getElementById('address1').innerText;
     var address2 = document.getElementById('address2').innerText;
-    var address = "Adres: " + address1 + ', ' + address2 + "</p>";
+    var address = "Adres: " + address1 + ', ' + address2;
+    if (nip){
+        address += '<br>NIP: ' + nip;
+    }
 
-    var buyer = headDivLeft + h3Buyer + '<hr>' + name + address + '</div>';
+    var buyer = headDivLeft + h3Buyer + '<hr>' + name + address + '</p></div>';
 
     var table = document.getElementsByClassName('table')[0];
     var patient = name + address;
