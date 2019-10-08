@@ -2278,7 +2278,7 @@ class TestSZOI_UsageCreate(TestCase):
 
     def test_szoi_usage_10HA(self):
         '''there is 10 HA in a file, no preexisting'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
         # create SZOI_File instance with the above file
         f = open(test_file)
         s = SZOI_File.objects.create(file=File(f))
@@ -2329,7 +2329,7 @@ class TestSZOI_UsageCreate(TestCase):
                     family='A4 IQ GOLD',
                     model='ITE',
                     price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
         # create SZOI_File instance with the above file
         f = open(test_file)
         s = SZOI_File.objects.create(file=File(open(test_file)))
@@ -2399,7 +2399,7 @@ class TestSZOI_UsageCreate(TestCase):
                     family='PHONAK ROGER',
                     model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
                     price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.xls'
         # create SZOI_File instance with the above file
         f = open(test_file)
         s = SZOI_File.objects.create(file=File(open(test_file)))
@@ -2455,7 +2455,7 @@ class TestSZOI_UsageCreate(TestCase):
     def test_szoi_usage_10HA_errors(self):
         '''second and third lines in a file have only 2 items,
         fourth line has none of the expected text'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.xls'
         # create SZOI_File instance with the above file
         f = open(test_file)
         s = SZOI_File.objects.create(file=File(f))

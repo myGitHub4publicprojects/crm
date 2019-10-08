@@ -8,9 +8,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
+from .validators import xls_only
+
 class SZOI_File(models.Model):
 	'''File uploaded from SZOI and containing all stock approved by NFZ'''
-	file = models.FileField(upload_to='documents/')
+	file = models.FileField(upload_to='documents/', validators=[xls_only])
 	uploaded_at = models.DateTimeField(auto_now_add=True)
 
 	def filename(self):
