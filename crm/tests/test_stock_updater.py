@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import csv
 import os
 import pytest
 import shutil
 import tempfile
+
 
 from django.conf import settings
 from django.test import TestCase
@@ -21,15 +23,13 @@ class Test_Stock_Update(TestCase):
 
     def test_stock_update_empty(self):
         '''test file is empty'''
-        test_file = os.getcwd() + '/crm/tests/test_files/empty.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/empty.xls'
         f = open(test_file)
-        # should be 0 lines in the file
-        self.assertEqual(sum(1 for line in f), 0)
        # create SZOI_File and SZOI_File_Usage instance with the above file
         szoi_file = SZOI_File.objects.create(file=File(f))
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
-        res = stock_update(szoi_file, szoi_file_usage)
+        stock_update(szoi_file, szoi_file_usage)
         # should create 0 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 0)
 
@@ -41,10 +41,8 @@ class Test_Stock_Update(TestCase):
 
     def test_stock_update_create_10HA(self):
         '''test file contains 10 lines with HA'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
         f = open(test_file)
-        # should be 18 lines in the file
-        self.assertEqual(sum(1 for line in f), 18)
         # create SZOI_File and SZOI_File_Usage instance with the above file
         szoi_file = SZOI_File.objects.create(file=File(f))
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
@@ -64,7 +62,7 @@ class Test_Stock_Update(TestCase):
     def test_stock_update_with_errors_in_file(self):
         '''second and third lines in a file have only 2 items,
         fourth line has none of the expected text'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.xls'
         f = open(test_file)
        
         # create SZOI_File and SZOI_File_Usage instance with the above file
@@ -89,10 +87,12 @@ class Test_Stock_Update(TestCase):
         error1 = errors[0]
         error2 = errors[1]
         error3 = errors[2]
-        self.assertEqual(error1.line, '2;BERNAFON AG;8100.00\n')
-        self.assertEqual(error2.line, '3;SONOVA AG;3100.00\n')
+        self.assertEqual(
+            error1.line, u"[u'2', u'BERNAFON AG', u'', u'', u'', u'', u'', u'', u'']")
+        self.assertEqual(
+            error2.line, u"[u'3', u'SONOVA AG', u'', u'', u'', u'', u'', u'', u'']")
         self.assertEqual(error3.error_log,
-                         'Eight item in a line has unexpected text')
+                         '"Kod środka" not recognized"')
         
         f.close()
 
@@ -100,7 +100,7 @@ class Test_Stock_Update(TestCase):
 
     def test_stock_update_with_errors_in_file_ha(self):
         '''HA name format is changed, HA name in line 2 is "test" '''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha_error_name.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha_error_name.xls'
         f = open(test_file)
        
         # create SZOI_File and SZOI_File_Usage instance with the above file
@@ -126,8 +126,13 @@ class Test_Stock_Update(TestCase):
 
 
     def test_stock_update_ignore_typos(self):
-        '''handle typos in "ZERENA5", "Audibel SILVERTRIC" and "JUNA7 NANO"'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
+        '''handle typos in "ZERENA5", "Audibel SILVERTRIC" and "JUNA7 NANO"
+        there are 2470 lines with items in a file,
+        there are 1219 lines with 'P.084.' or 'P.084.' code (HA),
+        there are 17 lines with 'P.086.' or 'P.087.' code (Other items),
+        there are 1234 lines where code contains '.01'
+        '''
+        test_file = os.getcwd() + '/crm/tests/test_files/szoifull.xls'
         f = open(test_file)
 
         # create SZOI_File and SZOI_File_Usage instance with the above file
@@ -170,7 +175,7 @@ class Test_Stock_Update(TestCase):
 
     def test_stock_update_create_17_OtherDevices(self):
         '''should create 17 Other_Item_Stock devices'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoifull.xls'
         f = open(test_file)
        # create SZOI_File and SZOI_File_Usage instance with the above file
         szoi_file = SZOI_File.objects.create(file=File(f))
@@ -202,7 +207,7 @@ class Test_Stock_Update(TestCase):
                     family='A4 IQ GOLD',
                     model='ITE',
                     price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
         f = open(test_file)
         # create SZOI_File and SZOI_File_Usage instance with the above file
         szoi_file = SZOI_File.objects.create(file=File(f))
@@ -249,7 +254,7 @@ class Test_Stock_Update(TestCase):
             family='PHONAK ROGER',
             model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
             price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.csv'
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.xls'
         f = open(test_file)
         # create SZOI_File and SZOI_File_Usage instance with the above file
         szoi_file = SZOI_File.objects.create(file=File(f))

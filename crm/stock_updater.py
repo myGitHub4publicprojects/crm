@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 import traceback
+import xlrd
 
 from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item, Other_Item_Stock, SZOI_Errors
 
-def lines_over_8(f):
-    # enables to iterate over lines in a field starting from the 8th line, yields one line
-        for ii, line in enumerate(f):
-            if ii >= 8:
-                yield line
+def get_line_from_8th(f):
+    '''accepts a path to an xls file, yields a list (9 elements, 8 strings and 1 float),
+    skips the first 7 lines'''
+    wb = xlrd.open_workbook(f)
+    sheet = wb.sheet_by_index(0)
+    for i in range(sheet.nrows):
+        if i > 7:
+            yield sheet.row_values(i)
+
 
 def process_HA(line):
-    '''accepts a line of a csv file, returns a dict with make, family, model, price 
+    '''accepts a list (line of a xls file), returns a dict with make, family, model, price 
     and pkwiu_code'''
     res = {}
     # Audibel
@@ -57,8 +62,7 @@ def process_HA(line):
         else:
             family = family_model[0]
             model = family_model[0]
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # Bernafon
     # there might be 2 typos in the file: JUNA7 NANO (JUNA 7) and ZERENA5 (ZERENA 5)
@@ -75,8 +79,7 @@ def process_HA(line):
             model = ' '.join(family_model[2:])
         else:
             model = family_model[1]
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # Phonak
     # in some Phonak/Sonova products name includes a brand
@@ -91,8 +94,7 @@ def process_HA(line):
         else:
             family = family_model[0]
             model = ' '.join(family_model[1:])
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # Oticon
     if 'OTICON' in line[1]:
@@ -100,8 +102,7 @@ def process_HA(line):
         family_model = line[2].split()  # HIT PRO BTE POWER
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # Audioservice
     if 'AUDIO SERVICE' in line[1]:
@@ -109,8 +110,7 @@ def process_HA(line):
         family_model = line[2].split()  # SINA HYPE 12 G4
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # Interton
     if 'INTERTON' in line[1]:
@@ -118,8 +118,7 @@ def process_HA(line):
         family_model = line[2].split()
         family = family_model[0]
         model = ' '.join(family_model[1:]) + ' ' + line[5]
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # Siemens
     if 'SIEMENS' in line[1]:
@@ -127,8 +126,7 @@ def process_HA(line):
         family_model = line[2].split()
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8].split('.')
-        price = int(price[0])
+        price = line[8]
 
     # BHM
     if 'BHM TECH' in line[1]:
@@ -136,11 +134,12 @@ def process_HA(line):
         family_model = line[2].split()
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        if not 'WYŁĄCZENIEM APARATÓW' in line[8]:
-            price = line[8].split('.')
-        else:
-            price = line[9].split('.')
-        price = int(price[0])
+        price = line[8]
+        # if not 'WYŁĄCZENIEM APARATÓW' in line[8]:
+        #     price = line[8]
+        # else:
+        #     price = line[9]
+        # price = int(price[0])
     
     res['make'] = make
     res['family'] = family
@@ -166,14 +165,13 @@ def process_Other(line):
         make = 'Phonak'
     
     model = line[2]
-    price = line[8].split('.')
-    price = int(price[0])
+    price = line[8]
 
-    if 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7]:
+    if 'P.087.' in line[6]:
         family = line[5]
         pkwiu_code = '26.60.14.0'
 
-    if 'WKŁADKA USZNA' in line[7]:
+    if 'P.086.' in line[6]:
         family = 'WKŁADKA USZNA'
         pkwiu_code = '32.50.23.0'
     
@@ -232,19 +230,24 @@ def stock_update(szoi_file, szoi_file_usage):
     'ha_update': [<instance1>, <instance2], 'other_update': [<instance1>, <instance2>]}'''
     res = {'ha_new': [], 'other_new': [], 'ha_update': [], 'other_update': []}
     file_path = szoi_file.file.path
-    f = open(file_path)
-
-    for i in lines_over_8(f):
-        line = i.split(';')
+    counterTotal = 0
+    counterHA = 0
+    counterOther = 0
+    counterKids = 0
+    for i in get_line_from_8th(file_path):
+        counterTotal +=1
         try:
-            # assume price for adults and children are the same, avoid duplicates
-            if 'PACJENCI DO UKOŃCZENIA 26 RŻ.' in line[7]:
+            # assume price for adults and children are the same, avoid duplicates,
+            # allow phonak Rogers (P.087)
+            if '.01' in i[6] and not ('P.087.' in i[6]):
+                counterKids += 1
                 continue
 
             # Hearing_Aid_Stock
-            elif 'APARAT SŁUCHOWY' in line[7]:
+            elif 'P.084.' in i[6] or 'P.085.' in i[6]:
+                counterHA += 1
                 # create a dict from a line
-                HA = process_HA(line)
+                HA = process_HA(i)
                 # update exisitng or create new HA instance
                 u = update_or_create(Hearing_Aid_Stock, HA)
 
@@ -254,9 +257,10 @@ def stock_update(szoi_file, szoi_file_usage):
                     res['ha_update'].append(u['update'])
 
             # Other_Item_Stock
-            elif 'SYSTEMY WSPOMAGAJĄCE SŁYSZENIE' in line[7] or 'WKŁADKA USZNA' in line[7]:
+            elif 'P.086.' in i[6] or 'P.087.' in i[6]:
+                counterOther += 1
                 # create a dict from a line
-                other = process_Other(line)
+                other = process_Other(i)
                 # update existing or create new device instance
                 u = update_or_create(Other_Item_Stock, other)
 
@@ -268,7 +272,7 @@ def stock_update(szoi_file, szoi_file_usage):
             else:
                 SZOI_Errors.objects.create(
                     szoi_file_usage=szoi_file_usage,
-                    error_log='Eight item in a line has unexpected text',
+                    error_log='"Kod środka" not recognized"',
                     line=i
                 )
         
@@ -278,5 +282,4 @@ def stock_update(szoi_file, szoi_file_usage):
                 error_log=traceback.format_exc(),
                 line = i
             )
-    f.close()
     return res
