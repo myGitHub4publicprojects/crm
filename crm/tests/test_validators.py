@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 import pytest
-# import shutil
-# import tempfile
 
-# from django.conf import settings
 from django.test import TestCase
 from django.core.files import File
 from django.core.exceptions import ValidationError
-
 
 from crm.validators import xls_only
 

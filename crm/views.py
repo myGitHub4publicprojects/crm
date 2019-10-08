@@ -1152,10 +1152,3 @@ class SZOI_UsageDetail(DetailView):
 	@method_decorator(login_required)
 	def dispatch(self, *args, **kwargs):
 		return super(SZOI_UsageDetail, self).dispatch(*args, **kwargs)
-
-
-# class SZOI_UsageList(ListView):
-# 	model = SZOI_File_Usage
-
-# 	def dispatch(self, *args, **kwargs):
-# 		return super(SZOI_UsageList, self).dispatch(*args, **kwargs)
