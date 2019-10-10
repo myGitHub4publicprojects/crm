@@ -15,8 +15,9 @@
 <a id="originalDoc" href="{% url 'crm:invoice_detail' instance.invoice.id %}">
     Korekta do faktury nr {{ instance.invoice.get_number }} z dnia {{ instance.invoice.date|date:'d-m-Y' }}
 </a>
+<p>Czas powstania dokumentu: {{ instance.timestamp }} (tylko dla nas widoczne)</p>
 <p>
-    <span id="date">Wystawiona: {{ instance.timestamp|date:'d-m-Y' }}</span>
+    <span id="date">Wystawiona: {{ instance.date|date:'d-m-Y' }}</span>
 </p>
 <a href="{% url 'crm:edit' instance.patient.id %}">
     <div class="btn btn-primary float-right mb-3">Powrót do pacjenta</div>

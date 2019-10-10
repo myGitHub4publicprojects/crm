@@ -922,6 +922,9 @@ def corrective_invoice_create(request, invoice_id):
 			patient=invoice.patient,
 			invoice=invoice,
 			note=note)
+		if request.POST.get('date'):
+			cinvoice.date = request.POST.get('date')
+			cinvoice.save()
 		# associate hearing aids and other devices with corrective invoice
 		for ha in selected_ha:
 			device = Hearing_Aid.objects.filter(id=int(ha))
@@ -929,6 +932,19 @@ def corrective_invoice_create(request, invoice_id):
 		for other in selected_other:
 			other = Other_Item.objects.filter(id=int(other))
 			other.update(corrective_invoice=cinvoice)
+
+		# create newinfo
+		note = 'Dodano fakturę korektę nr: %s' % cinvoice.id
+		NewInfo.objects.create(
+			patient=invoice.patient,
+			note=note,
+			audiometrist=request.user)
+
+		# remove reminder about the invoice
+		if Reminder_Invoice.objects.filter(invoice=invoice).exists():
+			r = Reminder_Invoice.objects.filter(invoice=invoice).first()
+			r.active=False
+			r.save()
 
 		# redirect to detail view with a success message
 		messages.success(request, 'Utworzono nową fakturę korektę.')

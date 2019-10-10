@@ -22,7 +22,7 @@ from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New,
-                        SZOI_File, SZOI_File_Usage, SZOI_Errors)
+                        SZOI_File, SZOI_File_Usage, SZOI_Errors, Corrective_Invoice)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -2204,6 +2204,114 @@ class TestInvoiceCreateView(TestCase):
         self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
 
         self.assertEqual(invoice.date, today + timedelta(days=1))
+
+
+class TestCorrectiveInvoiceCreateView(TestCase):
+    def setUp(self):
+        user_john = create_user()
+        create_patient(user_john)
+
+    def test_anonymous(self):
+        '''should redirect to login'''
+        url = reverse('crm:corrective_invoice_create', args=(1,))
+        expected_url = reverse('login') + '?next=/1/corrective_invoice_create/'
+        response = self.client.post(url, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+    def test_logged_in_with_valid_data_for_ha(self):
+        '''should create:
+        one corrective invoice,
+        invoice note: 'new note',
+        invoice date not provided - should default to today
+        should also:
+        redirect to corretive invoice detail view
+        corresponding invoice items should remain unchanged
+        corresponding invoice remider should be inactivated'''
+        i= Invoice.objects.create(patient=Patient.objects.get(id=1))
+        mixer.blend('crm.Reminder_Invoice', invoice=i)
+        mixer.blend('crm.Hearing_Aid', current=False, invoice=i)
+        mixer.blend('crm.Other_Item', invoice=i)
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:corrective_invoice_create', args=(1,))
+        expected_url = reverse('crm:corrective_invoice_detail', args=(1,))
+        data = {
+            # form data
+            'ha': [1],
+            'other': [1],
+            'note': 'new note',
+        }
+
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+        cinvoice = Corrective_Invoice.objects.get(pk=1)
+
+        h = Hearing_Aid.objects.all().first()
+        # should be only one Hearing_Aid obj
+        self.assertEqual(Hearing_Aid.objects.all().count(), 1)
+        # HA should not be active
+        self.assertFalse(h.current)
+        # this corrective_invoice should be tied to hearing aid
+        self.assertEqual(h.corrective_invoice, cinvoice)
+        # HA should still have invoice
+        i = Invoice.objects.get(id=1)
+        self.assertEqual(h.invoice, i)
+
+        o = Other_Item.objects.all().first()
+        # should be only one Other_Item obj
+        self.assertEqual(Other_Item.objects.all().count(), 1)
+        # this corrective_invoice should be tied to Other_Item
+        self.assertEqual(o.corrective_invoice, cinvoice)
+        # Other_Item should still have invoice
+        i = Invoice.objects.get(id=1)
+        self.assertEqual(o.invoice, i)
+
+        # new cinvoice should have a note: 'new note'
+        self.assertEqual(cinvoice.note, 'new note')
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę korektę.')
+
+        # there should be one NewInfo instance
+        new_info = NewInfo.objects.get(id=1)
+        expected_note = 'Dodano fakturę korektę nr: %s' % cinvoice.id
+        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+        # inactivate reminder
+        r = Reminder_Invoice.objects.all()
+        # should be one reminder
+        self.assertEqual(r.count(), 1)
+        # reminder should be inactive
+        self.assertFalse(r.first().active)
+
+        # corrective invoice date should be today
+        self.assertEqual(cinvoice.date, today)
+
+    def test_logged_in_with_valid_data_for_ha_date_provided(self):
+        '''corrective invoice date should be tomorrow'''
+        i = Invoice.objects.create(patient=Patient.objects.get(id=1))
+        mixer.blend('crm.Reminder_Invoice', invoice=i)
+        mixer.blend('crm.Hearing_Aid', current=False, invoice=i)
+        self.client.login(username='john', password='glassonion')
+        url = reverse('crm:corrective_invoice_create', args=(1,))
+        data = {
+            # form data
+            'ha': [1],
+            'other': [],
+            'date': today + timedelta(days=1),
+        }
+
+        self.client.post(url, data, follow=True)
+        
+        # corrective invoice date should be tomorrow
+        cinvoice = Corrective_Invoice.objects.get(pk=1)
+        self.assertEqual(cinvoice.date, today + timedelta(days=1))
 
 
 class TestInvoiceUpdateView(TestCase):

@@ -113,6 +113,7 @@ class Invoice(Finance):
 
 class Corrective_Invoice(Finance):
 	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+	date = models.DateField(default=datetime.date.today())
 	def get_number(self):
 		return str(self.pk) + self.timestamp.strftime("/%m/%d")
 
