@@ -1968,6 +1968,7 @@ class TestInvoiceCreateView(TestCase):
         for a given patient,
         invoice type should be 'transfer',
         invoice note: 'test note',
+        invoice date not provided - should default to today
         should also:
         redirect to detail view'''
         Invoice.objects.create(patient=Patient.objects.get(id=1))
@@ -2032,6 +2033,8 @@ class TestInvoiceCreateView(TestCase):
         expected_note = 'Dodano fakturę nr: %s' % invoice.id
 
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+        self.assertEqual(invoice.date, today)
 
         # n1 = NFZ_New.objects.create(patient=patient1,
         #                             side='left',
@@ -2150,6 +2153,7 @@ class TestInvoiceCreateView(TestCase):
         one instance of other device,
         one invoice instance with one position - wkładka uszna,
         for a given patient,
+        invoice date was set to tomorrow,
         should redirect to detail view'''
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:invoice_create', args=(1,))
@@ -2157,6 +2161,7 @@ class TestInvoiceCreateView(TestCase):
         data = {
             # form data
             'type': 'transfer',
+            'date': today + timedelta(days=1),
 
             # formset data
             # these are needed for formset to work
@@ -2197,6 +2202,8 @@ class TestInvoiceCreateView(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
+
+        self.assertEqual(invoice.date, today + timedelta(days=1))
 
 
 class TestInvoiceUpdateView(TestCase):
