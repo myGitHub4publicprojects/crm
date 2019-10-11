@@ -865,7 +865,6 @@ def invoice_create(request, patient_id):
 @login_required
 def invoice_detail(request, invoice_id):
 	invoice = get_object_or_404(Invoice, pk=invoice_id)
-	print('type: ', invoice.type)
 
 	if request.POST.get('inactivate'):
 		invoice.current = False

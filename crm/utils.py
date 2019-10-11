@@ -236,8 +236,17 @@ def get_finance_context(instance):
             other_items[str(i)]['vat_amount'] += vat_amount
             other_items[str(i)]['gross_value'] += i.price_gross
 
-    context = {	'ha_list': ha_items,
-				'other_list': other_items,
+    # add numering to items and convert to list to save order (HA first, Ohter next)
+    lp_counter = 1
+    all_items_numbered = []
+    for name, details in ha_items.items():
+        all_items_numbered.append((lp_counter, 'Aparat słuchowy ' + name, details))
+        lp_counter += 1
+    for name, details in other_items.items():
+        all_items_numbered.append((lp_counter, name, details))
+        lp_counter += 1
+
+    context = {	'all_items_numbered': all_items_numbered,
 				'nfz_ha_refund': nfz_ha_refund,
 				'nfz_mold_refund': nfz_mold_refund,
 				'nfz_total_refund': nfz_ha_refund + nfz_mold_refund,

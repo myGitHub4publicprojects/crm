@@ -67,6 +67,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Lp.</th>
             <th>Nazwa pozycji</th>
             <th>PKWiU</th>
             <th>ilość</th>
@@ -80,30 +81,18 @@
     </thead>
 
 <tbody>
-    {% for key, value in ha_list.items %}
+    {% for i in all_items_numbered %}
     <tr>
-        <td>Aparat słuchowy {{ key }}</td>
-        <td>{{ value.pkwiu_code }}</td>
-        <td>{{ value.quantity }}</td>
-        <td>{{ value.price_gross }}</td>
-        <td>{{ value.net_price }}</td>
-        <td>{{ value.net_value }}</td>
-        <td>{{ value.vat_rate }}</td>
-        <td>{{ value.vat_amount }}</td>
-        <td>{{ value.gross_value }}</td>
-    </tr>
-    {% endfor %}
-    {% for key, value in other_list.items %}
-    <tr>
-        <td>{{ key }}</td>
-        <td>{{ value.pkwiu_code }}</td>
-        <td>{{ value.quantity }}</td>
-        <td>{{ value.price_gross }}</td>
-        <td>{{ value.net_price }}</td>
-        <td>{{ value.net_value }}</td>
-        <td>{{ value.vat_rate }}</td>
-        <td>{{ value.vat_amount }}</td>
-        <td>{{ value.gross_value }}</td>
+        <td>{{ i.0 }}</td>
+        <td>{{ i.1 }}</td>
+        <td>{{ i.2.pkwiu_code }}</td>
+        <td>{{ i.2.quantity }}</td>
+        <td>{{ i.2.price_gross }}</td>
+        <td>{{ i.2.net_price }}</td>
+        <td>{{ i.2.net_value }}</td>
+        <td>{{ i.2.vat_rate }}</td>
+        <td>{{ i.2.vat_amount }}</td>
+        <td>{{ i.2.gross_value }}</td>
     </tr>
     {% endfor %}
     <tr>
