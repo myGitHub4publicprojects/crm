@@ -9,3 +9,5 @@ htmlcov/
 .cache/
 local_settings.py
 sonovoxcrm/static/
+crm/tests/test_files
+ha_list.py
