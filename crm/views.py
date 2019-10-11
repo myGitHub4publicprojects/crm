@@ -967,8 +967,7 @@ def corrective_invoice_detail(request, cinvoice_id):
 		return redirect('crm:edit', cinvoice.patient.id)
 	context = get_finance_context(cinvoice)
 	original_context = get_finance_context(cinvoice.invoice)
-	context['original_ha_list'] = original_context['ha_list']
-	context['original_other_list'] = original_context['other_list']
+	context['all_items_numbered_original'] = original_context['all_items_numbered']
 	context['original_total_value'] = original_context['total_value']
 	return render(request, 'crm/detail_corrective_invoice.html', context)
 
