@@ -52,3 +52,8 @@
       font-size: 1em;
     }
   }
+
+@media print {
+  .pageBreak {page-break-after: always;}
+}
+

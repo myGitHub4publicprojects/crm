@@ -1,5 +1,7 @@
 function printDiv() {
     var style = '<div style="padding: 50px;">';
+    var original = '<h4 style="text-align:center; clear:both;">Oryginał</h4>';
+    var copy = '<h4 style="text-align:center; clear:both;">Kopia</h4>';
     var date = document.getElementById('date').innerText;
     var saleDate = document.getElementById('saleDate').innerText;
     var sVox = '<p style="padding-left: 20%;"><small>SONOVOX<br>Aparaty Słuchowe<br>';
@@ -12,7 +14,7 @@ function printDiv() {
     var documentType = document.getElementById('documentType').innerText;
     var documentTitle = '<h1 style="text-align:center; clear:both;">' + documentType + '</h1>';
     var invoiceType = document.getElementById('invoiceType').innerText;
-    invoiceTypeP = 'Sposób płatności: ' + invoiceType;
+    var invoiceTypeP = 'Sposób płatności: ' + invoiceType;
     
     var invoiceDetails = date + '<br>' + saleDate + '<br>' + invoiceTypeP;
     if (invoiceType =='przelew'){
@@ -39,21 +41,21 @@ function printDiv() {
 
     var headDivRight = '<div style="width: 50%; float: right;">'
     var invoiceDetailsDiv = headDivRight + '<p style="padding-left: 20%;">' + invoiceDetails + '</p></div>';
+    var invoiceTop = sonovox + invoiceDetailsDiv + documentTitle + seller + buyer;
 
-
-    var printContents = style + sonovox + invoiceDetailsDiv + documentTitle + seller + buyer + table.outerHTML;
+    
     var invoiceNote = document.getElementById('note');
-    if (invoiceNote){
-        invoiceNote = invoiceNote.innerHTML;
-        printContents += invoiceNote;
-    }
-
+    invoiceNote = (invoiceNote) ? invoiceNote.innerHTML : '';
     var footer = '<br><p style="float: right;">Osoba upoważniona do wystawienia dokumentu:</p></div>';
-    printContents += footer;
+    var printContents = style + original + invoiceTop + table.outerHTML + invoiceNote + footer;
+    var printContents2 = style + copy + invoiceTop + table.outerHTML + invoiceNote + footer;
+    var pageBreak = '<div class="pageBreak"></div>';
+
+    printFinal = printContents + pageBreak + printContents2;
 
     var originalContents = document.body.innerHTML;
 
-    document.body.innerHTML = printContents;
+    document.body.innerHTML = printFinal;
 
     window.print();
 
