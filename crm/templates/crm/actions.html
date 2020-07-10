@@ -1,91 +1,13 @@
 <div class="row mt-3">
-	<!-- niepotwierdzone wnioski -->
+	<!--  wnioski NFZ -->
 	<div class="col-lg">
-		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#nwnioski" aria-expanded="false" aria-controls="nwnioski">niepotwierdzone NFZ</div>
-		<div class="collapse" id="nwnioski">
-			<div class="card card-body">
-				<div class="btn btn-outline-info">
-					<h4 class="bg-info text-white">ucho lewe</h4>
-					{% if left_NFZ_new %} NIEpotwierdzony wniosek dostarczono: {{ left_NFZ_new.date|date:'d-m-Y' }}
-					<br>
-					<div class="w-50 p-3 float-left">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#new_nfz_left" aria-expanded="false" aria-controls="new_nfz_left">Zmień</div>
-						<div class="collapse" id="new_nfz_left">
-							<p>Zmieniam datę odebrania tego wniosku na:</p>
-							<input type="date" name="new_NFZ_left">
-						</div>
-					</div>
-					<div class="w-50 p-3 float-right">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#new_nfz_left_remove" aria-expanded="false" aria-controls="nfz_left">Anuluj</div>
-						<div class="collapse" id="new_nfz_left_remove">
-							<input type="radio" name="nfz_new_left_remove" id="nfz_new_left_remove" />
-							<label for="nfz_new_left_remove">Anuluj</label>
-						</div>
-					</div>
-					{% else %} Dodaj NIEpotwierdzony wniosek NFZ:
-					<input type="date" name="new_NFZ_left"> {% endif %}
-				</div>
-	
-	
-	
-				<div class="btn btn-outline-danger">
-					<h4 class="bg-danger text-white">ucho prawe</h4>
-					{% if right_NFZ_new %} NIEpotwierdzony wniosek dostarczono: {{ right_NFZ_new.date|date:'d-m-Y' }}
-					<br>
-					<div class="w-50 p-3 float-left">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#new_nfz_right" aria-expanded="false" aria-controls="new_nfz_right">Zmień</div>
-						<div class="collapse" id="new_nfz_right">
-							<p>Zmieniam datę odebrania tego wniosku na:</p>
-							<input type="date" name="new_NFZ_right">
-						</div>
-					</div>
-					<div class="w-50 p-3 float-right">
-						<div class="btn btn-secondary" data-toggle="collapse" data-target="#nfz_new_right_remove">Anuluj</div>
-						<div class="collapse" id="nfz_new_right_remove">
-							<input type="radio" name="nfz_new_right_remove" id="nfz_new_right_remove" />
-							<label for="nfz_new_right_remove">Anuluj</label>
-						</div>
-					</div>
-					{% else %} Dodaj NIEpotwierdzony wniosek NFZ:
-					<input type="date" name="new_NFZ_right"> {% endif %}
-				</div>
-	
-			</div>
-			{% if left_NFZ_new_all %}
-			<h4>Poprzednie lewe:</h4>
-			<ul class="list-unstyled">
-				{% for i in left_NFZ_new_all %}
-				<li>
-					<small>{{ i.date|date:'d-m-Y' }}</small>
-					<hr>
-				</li>
-				{% endfor %}
-			</ul>
-			{% endif %} {% if right_NFZ_new_all %}
-			<h4>Poprzednie prawe:</h4>
-			<ul class="list-unstyled">
-				{% for i in right_NFZ_new_all %}
-				<li>
-					<small>{{ i.date|date:'d-m-Y' }}</small>
-					<hr>
-				</li>
-				{% endfor %}
-			</ul>
-			{% endif %}
-	
-	
-		</div>
-	</div>
-
-	<!-- potwierdzone wnioski -->
-	<div class="col-lg">
-		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#wnioski" aria-expanded="false" aria-controls="wnioski">potwierdzone NFZ</div>
+		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#wnioski" aria-expanded="false" aria-controls="wnioski">wnioski NFZ</div>
 		<div class="collapse" id="wnioski">
 			<div class="card card-body">
 				<div class="btn btn-outline-info">
 					<h4 class="bg-info text-white">ucho lewe</h4>
 					{% if left_NFZ_confirmed %}
-						potwierdzony wniosek dostarczono: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}<br>
+						wniosek NFZ dodano: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 						<div class="w-50 p-3 float-left">
 							<div class="btn btn-secondary" data-toggle="collapse" data-target="#nfz_left" aria-expanded="false" aria-controls="nfz_left">Zmień</div>
 							<div class="collapse" id="nfz_left">
@@ -101,7 +23,7 @@
 							</div>
 						</div>
 					{% else %}
-						Dodaj potwierdzony wniosek NFZ: <input type="date" name="NFZ_left">
+						Dodaj wniosek NFZ: <input type="date" name="NFZ_left">
 					{% endif %}
 				</div>
 					
@@ -110,7 +32,7 @@
 				<div class="btn btn-outline-danger">
 					<h4 class="bg-danger text-white">ucho prawe</h4>
 					{% if right_NFZ_confirmed %}
-						potwierdzony wniosek dostarczono: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}<br>
+						wniosek NFZ dodano: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}<br>
 						<div class="w-50 p-3 float-left">
 							<div class="btn btn-secondary" data-toggle="collapse" data-target="#nfz_right" aria-expanded="false" aria-controls="nfz_right">Zmień</div>
 							<div class="collapse" id="nfz_right">
@@ -126,7 +48,7 @@
 							</div>
 						</div>
 					{% else %}
-						Dodaj potwierdzony wniosek NFZ: <input type="date" name="NFZ_right">
+						Dodaj wniosek NFZ: <input type="date" name="NFZ_right">
 					{% endif %}
 				</div>
 
@@ -160,7 +82,7 @@
 
 	<!-- kosztorys -->
 	<div class="col-lg">
-		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#kosztorys" aria-expanded="false" aria-controls="kosztorys">kosztorys</div>
+		<div class="w-100 btn btn-outline-info" data-toggle="collapse" data-target="#kosztorys" aria-expanded="false" aria-controls="kosztorys">proforma</div>
 		<div class="collapse" id="kosztorys">
 			<div class="card card-body">
 				<div class="card-body">

@@ -22,9 +22,9 @@ from .forms import (PatientForm, DeviceForm, InvoiceForm,
                     SZOI_Usage_Form)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                     Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
-                    NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
+                    NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
 					Reminder_PCPR,  Reminder_NFZ_Confirmed,
-                    Reminder_NFZ_New, Corrective_Invoice, SZOI_File, SZOI_File_Usage)
+                    Corrective_Invoice, SZOI_File, SZOI_File_Usage)
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
@@ -101,14 +101,14 @@ def advancedsearch(request):
 			purchase_date__range=[ha_purchase_start,ha_purchase_end])
 		patient_list = patient_list & patients_from_ha(all_such_has)
 	
-	# search by dates of NFZ new - only active not prevoius
-	if request.GET.get('s_nfz_new_date') or request.GET.get('e_nfz_new_date'):
-		nfz_start = request.GET.get('s_nfz_new_date') or '1990-01-01'
-		nfz_end = request.GET.get(
-			'e_nfz_new_date') or str(datetime.datetime.today().date())
-		all_such_nfz = NFZ_New.objects.filter(
-			date__range=[nfz_start, nfz_end], in_progress=True)
-		patient_list = patient_list & patients_from_ha(all_such_nfz)
+	# # search by dates of NFZ new - only active not prevoius
+	# if request.GET.get('s_nfz_new_date') or request.GET.get('e_nfz_new_date'):
+	# 	nfz_start = request.GET.get('s_nfz_new_date') or '1990-01-01'
+	# 	nfz_end = request.GET.get(
+	# 		'e_nfz_new_date') or str(datetime.datetime.today().date())
+	# 	all_such_nfz = NFZ_New.objects.filter(
+	# 		date__range=[nfz_start, nfz_end], in_progress=True)
+	# 	patient_list = patient_list & patients_from_ha(all_such_nfz)
 
 	# search by dates of NFZ confirmed - only active not prevoius
 	if request.GET.get('s_nfz_date') or request.GET.get('e_nfz_date'):
@@ -181,8 +181,8 @@ def edit(request, patient_id):
 	right_hearing_aid = patient.hearing_aid_set.filter(ear="right", current=True).last()
 	left_hearing_aid = patient.hearing_aid_set.filter(
 		ear="left", current=True).last()
-	nfz_new_left_qs = patient.nfz_new_set.filter(side='left')
-	nfz_new_right_qs = patient.nfz_new_set.filter(side='right')
+	# nfz_new_left_qs = patient.nfz_new_set.filter(side='left')
+	# nfz_new_right_qs = patient.nfz_new_set.filter(side='right')
 	nfz_confirmed_left_qs = patient.nfz_confirmed_set.filter(side='left')
 	nfz_confirmed_right_qs = patient.nfz_confirmed_set.filter(side='right')
 
@@ -224,10 +224,10 @@ def edit(request, patient_id):
 			'patient_notes': patient.newinfo_set.order_by('-timestamp'),
 			'right_hearing_aid': right_hearing_aid,
 			'left_hearing_aid': left_hearing_aid,
-			'left_NFZ_new_all': last_and_previous(nfz_new_left_qs)['previous'],
-			'left_NFZ_new': last_and_previous(nfz_new_left_qs)['last'],
-			'right_NFZ_new_all': last_and_previous(nfz_new_right_qs)['previous'],
-			'right_NFZ_new': last_and_previous(nfz_new_right_qs)['last'],
+			# 'left_NFZ_new_all': last_and_previous(nfz_new_left_qs)['previous'],
+			# 'left_NFZ_new': last_and_previous(nfz_new_left_qs)['last'],
+			# 'right_NFZ_new_all': last_and_previous(nfz_new_right_qs)['previous'],
+			# 'right_NFZ_new': last_and_previous(nfz_new_right_qs)['last'],
 			'left_NFZ_confirmed_all': last_and_previous(nfz_confirmed_left_qs)['previous'],
 			'left_NFZ_confirmed': last_and_previous(nfz_confirmed_left_qs)['last'],
 			'right_NFZ_confirmed_all': last_and_previous(nfz_confirmed_right_qs)['previous'],
@@ -299,10 +299,10 @@ def store(request):
 				hearing_aid.save()
 
 			# add NFZ_new
-		if request.POST.get(ear + '_NFZ_new'):
-			nfz_new = NFZ_New.objects.create(
-				patient=patient, date=request.POST[ear + '_NFZ_new'], side=ear)
-			Reminder_NFZ_New.objects.create(nfz_new=nfz_new)
+		# if request.POST.get(ear + '_NFZ_new'):
+		# 	nfz_new = NFZ_New.objects.create(
+		# 		patient=patient, date=request.POST[ear + '_NFZ_new'], side=ear)
+		# 	Reminder_NFZ_New.objects.create(nfz_new=nfz_new)
 
 			# add NFZ_confirmed
 		if request.POST.get(ear + '_NFZ_confirmed_date'):
@@ -402,30 +402,33 @@ def updating(request, patient_id):
 				hearing_aid.our = False
 				hearing_aid.save()
 
-			# adding NFZ_new to patient
-			# previous NFZ if present are set to inactive
-		if request.POST.get('new_NFZ_' + ear):
-			nfz_new = NFZ_New.objects.filter(
-                            patient=patient, side=ear, in_progress=True)
-			if nfz_new:
-				nfz_new.update(in_progress=False)
-			new_nfz_new = NFZ_New.objects.create(
-				patient=patient, side=ear, date=request.POST['new_NFZ_' + ear])
-			new_action.append('Dodano niepotwierdzony ' + pl_side + ' wniosek ' +
-                            'z datą ' + request.POST['new_NFZ_' + ear] + '.')
-			Reminder_NFZ_New.objects.create(nfz_new=new_nfz_new)
+		# 	# adding NFZ_new to patient
+		# 	# previous NFZ if present are set to inactive
+		# if request.POST.get('new_NFZ_' + ear):
+		# 	nfz_new = NFZ_New.objects.filter(
+        #                     patient=patient, side=ear, in_progress=True)
+		# 	if nfz_new:
+		# 		nfz_new.update(in_progress=False)
+		# 	new_nfz_new = NFZ_New.objects.create(
+		# 		patient=patient, side=ear, date=request.POST['new_NFZ_' + ear])
+		# 	new_action.append('Dodano niepotwierdzony ' + pl_side + ' wniosek ' +
+        #                     'z datą ' + request.POST['new_NFZ_' + ear] + '.')
+		# 	Reminder_NFZ_New.objects.create(nfz_new=new_nfz_new)
 
-			# remove NFZ_new from currently active
-		if request.POST.get('nfz_new_' + ear + '_remove'):
-			last_in_progress = NFZ_New.objects.filter(
-				patient=patient, side=ear, in_progress=True).last()
-			last_in_progress.in_progress = False
-			last_in_progress.save()
-			new_action.append('Usunięto ' + pl_side + ' niepotwierdzony wniosek ' +
-                            'z datą ' + str(last_in_progress.date) + '.')
-			reminder = Reminder_NFZ_New.objects.get(nfz_new=last_in_progress)
-			reminder.active = False
-			reminder.save()
+		# 	# remove NFZ_new from currently active
+		# if request.POST.get('nfz_new_' + ear + '_remove'):
+		# 	last_in_progress = NFZ_New.objects.filter(
+		# 		patient=patient, side=ear, in_progress=True).last()
+		# 	last_in_progress.in_progress = False
+		# 	last_in_progress.save()
+		# 	new_action.append('Usunięto ' + pl_side + ' niepotwierdzony wniosek ' +
+        #                     'z datą ' + str(last_in_progress.date) + '.')
+		# 	reminder = Reminder_NFZ_New.objects.get(nfz_new=last_in_progress)
+		# 	reminder.active = False
+		# 	reminder.save()
+
+
+
 
 			# adding NFZ_confirmed to patient
 			# previous NFZ if present are set to inactive
@@ -441,12 +444,12 @@ def updating(request, patient_id):
 
 			# Reminders
 			# inactivate Reminder.nfz_new if any:
-			nfz_new = NFZ_New.objects.filter(
-					patient=patient, side=ear, in_progress=True)
-			reminder_nfz_new = Reminder_NFZ_New.objects.filter(nfz_new=nfz_new)
-			if reminder_nfz_new:
-				reminder_nfz_new[0].active = False
-				reminder_nfz_new[0].save()
+			# nfz_new = NFZ_New.objects.filter(
+			# 		patient=patient, side=ear, in_progress=True)
+			# reminder_nfz_new = Reminder_NFZ_New.objects.filter(nfz_new=nfz_new)
+			# if reminder_nfz_new:
+			# 	reminder_nfz_new[0].active = False
+			# 	reminder_nfz_new[0].save()
 
 			# add Reminder.nfz_confirmed
 			Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=new_nfz_confirmed)
@@ -521,16 +524,19 @@ def updating(request, patient_id):
 				reminder.save()
 
 		# inactivate NFZ_New and its reminder
-		nfz_new = NFZ_New.objects.filter(
-			patient=patient, in_progress=True)
-		if nfz_new:
-			for n in nfz_new:
-				n.in_progress = False
-				n.save()
-				reminder = Reminder_NFZ_New.objects.get(nfz_new=n)
-				reminder.active = False
-				reminder.save()
+		# nfz_new = NFZ_New.objects.filter(
+		# 	patient=patient, in_progress=True)
+		# if nfz_new:
+		# 	for n in nfz_new:
+		# 		n.in_progress = False
+		# 		n.save()
+		# 		reminder = Reminder_NFZ_New.objects.get(nfz_new=n)
+		# 		reminder.active = False
+		# 		reminder.save()
 			
+
+
+
 		
 		# remove PCPR_Estimate from currently active
 	if request.POST.get('pcpr_inactivate'):
@@ -601,8 +607,7 @@ def duplicate_check(request):
 
 @login_required
 def reminders(request):
-	all_reminders = [Reminder_NFZ_New.objects.active(),
-					Reminder_NFZ_Confirmed.objects.active(),
+	all_reminders = [Reminder_NFZ_Confirmed.objects.active(),
 					Reminder_PCPR.objects.active(),
 					Reminder_Invoice.objects.active(),
 					Reminder_Collection.objects.active()]
@@ -611,11 +616,11 @@ def reminders(request):
 	a = []
 	for active_reminders in all_reminders:
 		for i in active_reminders:
-			if i.__class__.__name__ == 'Reminder_NFZ_New':
-				msg = ' otrzymano NOWY wniosek NFZ'
-				patient = i.nfz_new.patient
-				url_address = reverse('crm:reminder_nfz_new', args=(i.id,))
-			elif i.__class__.__name__ == 'Reminder_NFZ_Confirmed':
+			# if i.__class__.__name__ == 'Reminder_NFZ_New':
+			# 	msg = ' otrzymano NOWY wniosek NFZ'
+			# 	patient = i.nfz_new.patient
+			# 	url_address = reverse('crm:reminder_nfz_new', args=(i.id,))
+			if i.__class__.__name__ == 'Reminder_NFZ_Confirmed':
 				msg = ' Otrzymano POTWIERDZONY wniosek NFZ'
 				patient = i.nfz_confirmed.patient
 				url_address = reverse('crm:reminder_nfz_confirmed', args=(i.id,))
@@ -638,25 +643,25 @@ def reminders(request):
 
 	return render(request, 'crm/reminders.html', {'reminders_list': reminders_list})
 
-@login_required
-def reminder_nfz_new(request, reminder_id):
-	r = get_object_or_404(Reminder_NFZ_New, pk=reminder_id)
-	if request.method == 'POST':
-		if request.POST.get('inactivate_reminder') == 'inactivate':
-			r.active = False
-			r.save()
-			messages.success(request, "Przypomnienie usunięte")
-			return redirect('crm:reminders')
-	msg = ' otrzymano NOWY wniosek NFZ'
-	patient = r.nfz_new.patient
-	more = ' lewy' if r.nfz_new.side == 'left' else ' prawy'
-	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
-		r.timestamp.strftime("%d.%m.%Y") + msg + more
-	context = {'subject': subject,
-				'patient': patient,
-				'reminder_id': r.id,
-            	'url_address': reverse('crm:reminder_nfz_new', args=(r.id,))}
-	return render(request, 'crm/reminder.html', context)
+# @login_required
+# def reminder_nfz_new(request, reminder_id):
+# 	r = get_object_or_404(Reminder_NFZ_New, pk=reminder_id)
+# 	if request.method == 'POST':
+# 		if request.POST.get('inactivate_reminder') == 'inactivate':
+# 			r.active = False
+# 			r.save()
+# 			messages.success(request, "Przypomnienie usunięte")
+# 			return redirect('crm:reminders')
+# 	msg = ' otrzymano NOWY wniosek NFZ'
+# 	patient = r.nfz_new.patient
+# 	more = ' lewy' if r.nfz_new.side == 'left' else ' prawy'
+# 	subject = patient.first_name + ' ' + patient.last_name + ', w dniu: ' + \
+# 		r.timestamp.strftime("%d.%m.%Y") + msg + more
+# 	context = {'subject': subject,
+# 				'patient': patient,
+# 				'reminder_id': r.id,
+#             	'url_address': reverse('crm:reminder_nfz_new', args=(r.id,))}
+# 	return render(request, 'crm/reminder.html', context)
 
 @login_required
 def reminder_nfz_confirmed(request, reminder_id):

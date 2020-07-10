@@ -12,8 +12,6 @@ urlpatterns = [
 	url(r'^store/$', views.store, name='store'),
 	url(r'^reminders/$', views.reminders, name='reminders'),
 	url(r'^duplicate_check/$', views.duplicate_check, name='duplicate_check'),
-    url(r'^(?P<reminder_id>[0-9]+)/reminder_nfz_new/$',
-        views.reminder_nfz_new, name='reminder_nfz_new'),
     url(r'^(?P<reminder_id>[0-9]+)/reminder_nfz_confirmed/$',
         views.reminder_nfz_confirmed, name='reminder_nfz_confirmed'),
     url(r'^(?P<reminder_id>[0-9]+)/reminder_pcpr/$',

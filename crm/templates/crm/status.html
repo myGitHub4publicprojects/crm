@@ -1,15 +1,6 @@
-{% if left_NFZ_new or right_NFZ_new %}
-	<div class="btn btn-sm btn-danger">
-		<small>Niepotwierdzone NFZ:
-		{% if left_NFZ_new %}Lewy: {{ left_NFZ_new.date|date:'d-m-Y' }}, {% endif %}
-		{% if right_NFZ_new %}Prawy: {{ right_NFZ_new.date|date:'d-m-Y' }}{% endif %}
-		</small>
-	</div>
-{% endif %}
-
 {% if left_NFZ_confirmed or right_NFZ_confirmed %}
 <div class="btn btn-sm btn-danger">
-	<small>Potwierdzone NFZ:
+	<small>Wnioski NFZ:
 		{% if left_NFZ_confirmed %}Lewy: {{ left_NFZ_confirmed.date|date:'d-m-Y' }}, {% endif %}
 		{% if right_NFZ_confirmed%}Prawy: {{ right_NFZ_confirmed.date|date:'d-m-Y' }}{% endif %}
 	</small>
@@ -18,7 +9,7 @@
 
 {% if PCPR_estimate %}
 	<div class="btn btn-sm btn-danger">
-		<small>Kosztorys: {{ PCPR_estimate.timestamp|date:'d-m-Y' }}
+		<small>Proforma: {{ PCPR_estimate.timestamp|date:'d-m-Y' }}
 		</small>
 	</div>
 {% endif %}

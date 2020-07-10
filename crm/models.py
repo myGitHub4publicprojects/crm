@@ -206,23 +206,11 @@ class NFZ(models.Model):
 
     class Meta:
         abstract = True
-
-
-class NFZ_New(NFZ):
-    # new application form to be confirmed by NFZ
-	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-        
+ 
 		
 class NFZ_Confirmed(NFZ):
 	# confirmed by NFZ application for hearing aid
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-
-	# Additonal features:
-	# nfz_scans = models.ImageField(upload_to=upload_location,
-	# 	null=True,
-	# 	blank=True,
-	# 	height_field="height_field",
-	# 	width_field="width_field")
 
 
 class ReminderManager(models.Manager):
@@ -241,10 +229,6 @@ class Reminder(models.Model):
 
 	class Meta:
 		abstract = True
-
-
-class Reminder_NFZ_New(Reminder):
-	nfz_new = models.ForeignKey(NFZ_New, on_delete=models.CASCADE)
 
 
 class Reminder_NFZ_Confirmed(Reminder):

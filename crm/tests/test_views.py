@@ -20,8 +20,8 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
-                     NFZ_Confirmed, NFZ_New, Reminder_Collection, Reminder_Invoice,
-                     Reminder_PCPR, Reminder_NFZ_Confirmed, Reminder_NFZ_New,
+                     NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
+                     Reminder_PCPR, Reminder_NFZ_Confirmed,
                         SZOI_File, SZOI_File_Usage, SZOI_Errors, Corrective_Invoice)
 
 pytestmark = pytest.mark.django_db
@@ -257,51 +257,51 @@ class TestAdvancedSearchView(TestCase):
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 2)
 
-    def test_search_nfz_new_date_only_lower_band(self):
-        '''only lower band of dates is given - upper band should default to today
-        should return only patients with nfz new after the lower band date'''
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        patient2 = Patient.objects.get(id=2)
-        patient3 = Patient.objects.get(id=3)
-        patient4 = Patient.objects.get(id=4)
-        # date out of range
-        NFZ_New.objects.create(
-            patient=patient1, date='2001-01-01', side='left')
-        NFZ_New.objects.create(
-            patient=patient2, date='2002-01-01', side='left')
-        NFZ_New.objects.create(
-            patient=patient3, date='2003-01-01', side='left')
-        # inactive
-        NFZ_New.objects.create(patient=patient4, date='2002-01-01', side='left',
-                               in_progress=False)
-        lower_band = '2002-01-01'
-        data = {'s_nfz_new_date': lower_band}
-        url = reverse('crm:advanced_search')
-        response = self.client.get(url, data)
-        self.assertEqual(len(response.context['patient_list']), 2)
+    # def test_search_nfz_new_date_only_lower_band(self):
+    #     '''only lower band of dates is given - upper band should default to today
+    #     should return only patients with nfz new after the lower band date'''
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     patient2 = Patient.objects.get(id=2)
+    #     patient3 = Patient.objects.get(id=3)
+    #     patient4 = Patient.objects.get(id=4)
+    #     # date out of range
+    #     NFZ_New.objects.create(
+    #         patient=patient1, date='2001-01-01', side='left')
+    #     NFZ_New.objects.create(
+    #         patient=patient2, date='2002-01-01', side='left')
+    #     NFZ_New.objects.create(
+    #         patient=patient3, date='2003-01-01', side='left')
+    #     # inactive
+    #     NFZ_New.objects.create(patient=patient4, date='2002-01-01', side='left',
+    #                            in_progress=False)
+    #     lower_band = '2002-01-01'
+    #     data = {'s_nfz_new_date': lower_band}
+    #     url = reverse('crm:advanced_search')
+    #     response = self.client.get(url, data)
+    #     self.assertEqual(len(response.context['patient_list']), 2)
 
-    def test_search_nfz_new_by_date_both_lower_and_upper_band(self):
-        '''both lower and upper band of dates is given, should return only patients
-        with NFZ new after the lower band and before the upper band date'''
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        patient2 = Patient.objects.get(id=2)
-        patient3 = Patient.objects.get(id=3)
-        NFZ_New.objects.create(patient=patient1, date='2001-01-01', side='left')
-        NFZ_New.objects.create(patient=patient2, date='2001-01-01', side='left')
-        NFZ_New.objects.create(patient=patient1, date='2002-01-01', side='left')
-        # date out of range
-        NFZ_New.objects.create(patient=patient3, date='2003-01-01', side='left')
-        # inactive
-        NFZ_New.objects.create(patient=patient3, date='2002-01-01', side='left',
-                                        in_progress=False)
-        lower_band = '2000-01-01'
-        upper_band = '2002-01-02'
-        data={'s_nfz_new_date': lower_band, 'e_nfz_new_date': upper_band}
-        url = reverse('crm:advanced_search')
-        response = self.client.get(url, data)
-        self.assertEqual(len(response.context['patient_list']), 2)
+    # def test_search_nfz_new_by_date_both_lower_and_upper_band(self):
+    #     '''both lower and upper band of dates is given, should return only patients
+    #     with NFZ new after the lower band and before the upper band date'''
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     patient2 = Patient.objects.get(id=2)
+    #     patient3 = Patient.objects.get(id=3)
+    #     NFZ_New.objects.create(patient=patient1, date='2001-01-01', side='left')
+    #     NFZ_New.objects.create(patient=patient2, date='2001-01-01', side='left')
+    #     NFZ_New.objects.create(patient=patient1, date='2002-01-01', side='left')
+    #     # date out of range
+    #     NFZ_New.objects.create(patient=patient3, date='2003-01-01', side='left')
+    #     # inactive
+    #     NFZ_New.objects.create(patient=patient3, date='2002-01-01', side='left',
+    #                                     in_progress=False)
+    #     lower_band = '2000-01-01'
+    #     upper_band = '2002-01-02'
+    #     data={'s_nfz_new_date': lower_band, 'e_nfz_new_date': upper_band}
+    #     url = reverse('crm:advanced_search')
+    #     response = self.client.get(url, data)
+    #     self.assertEqual(len(response.context['patient_list']), 2)
 
 
     def test_search_pcpr_estimate_date_both_lower_and_upper_band(self):
@@ -420,35 +420,35 @@ class TestEditView(TestCase):
         assert response.status_code == 200, 'Should be callable by logged in user'
 
 
-    def test_patient_with_both_active_NFZ_new(self):
-        ''' scenario with left and right active (in_progres=True)
-        latest (.last()) NFZ new instance 
-        there are also former, inactive left and right instance'''
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        nfz0 = NFZ_New.objects.create(patient=patient1,
-                            date = today,
-                            side = 'left',
-                            in_progress = False)
-        nfz1 = NFZ_New.objects.create(patient=patient1,
-                            date = today,
-                            side = 'left',
-                            in_progress = True)
-        nfz2 = NFZ_New.objects.create(patient=patient1,
-                            date = today,
-                            side = 'right',
-                            in_progress = False)
-        nfz3 = NFZ_New.objects.create(patient=patient1,
-                            date = today,
-                            side = 'right',
-                            in_progress = True)
-        response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
-        self.assertIsNotNone(response.context['left_NFZ_new'])
-        self.assertEqual(response.context['left_NFZ_new'], nfz1)
-        self.assertEqual(len(response.context['left_NFZ_new_all']), 1)
-        self.assertIsNotNone(response.context['right_NFZ_new'])
-        self.assertEqual(response.context['right_NFZ_new'], nfz3)
-        self.assertEqual(len(response.context['right_NFZ_new_all']), 1)
+    # def test_patient_with_both_active_NFZ_new(self):
+    #     ''' scenario with left and right active (in_progres=True)
+    #     latest (.last()) NFZ new instance 
+    #     there are also former, inactive left and right instance'''
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     nfz0 = NFZ_New.objects.create(patient=patient1,
+    #                         date = today,
+    #                         side = 'left',
+    #                         in_progress = False)
+    #     nfz1 = NFZ_New.objects.create(patient=patient1,
+    #                         date = today,
+    #                         side = 'left',
+    #                         in_progress = True)
+    #     nfz2 = NFZ_New.objects.create(patient=patient1,
+    #                         date = today,
+    #                         side = 'right',
+    #                         in_progress = False)
+    #     nfz3 = NFZ_New.objects.create(patient=patient1,
+    #                         date = today,
+    #                         side = 'right',
+    #                         in_progress = True)
+    #     response = self.client.get(reverse('crm:edit', args=(patient1.id,)))
+    #     self.assertIsNotNone(response.context['left_NFZ_new'])
+    #     self.assertEqual(response.context['left_NFZ_new'], nfz1)
+    #     self.assertEqual(len(response.context['left_NFZ_new_all']), 1)
+    #     self.assertIsNotNone(response.context['right_NFZ_new'])
+    #     self.assertEqual(response.context['right_NFZ_new'], nfz3)
+    #     self.assertEqual(len(response.context['right_NFZ_new_all']), 1)
 
 
     def test_patient_with_only_inactive_NFZ_confirmed(self):
@@ -621,8 +621,8 @@ class TestStoreView(TestCase):
                 'right_ha': 'model2_family2_brand2',
                 'left_purchase_date': '1999-01-01',
                 'right_purchase_date': '1999-01-02',
-                'left_NFZ_new': '2001-01-01',
-                'right_NFZ_new': '2001-01-01',
+                # 'left_NFZ_new': '2001-01-01',
+                # 'right_NFZ_new': '2001-01-01',
                 'left_NFZ_confirmed_date': '2001-01-01',
                 'right_NFZ_confirmed_date': '2002-02-02',
                 'note': 'p1_note',
@@ -642,10 +642,10 @@ class TestStoreView(TestCase):
         self.assertRedirects(response, expected_url,
                      status_code=302, target_status_code=200)
         self.assertEqual(Patient.objects.all().count(), 1)
-        self.assertEqual(NFZ_New.objects.all().count(), 2)
+        # self.assertEqual(NFZ_New.objects.all().count(), 2)
         self.assertEqual(NFZ_Confirmed.objects.all().count(), 2)
         self.assertEqual(Hearing_Aid.objects.all().count(), 2)
-        self.assertEqual(Reminder_NFZ_New.objects.all().count(), 2)
+        # self.assertEqual(Reminder_NFZ_New.objects.all().count(), 2)
         self.assertEqual(Reminder_NFZ_Confirmed.objects.all().count(), 2)
 
 
@@ -916,122 +916,122 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(right_ha.purchase_date), '2001-01-02')
         self.assertFalse(left_ha.our)
 
-    def test_adding_NFZ_new(self):
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        data = self.data.copy()
-        data['new_NFZ_left'] = '2001-01-01'
-        data['new_NFZ_right'] = '2001-01-02'
-        url = reverse('crm:updating', args=(patient1.id,))
-        expected_url = reverse('crm:edit', args=(1,))
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
+    # def test_adding_NFZ_new(self):
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     data = self.data.copy()
+    #     data['new_NFZ_left'] = '2001-01-01'
+    #     data['new_NFZ_right'] = '2001-01-02'
+    #     url = reverse('crm:updating', args=(patient1.id,))
+    #     expected_url = reverse('crm:edit', args=(1,))
+    #     response = self.client.post(url, data, follow=True)
+    #     # should give code 200 as follow is set to True
+    #     assert response.status_code == 200
+    #     self.assertRedirects(response, expected_url,
+    #                          status_code=302, target_status_code=200)
 
-        left_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        self.assertEqual(left_nfz_all.count(), 1)
-        self.assertEqual(right_nfz_all.count(), 1)
-        self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
-        self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
-        new_info = NewInfo.objects.get(id=1)
-        expected_note = 'Dodano niepotwierdzony lewy wniosek z datą 2001-01-01. ' + \
-                        'Dodano niepotwierdzony prawy wniosek z datą 2001-01-02.'
-        reminders = Reminder_NFZ_New.objects.all()
-        self.assertEqual(reminders.count(), 2)
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+    #     left_nfz_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='left')
+    #     right_nfz_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='right')
+    #     self.assertEqual(left_nfz_all.count(), 1)
+    #     self.assertEqual(right_nfz_all.count(), 1)
+    #     self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
+    #     self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+    #     new_info = NewInfo.objects.get(id=1)
+    #     expected_note = 'Dodano niepotwierdzony lewy wniosek z datą 2001-01-01. ' + \
+    #                     'Dodano niepotwierdzony prawy wniosek z datą 2001-01-02.'
+    #     reminders = Reminder_NFZ_New.objects.all()
+    #     self.assertEqual(reminders.count(), 2)
+    #     self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-    def test_adding_another_NFZ_new(self):
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        n1 = NFZ_New.objects.create(patient=patient1,
-                                          side='left',
-                                          date='2000-01-01')
-        n2 = NFZ_New.objects.create(patient=patient1,
-                                          side='right',
-                                          date='2000-01-02')
-        Reminder_NFZ_New.objects.create(nfz_new=n1, activation_date=today)
-        Reminder_NFZ_New.objects.create(nfz_new=n2, activation_date=today)
-        data = self.data.copy()
-        data['new_NFZ_left'] = '2001-01-01'
-        data['new_NFZ_right'] = '2001-01-02'
-        url = reverse('crm:updating', args=(patient1.id,))
-        expected_url = reverse('crm:edit', args=(1,))
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
+    # def test_adding_another_NFZ_new(self):
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     n1 = NFZ_New.objects.create(patient=patient1,
+    #                                       side='left',
+    #                                       date='2000-01-01')
+    #     n2 = NFZ_New.objects.create(patient=patient1,
+    #                                       side='right',
+    #                                       date='2000-01-02')
+    #     Reminder_NFZ_New.objects.create(nfz_new=n1, activation_date=today)
+    #     Reminder_NFZ_New.objects.create(nfz_new=n2, activation_date=today)
+    #     data = self.data.copy()
+    #     data['new_NFZ_left'] = '2001-01-01'
+    #     data['new_NFZ_right'] = '2001-01-02'
+    #     url = reverse('crm:updating', args=(patient1.id,))
+    #     expected_url = reverse('crm:edit', args=(1,))
+    #     response = self.client.post(url, data, follow=True)
+    #     # should give code 200 as follow is set to True
+    #     assert response.status_code == 200
+    #     self.assertRedirects(response, expected_url,
+    #                          status_code=302, target_status_code=200)
 
-        left_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        self.assertEqual(left_nfz_all.count(), 2)
-        self.assertEqual(right_nfz_all.count(), 2)
-        self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
-        self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
-        self.assertEqual(response.context['reminders'], 2)
+    #     left_nfz_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='left')
+    #     right_nfz_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='right')
+    #     self.assertEqual(left_nfz_all.count(), 2)
+    #     self.assertEqual(right_nfz_all.count(), 2)
+    #     self.assertEqual(str(left_nfz_all.last().date), '2001-01-01')
+    #     self.assertEqual(str(right_nfz_all.last().date), '2001-01-02')
+    #     self.assertEqual(response.context['reminders'], 2)
 
-    def test_remove_NFZ_New(self):
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        n1 = NFZ_New.objects.create(patient=patient1,
-                                          side='left',
-                                          date='2000-01-01')
-        n2 = NFZ_New.objects.create(patient=patient1,
-                                          side='right',
-                                          date='2000-01-02')
-        Reminder_NFZ_New.objects.create(nfz_new=n1)
-        Reminder_NFZ_New.objects.create(nfz_new=n2)
-        data = self.data.copy()
-        data['nfz_new_left_remove'] = True
-        data['nfz_new_right_remove'] = True
-        url = reverse('crm:updating', args=(patient1.id,))
-        expected_url = reverse('crm:edit', args=(1,))
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
+    # def test_remove_NFZ_New(self):
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     n1 = NFZ_New.objects.create(patient=patient1,
+    #                                       side='left',
+    #                                       date='2000-01-01')
+    #     n2 = NFZ_New.objects.create(patient=patient1,
+    #                                       side='right',
+    #                                       date='2000-01-02')
+    #     Reminder_NFZ_New.objects.create(nfz_new=n1)
+    #     Reminder_NFZ_New.objects.create(nfz_new=n2)
+    #     data = self.data.copy()
+    #     data['nfz_new_left_remove'] = True
+    #     data['nfz_new_right_remove'] = True
+    #     url = reverse('crm:updating', args=(patient1.id,))
+    #     expected_url = reverse('crm:edit', args=(1,))
+    #     response = self.client.post(url, data, follow=True)
+    #     # should give code 200 as follow is set to True
+    #     assert response.status_code == 200
+    #     self.assertRedirects(response, expected_url,
+    #                          status_code=302, target_status_code=200)
 
-        left_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        self.assertEqual(left_nfz_all.count(), 1)
-        self.assertEqual(right_nfz_all.count(), 1)
-        self.assertFalse(left_nfz_all.last().in_progress)
-        self.assertFalse(right_nfz_all.last().in_progress)
-        new_info = NewInfo.objects.get(id=1)
-        expected_note = 'Usunięto lewy niepotwierdzony wniosek z datą 2000-01-01. ' + \
-                        'Usunięto prawy niepotwierdzony wniosek z datą 2000-01-02.'
+    #     left_nfz_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='left')
+    #     right_nfz_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='right')
+    #     self.assertEqual(left_nfz_all.count(), 1)
+    #     self.assertEqual(right_nfz_all.count(), 1)
+    #     self.assertFalse(left_nfz_all.last().in_progress)
+    #     self.assertFalse(right_nfz_all.last().in_progress)
+    #     new_info = NewInfo.objects.get(id=1)
+    #     expected_note = 'Usunięto lewy niepotwierdzony wniosek z datą 2000-01-01. ' + \
+    #                     'Usunięto prawy niepotwierdzony wniosek z datą 2000-01-02.'
 
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+    #     self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-        # should inactivate 2 Reminder.nfz_new
-        left_nfz_new_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_new_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        left_new_nfz = left_nfz_new_all[0]
-        right_new_nfz = right_nfz_new_all[0]
-        left_new_reminders = Reminder_NFZ_New.objects.filter(
-            nfz_new=left_new_nfz)
-        self.assertEqual(left_new_reminders.count(), 1)
-        right_new_reminders = Reminder_NFZ_New.objects.filter(
-            nfz_new=right_new_nfz)
-        self.assertEqual(right_new_reminders.count(), 1)
-        self.assertFalse(left_new_reminders.last().active)
-        self.assertFalse(right_new_reminders.last().active)
+    #     # should inactivate 2 Reminder.nfz_new
+    #     left_nfz_new_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='left')
+    #     right_nfz_new_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='right')
+    #     left_new_nfz = left_nfz_new_all[0]
+    #     right_new_nfz = right_nfz_new_all[0]
+    #     left_new_reminders = Reminder_NFZ_New.objects.filter(
+    #         nfz_new=left_new_nfz)
+    #     self.assertEqual(left_new_reminders.count(), 1)
+    #     right_new_reminders = Reminder_NFZ_New.objects.filter(
+    #         nfz_new=right_new_nfz)
+    #     self.assertEqual(right_new_reminders.count(), 1)
+    #     self.assertFalse(left_new_reminders.last().active)
+    #     self.assertFalse(right_new_reminders.last().active)
 
-        # there should be 2 Reminders in total (2 inactive)
-        reminders = Reminder_NFZ_New.objects.all()
-        self.assertEqual(reminders.count(), 2)
+    #     # there should be 2 Reminders in total (2 inactive)
+    #     reminders = Reminder_NFZ_New.objects.all()
+    #     self.assertEqual(reminders.count(), 2)
 
     def test_adding_NFZ_confirmed_no_NFZ_New(self):
         self.client.login(username='john', password='glassonion')
@@ -1069,65 +1069,65 @@ class TestUpdatingView(TestCase):
         self.assertEqual(reminders.count(), 2)
         
 
-    def test_adding_NFZ_confirmed_previous_NFZ_New(self):
-        '''confirmed NFZ are added where NFZ_New instances already exists,
-        reminders about NFZ_New should be deactivated'''
-        self.client.login(username='john', password='glassonion')
-        patient1 = Patient.objects.get(id=1)
-        n1 = NFZ_New.objects.create(patient=patient1,
-                                   side='left',
-                                   date='2000-01-01')
-        n2 = NFZ_New.objects.create(patient=patient1,
-                                     side='right',
-                                     date='2000-01-02')
-        Reminder_NFZ_New.objects.create(nfz_new=n1, activation_date=today)
-        Reminder_NFZ_New.objects.create(nfz_new=n2, activation_date=today)
-        data = self.data.copy()
-        data['NFZ_left'] = '2001-01-01'
-        data['NFZ_right'] = '2001-01-02'
-        url = reverse('crm:updating', args=(patient1.id,))
-        response = self.client.post(url, data, follow=True)
+    # def test_adding_NFZ_confirmed_previous_NFZ_New(self):
+    #     '''confirmed NFZ are added where NFZ_New instances already exists,
+    #     reminders about NFZ_New should be deactivated'''
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+    #     n1 = NFZ_New.objects.create(patient=patient1,
+    #                                side='left',
+    #                                date='2000-01-01')
+    #     n2 = NFZ_New.objects.create(patient=patient1,
+    #                                  side='right',
+    #                                  date='2000-01-02')
+    #     Reminder_NFZ_New.objects.create(nfz_new=n1, activation_date=today)
+    #     Reminder_NFZ_New.objects.create(nfz_new=n2, activation_date=today)
+    #     data = self.data.copy()
+    #     data['NFZ_left'] = '2001-01-01'
+    #     data['NFZ_right'] = '2001-01-02'
+    #     url = reverse('crm:updating', args=(patient1.id,))
+    #     response = self.client.post(url, data, follow=True)
        
-        left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
-            patient=patient1, side='right')
-        self.assertEqual(left_nfz_confirmed_all.count(), 1)
-        self.assertEqual(right_nfz_confirmed_all.count(), 1)
-        self.assertEqual(str(left_nfz_confirmed_all.last().date), '2001-01-01')
-        self.assertEqual(str(right_nfz_confirmed_all.last().date), '2001-01-02')
+    #     left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+    #         patient=patient1, side='left')
+    #     right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+    #         patient=patient1, side='right')
+    #     self.assertEqual(left_nfz_confirmed_all.count(), 1)
+    #     self.assertEqual(right_nfz_confirmed_all.count(), 1)
+    #     self.assertEqual(str(left_nfz_confirmed_all.last().date), '2001-01-01')
+    #     self.assertEqual(str(right_nfz_confirmed_all.last().date), '2001-01-02')
 
-        # should inactivate 2 Reminder.nfz_new
-        left_nfz_new_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_new_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        left_new_nfz = left_nfz_new_all[0]
-        right_new_nfz = right_nfz_new_all[0]
-        left_new_reminders = Reminder_NFZ_New.objects.filter(
-            nfz_new=left_new_nfz)
-        self.assertEqual(left_new_reminders.count(), 1)
-        right_new_reminders = Reminder_NFZ_New.objects.filter(
-            nfz_new=right_new_nfz)
-        self.assertEqual(right_new_reminders.count(), 1)
-        self.assertFalse(left_new_reminders.last().active)
-        self.assertFalse(right_new_reminders.last().active)
+    #     # should inactivate 2 Reminder.nfz_new
+    #     left_nfz_new_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='left')
+    #     right_nfz_new_all = NFZ_New.objects.filter(
+    #         patient=patient1, side='right')
+    #     left_new_nfz = left_nfz_new_all[0]
+    #     right_new_nfz = right_nfz_new_all[0]
+    #     left_new_reminders = Reminder_NFZ_New.objects.filter(
+    #         nfz_new=left_new_nfz)
+    #     self.assertEqual(left_new_reminders.count(), 1)
+    #     right_new_reminders = Reminder_NFZ_New.objects.filter(
+    #         nfz_new=right_new_nfz)
+    #     self.assertEqual(right_new_reminders.count(), 1)
+    #     self.assertFalse(left_new_reminders.last().active)
+    #     self.assertFalse(right_new_reminders.last().active)
 
-        # and create 2 Reminder.nfz_confirmed (active)
-        left_confirmed_nfz = left_nfz_confirmed_all[0]
-        right_confirmed_nfz = right_nfz_confirmed_all[0]
-        left_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
-            nfz_confirmed=left_confirmed_nfz)
-        self.assertEqual(left_confirmed_reminders.count(), 1)
-        right_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
-            nfz_confirmed=right_confirmed_nfz)
-        self.assertEqual(right_confirmed_reminders.count(), 1)
-        self.assertTrue(left_confirmed_reminders.last().active)
-        self.assertTrue(right_confirmed_reminders.last().active)
+    #     # and create 2 Reminder.nfz_confirmed (active)
+    #     left_confirmed_nfz = left_nfz_confirmed_all[0]
+    #     right_confirmed_nfz = right_nfz_confirmed_all[0]
+    #     left_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+    #         nfz_confirmed=left_confirmed_nfz)
+    #     self.assertEqual(left_confirmed_reminders.count(), 1)
+    #     right_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+    #         nfz_confirmed=right_confirmed_nfz)
+    #     self.assertEqual(right_confirmed_reminders.count(), 1)
+    #     self.assertTrue(left_confirmed_reminders.last().active)
+    #     self.assertTrue(right_confirmed_reminders.last().active)
 
-        # there should be 2 Reminder_NFZ_Confirmed
-        reminders = Reminder_NFZ_Confirmed.objects.all()
-        self.assertEqual(reminders.count(), 2)
+    #     # there should be 2 Reminder_NFZ_Confirmed
+    #     reminders = Reminder_NFZ_Confirmed.objects.all()
+    #     self.assertEqual(reminders.count(), 2)
 
 
     def test_adding_another_NFZ_confirmed(self):
@@ -1396,12 +1396,12 @@ class TestUpdatingView(TestCase):
         # there is one active invoice
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        new1 = NFZ_New.objects.create(patient=patient1,
-                                    side='left',
-                                    date='2000-01-01')
-        new2 = NFZ_New.objects.create(patient=patient1,
-                                    side='right',
-                                    date='2000-01-02')
+        # new1 = NFZ_New.objects.create(patient=patient1,
+        #                             side='left',
+        #                             date='2000-01-01')
+        # new2 = NFZ_New.objects.create(patient=patient1,
+        #                             side='right',
+        #                             date='2000-01-02')
         n1 = NFZ_Confirmed.objects.create(patient=patient1,
                                      side='left',
                                      date='2000-01-01')
@@ -1454,8 +1454,8 @@ class TestUpdatingView(TestCase):
                                     purchase_date='2000-01-02',
                                     our=False,
                                     current=True)
-        Reminder_NFZ_New.objects.create(nfz_new=new1, activation_date=today)
-        Reminder_NFZ_New.objects.create(nfz_new=new2, activation_date=today)
+        # Reminder_NFZ_New.objects.create(nfz_new=new1, activation_date=today)
+        # Reminder_NFZ_New.objects.create(nfz_new=new2, activation_date=today)
         Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n1, activation_date=today)
         Reminder_NFZ_Confirmed.objects.create(nfz_confirmed=n2, activation_date=today)
         Reminder_PCPR.objects.create(pcpr=p1, activation_date=today)
@@ -1493,12 +1493,12 @@ class TestUpdatingView(TestCase):
 
 
         # should set NFZ New if any to inactive
-        left_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        self.assertFalse(left_nfz_all.last().in_progress)
-        self.assertFalse(right_nfz_all.last().in_progress)
+        # left_nfz_all = NFZ_New.objects.filter(
+        #     patient=patient1, side='left')
+        # right_nfz_all = NFZ_New.objects.filter(
+        #     patient=patient1, side='right')
+        # self.assertFalse(left_nfz_all.last().in_progress)
+        # self.assertFalse(right_nfz_all.last().in_progress)
 
         # should set NFZ confirmed to inactive
         left_nfz_all = NFZ_Confirmed.objects.filter(
@@ -1526,20 +1526,20 @@ class TestUpdatingView(TestCase):
 
         # reminders       
         # there should be 2 Reminder_NFZ_New (one for each side), both inactive
-        left_nfz_new_all = NFZ_New.objects.filter(
-            patient=patient1, side='left')
-        right_nfz_new_all = NFZ_New.objects.filter(
-            patient=patient1, side='right')
-        left_new_nfz = left_nfz_new_all[0]
-        right_new_nfz = right_nfz_new_all[0]
-        left_new_reminders = Reminder_NFZ_New.objects.filter(
-            nfz_new=left_new_nfz)
-        self.assertEqual(left_new_reminders.count(), 1)
-        right_new_reminders = Reminder_NFZ_New.objects.filter(
-            nfz_new=right_new_nfz)
-        self.assertEqual(right_new_reminders.count(), 1)
-        self.assertFalse(left_new_reminders.last().active)
-        self.assertFalse(right_new_reminders.last().active)
+        # left_nfz_new_all = NFZ_New.objects.filter(
+        #     patient=patient1, side='left')
+        # right_nfz_new_all = NFZ_New.objects.filter(
+        #     patient=patient1, side='right')
+        # left_new_nfz = left_nfz_new_all[0]
+        # right_new_nfz = right_nfz_new_all[0]
+        # left_new_reminders = Reminder_NFZ_New.objects.filter(
+        #     nfz_new=left_new_nfz)
+        # self.assertEqual(left_new_reminders.count(), 1)
+        # right_new_reminders = Reminder_NFZ_New.objects.filter(
+        #     nfz_new=right_new_nfz)
+        # self.assertEqual(right_new_reminders.count(), 1)
+        # self.assertFalse(left_new_reminders.last().active)
+        # self.assertFalse(right_new_reminders.last().active)
 
         # there should be 2 Reminder_NFZ_Confirmed (one for each side), both inactive
         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
@@ -1763,39 +1763,39 @@ class TestDeletePatientView(TestCase):
         self.assertFalse(Patient.objects.all().exists())
 
 
-class TestReminderNFZNewView(TestCase):
-    def setUp(self):
-        user_john = create_user()
-        patient1 = create_patient(user_john)
+# class TestReminderNFZNewView(TestCase):
+#     def setUp(self):
+#         user_john = create_user()
+#         patient1 = create_patient(user_john)
 
-    def test_one(self):
-        self.client.login(username='john', password='glassonion')
-        nfz = NFZ_New.objects.create(
-            patient=Patient.objects.get(id=1), date=today, side='left')
-        Reminder_NFZ_New.objects.create(nfz_new=nfz, activation_date=today)
-        url = reverse('crm:reminder_nfz_new', args=(1,))
-        response = self.client.post(url)
-        # should give code 200
-        assert response.status_code == 200
-        self.assertEqual(response.context['reminder_id'], 1)
-        exp_subj = 'John Smith1, w dniu: %s otrzymano NOWY wniosek NFZ lewy' % today.strftime(
-            "%d.%m.%Y")
-        self.assertEqual(response.context['subject'], exp_subj)
-        self.assertEqual(response.context['url_address'], url)
+#     def test_one(self):
+#         self.client.login(username='john', password='glassonion')
+#         nfz = NFZ_New.objects.create(
+#             patient=Patient.objects.get(id=1), date=today, side='left')
+#         Reminder_NFZ_New.objects.create(nfz_new=nfz, activation_date=today)
+#         url = reverse('crm:reminder_nfz_new', args=(1,))
+#         response = self.client.post(url)
+#         # should give code 200
+#         assert response.status_code == 200
+#         self.assertEqual(response.context['reminder_id'], 1)
+#         exp_subj = 'John Smith1, w dniu: %s otrzymano NOWY wniosek NFZ lewy' % today.strftime(
+#             "%d.%m.%Y")
+#         self.assertEqual(response.context['subject'], exp_subj)
+#         self.assertEqual(response.context['url_address'], url)
 
 
-    def test_inactivate_reminder_nfz_new(self):
-        self.client.login(username='john', password='glassonion')
-        nfz = NFZ_New.objects.create(
-            patient=Patient.objects.get(id=1), date=today, side='left')
-        Reminder_NFZ_New.objects.create(nfz_new=nfz, activation_date=today)
-        data = {'inactivate_reminder': 'inactivate'}
-        url = reverse('crm:reminder_nfz_new', args=(1,))
-        # should give code 200
-        response = self.client.post(url, data, follow=True)
-        assert response.status_code == 200
-        # should inactivate reminder
-        self.assertFalse(Reminder_NFZ_New.objects.get(id=1).active)
+#     def test_inactivate_reminder_nfz_new(self):
+#         self.client.login(username='john', password='glassonion')
+#         nfz = NFZ_New.objects.create(
+#             patient=Patient.objects.get(id=1), date=today, side='left')
+#         Reminder_NFZ_New.objects.create(nfz_new=nfz, activation_date=today)
+#         data = {'inactivate_reminder': 'inactivate'}
+#         url = reverse('crm:reminder_nfz_new', args=(1,))
+#         # should give code 200
+#         response = self.client.post(url, data, follow=True)
+#         assert response.status_code == 200
+#         # should inactivate reminder
+#         self.assertFalse(Reminder_NFZ_New.objects.get(id=1).active)
 
 class TestReminderNFZConfirmedView(TestCase):
     def setUp(self):
