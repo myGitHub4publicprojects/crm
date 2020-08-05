@@ -112,11 +112,11 @@ class Invoice(Finance):
 	# def get_absolute_url(self):
 	# 	return reverse('crm:invoice_update', kwargs={'pk': self.pk})
 
-class Corrective_Invoice(Finance):
-	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
-	date = models.DateField(default=datetime.date.today())
-	def get_number(self):
-		return str(self.pk) + self.timestamp.strftime("/%m/%d")
+# class Corrective_Invoice(Finance):
+# 	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+# 	date = models.DateField(default=datetime.date.today())
+# 	def get_number(self):
+# 		return str(self.pk) + self.timestamp.strftime("/%m/%d")
 
 
 class Device(models.Model):
@@ -151,8 +151,6 @@ class Our_Device(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	invoice = models.ForeignKey(
 		Invoice, on_delete=models.CASCADE, null=True, blank=True)
-	corrective_invoice = models.ForeignKey(
-            Corrective_Invoice, on_delete=models.CASCADE, null=True, blank=True)
 	estimate = models.ForeignKey(
 		PCPR_Estimate, on_delete=models.CASCADE, null=True, blank=True)
 

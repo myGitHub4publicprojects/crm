@@ -22,7 +22,7 @@ from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
                      NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed,
-                        SZOI_File, SZOI_File_Usage, SZOI_Errors, Corrective_Invoice)
+                        SZOI_File, SZOI_File_Usage, SZOI_Errors)
 
 pytestmark = pytest.mark.django_db
 today = datetime.today().date()
@@ -301,24 +301,18 @@ class TestAdvancedSearchView(TestCase):
 
         invoice1 = Invoice.objects.create(
             patient=patient1,
-            payed=True,
-            type='cash',
             current=True,)
         invoice1.timestamp = '2000-01-01 00:00:00'
         invoice1.save()
         
         invoice2 = Invoice.objects.create(
             patient=patient2,
-            payed=True,
-            type='cash',
             current=True,)
         invoice2.timestamp = '2002-01-01 00:00:00'
         invoice2.save()
 
         invoice3 = Invoice.objects.create(
             patient=patient3,
-            payed=True,
-            type='cash',
             current=True,)
         invoice3.timestamp = '2003-01-01 00:00:00'
         invoice3.save()
@@ -1012,12 +1006,8 @@ class TestUpdatingView(TestCase):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         i1 = Invoice.objects.create(patient=patient1,
-                                     payed=True,
-                                     type='cash',
                                      current=False)
         i2= Invoice.objects.create(patient=patient1,
-                                     payed=True,
-                                     type='cash',
                                      current=True)
         i2.timestamp = '2000-01-01'
         i2.save()
@@ -1461,7 +1451,7 @@ class TestReminderInvoiceView(TestCase):
     def test_one(self):
         self.client.login(username='john', password='glassonion')
         invoice = Invoice.objects.create(
-            patient=Patient.objects.get(id=1), type='cash', payed=True)
+            patient=Patient.objects.get(id=1))
 
         Reminder_Invoice.objects.create(invoice=invoice)
         url = reverse('crm:reminder_invoice', args=(1,))
@@ -1476,7 +1466,7 @@ class TestReminderInvoiceView(TestCase):
     def test_inactivate_reminder_invoice(self):
         self.client.login(username='john', password='glassonion')
         invoice = Invoice.objects.create(
-            patient=Patient.objects.get(id=1), type='cash', payed=True)
+            patient=Patient.objects.get(id=1))
 
         Reminder_Invoice.objects.create(invoice=invoice)
         data = {'inactivate_reminder': 'inactivate'}
@@ -1535,364 +1525,6 @@ class TestReminderCollectionView(TestCase):
         assert response.status_code == 200
         # should inactivate reminder
         self.assertFalse(Reminder_Collection.objects.get(id=1).active)
-
-
-class TestInvoiceCreateView(TestCase):
-    def setUp(self):
-        user_john = create_user()
-        create_patient(user_john)
-
-    def test_anonymous(self):
-        '''should redirect to login'''
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('login') + '?next=/1/invoice_create/'
-        response = self.client.post(url, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-    def test_logged_in_with_valid_data_for_ha(self):
-        '''should create:
-        one hearing aid (current=False),
-        one invoice instance with one position - hearing aid,
-        for a given patient,
-        invoice type should be 'transfer',
-        invoice note: 'test note',
-        invoice date not provided - should default to today
-        should also:
-        redirect to detail view'''
-        Invoice.objects.create(patient=Patient.objects.get(id=1))
-        Invoice.objects.create(patient=Patient.objects.get(id=1))
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_detail', args=(3,))
-        data = {
-            # form data
-            'type': 'transfer',
-            'note': 'test note',
-            'current': True,
-
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
-
-            # formset forms data
-            'form-0-device_type': 'ha',
-            'form-0-make': 'Bernafon',
-            'form-0-family': 'WIN',
-            'form-0-model': '102',
-            'form-0-price_gross': 107,
-            'form-0-vat_rate': '8',
-            'form-0-pkwiu_code': '11.22',
-            'form-0-quantity': 1,
-            'form-0-ear': 'right',
-        }
-
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-        invoice = Invoice.objects.get(pk=3)
-
-        ha = Hearing_Aid.objects.get(pk=1)
-        # should create only one Hearing_Aid obj
-        self.assertEqual(Hearing_Aid.objects.all().count(), 1)
-        # created HA should not be active
-        self.assertFalse(ha.current)
-        # should create one new invoice obj (there are also 2 old)
-        self.assertEqual(Invoice.objects.all().count(), 3)
-        # this invoice should be tied to hearing aid
-        self.assertEqual(ha.invoice, invoice)
-        # hearing aid make should be 'Bernafon'
-        self.assertEqual(ha.make, 'Bernafon')
-        # new invoice should be active (current=True)
-        self.assertTrue(invoice.current)
-        # new invoice should have a type of 'transfer'
-        self.assertEqual(invoice.type, 'transfer')
-        # new invoice should have a note: 'test note'
-        self.assertEqual(invoice.note, 'test note')
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
-
-        # there should be one NewInfo instance
-        new_info = NewInfo.objects.get(id=1)
-        expected_note = 'Dodano fakturę nr: %s' % invoice.id
-
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
-
-        self.assertEqual(invoice.date, today)
-
-
-
-    def test_logged_in_with_invalid_form_data(self):
-        '''should redisplay invoice_create page with a warning message'''
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        data = {
-            # form data
-            'type': '', # this should make the form invalid
-
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
-
-            # formset forms data
-            'form-0-device_type': 'ha',
-            'form-0-make': 'Bernafon',
-            'form-0-family': 'WIN',
-            'form-0-model': '102',
-            'form-0-price_gross': 107,
-            'form-0-vat_rate': '8',
-            'form-0-ear': 'right',
-        }
-        response = self.client.post(url, data, follow=True)
-
-        assert response.status_code == 200
-
-        # should not create invoice obj
-        self.assertEqual(Invoice.objects.all().count(), 0)
-
-        # should not create Hearing_Aid obj
-        self.assertEqual(Hearing_Aid.objects.all().count(), 0)
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Niepoprawne dane, popraw.')
-
-
-
-
-    def test_logged_in_with_valid_data_for_other_device(self):
-        '''should create:
-        one instance of other device,
-        one invoice instance with one position - wkładka uszna,
-        for a given patient,
-        invoice date was set to tomorrow,
-        should redirect to detail view'''
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_create', args=(1,))
-        expected_url = reverse('crm:invoice_detail', args=(1,))
-        data = {
-            # form data
-            'type': 'transfer',
-            'date': today + timedelta(days=1),
-
-            # formset data
-            # these are needed for formset to work
-            'form-TOTAL_FORMS': 1,
-            'form-INITIAL_FORMS': 0,
-
-            # formset forms data
-            'form-0-device_type': 'other',
-            'form-0-make': 'Audioservice',
-            'form-0-family': 'wkładka uszna',
-            'form-0-model': 'twarda',
-            'form-0-price_gross': 17,
-            'form-0-vat_rate': '8',
-            'form-0-pkwiu_code': '11.22',
-            'form-0-quantity': 1,
-            'form-0-ear': 'right',  # this will not be saved anywhere, but requred
-                                    # for the form to be valid
-        }
-
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-        invoice = Invoice.objects.get(pk=1)
-
-        other = Other_Item.objects.get(pk=1)
-        # should create only one Other_Item obj
-        self.assertEqual(Other_Item.objects.all().count(), 1)
-        # should create only one invoice obj
-        self.assertEqual(Invoice.objects.all().count(), 1)
-        # this invoice should be tied to 'other device'
-        self.assertEqual(other.invoice, invoice)
-        # other item make should be 'Audioservice'
-        self.assertEqual(other.make, 'Audioservice')
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę.')
-
-        self.assertEqual(invoice.date, today + timedelta(days=1))
-
-
-class TestCorrectiveInvoiceCreateView(TestCase):
-    def setUp(self):
-        user_john = create_user()
-        create_patient(user_john)
-
-    def test_anonymous(self):
-        '''should redirect to login'''
-        url = reverse('crm:corrective_invoice_create', args=(1,))
-        expected_url = reverse('login') + '?next=/1/corrective_invoice_create/'
-        response = self.client.post(url, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-    def test_logged_in_with_valid_data_for_ha(self):
-        '''should create:
-        one corrective invoice,
-        invoice note: 'new note',
-        invoice date not provided - should default to today
-        should also:
-        redirect to corretive invoice detail view
-        corresponding invoice items should remain unchanged
-        corresponding invoice remider should be inactivated'''
-        i= Invoice.objects.create(patient=Patient.objects.get(id=1))
-        mixer.blend('crm.Reminder_Invoice', invoice=i)
-        mixer.blend('crm.Hearing_Aid', current=False, invoice=i)
-        mixer.blend('crm.Other_Item', invoice=i)
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:corrective_invoice_create', args=(1,))
-        expected_url = reverse('crm:corrective_invoice_detail', args=(1,))
-        data = {
-            # form data
-            'ha': [1],
-            'other': [1],
-            'note': 'new note',
-        }
-
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-        cinvoice = Corrective_Invoice.objects.get(pk=1)
-
-        h = Hearing_Aid.objects.all().first()
-        # should be only one Hearing_Aid obj
-        self.assertEqual(Hearing_Aid.objects.all().count(), 1)
-        # HA should not be active
-        self.assertFalse(h.current)
-        # this corrective_invoice should be tied to hearing aid
-        self.assertEqual(h.corrective_invoice, cinvoice)
-        # HA should still have invoice
-        i = Invoice.objects.get(id=1)
-        self.assertEqual(h.invoice, i)
-
-        o = Other_Item.objects.all().first()
-        # should be only one Other_Item obj
-        self.assertEqual(Other_Item.objects.all().count(), 1)
-        # this corrective_invoice should be tied to Other_Item
-        self.assertEqual(o.corrective_invoice, cinvoice)
-        # Other_Item should still have invoice
-        i = Invoice.objects.get(id=1)
-        self.assertEqual(o.invoice, i)
-
-        # new cinvoice should have a note: 'new note'
-        self.assertEqual(cinvoice.note, 'new note')
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Utworzono nową fakturę korektę.')
-
-        # there should be one NewInfo instance
-        new_info = NewInfo.objects.get(id=1)
-        expected_note = 'Dodano fakturę korektę nr: %s' % cinvoice.id
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
-
-        # inactivate reminder
-        r = Reminder_Invoice.objects.all()
-        # should be one reminder
-        self.assertEqual(r.count(), 1)
-        # reminder should be inactive
-        self.assertFalse(r.first().active)
-
-        # corrective invoice date should be today
-        self.assertEqual(cinvoice.date, today)
-
-    def test_logged_in_with_valid_data_for_ha_date_provided(self):
-        '''corrective invoice date should be tomorrow'''
-        i = Invoice.objects.create(patient=Patient.objects.get(id=1))
-        mixer.blend('crm.Reminder_Invoice', invoice=i)
-        mixer.blend('crm.Hearing_Aid', current=False, invoice=i)
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:corrective_invoice_create', args=(1,))
-        data = {
-            # form data
-            'ha': [1],
-            'other': [],
-            'date': today + timedelta(days=1),
-        }
-
-        self.client.post(url, data, follow=True)
-        
-        # corrective invoice date should be tomorrow
-        cinvoice = Corrective_Invoice.objects.get(pk=1)
-        self.assertEqual(cinvoice.date, today + timedelta(days=1))
-
-
-class TestInvoiceUpdateView(TestCase):
-    def setUp(self):
-        user_john = create_user()
-        create_patient(user_john)
-
-    def test_anonymous(self):
-        '''should redirect to login'''
-        url = reverse('crm:invoice_update', args=(1,))
-        expected_url = reverse('login') + '?next=/1/invoice_update/'
-        response = self.client.post(url, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-    def test_logged_in_with_valid_data(self):
-        '''should modify:
-        note, current, payed, type, date
-        redirect to invoice detail view'''
-        i = Invoice.objects.create(
-            patient=Patient.objects.get(id=1),
-            type='transfer',
-            current=True,
-            payed=False,
-            note='test note óŹł',
-            date = datetime.now() - timedelta(days=1)
-        )
-
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:invoice_update', args=(1,))
-        expected_url = reverse('crm:invoice_detail', args=(1,))
-        data = {
-            # form data
-            'type': 'cash',
-            'note': 'test note',
-            'current': False,
-            'payed': True,
-            'date': today
-        }
-
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-        # should be one Invoice
-        self.assertEqual(Invoice.objects.all().count(), 1)
-        # should modify invoice type to be 'cash'
-        invoice = Invoice.objects.all().first()
-        self.assertEqual(invoice.type, 'cash')
-        # should modify invoice current to be False
-        self.assertEqual(invoice.current, False)
-        # should modify invoice payed to be True
-        self.assertEqual(invoice.payed, True)
-        # should modify invoice note to be 'test note'
-        self.assertEqual(invoice.note, 'test note')
-        # should modify invoice date to be today
-        self.assertEqual(invoice.date, today)
 
 
 class TestSZOI_UsageCreate(TestCase):

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from .models import (Patient, Invoice, PCPR_Estimate,
-                     Hearing_Aid_Stock, Other_Item_Stock, SZOI_File_Usage)
+from .models import (Patient, Hearing_Aid_Stock, Other_Item_Stock, SZOI_File_Usage)
 
 class PatientForm(forms.ModelForm):
 	class Meta:
@@ -13,17 +12,6 @@ class PatientForm(forms.ModelForm):
 			"date_of_birth"
 		]
 
-class InvoiceForm(forms.ModelForm):
-    date = forms.DateField(required=False)
-    class Meta:
-    	model = Invoice
-    	fields = ['note', 'type', 'current', 'date']
-
-
-class PCPR_EstimateForm(forms.ModelForm):
-    class Meta:
-    	model = PCPR_Estimate
-    	fields = ['note']
 
 class DeviceForm(forms.Form):
 	device_type = forms.ChoiceField(
