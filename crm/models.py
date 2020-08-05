@@ -39,6 +39,7 @@ class SZOI_Errors(models.Model):
 	error_log = models.TextField()
 	line = models.TextField()
 
+
 class Patient(models.Model):
 	first_name = models.CharField(max_length=120)
 	last_name = models.CharField(max_length=120)
@@ -146,6 +147,7 @@ class Device(models.Model):
 	def __unicode__(self):
 		return ' '.join([self.make, self.family, self.model])
 
+
 class Our_Device(models.Model):
 	patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 	invoice = models.ForeignKey(
@@ -170,6 +172,7 @@ class Hearing_Aid_Stock(Device):
 
 	def get_absolute_url(self):
 		return reverse('crm:edit_ha', kwargs={'pk': self.pk})
+
 
 class Hearing_Aid(Device, Our_Device):
 	ear = models.CharField(max_length=5, choices=(
