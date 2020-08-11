@@ -411,9 +411,33 @@ def updating(request, patient_id):
 			reminder.active = False
 			reminder.save()
 
+	if request.POST.get('new_pcpr'):
+    	# add new pcpr estimate, inactivate previous pcpr and reminder, inactivate nfz reminder, set new pcpr reminder
+		# inactivate previous pcpr estimates, add new note
+		pcpr_current = PCPR_Estimate.objects.filter(patient=patient, current=True)
+		if pcpr_current:
+			PCPR_Estimate.objects.filter(patient=patient, current=True).update(current=False)
+			# inactivate preious reminders 
+			for single_pcpr_current in pcpr_current:
+				Reminder_PCPR.objects.filter(pcpr=single_pcpr_current).update(active=False)
+		# inactivate both sides Reminder_NFZ_Confirmed
+		nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, in_progress=True)
+		if Reminder_NFZ_Confirmed.objects.filter(nfz_confirmed__in=nfz_confirmed, active=True):
+			Reminder_NFZ_Confirmed.objects.filter(
+				patient=patient, active=True).update(active=False)
+		# create new pcpr estimate
+		new_pcpr_estimate = PCPR_Estimate.objects.create(patient=patient)
+		new_pcpr_estimate.timestamp = request.POST['new_pcpr'] + "T17:41:28+00:00"
+		new_pcpr_estimate.save()
+		# create new pcpr estimate reminder
+		Reminder_PCPR.objects.create(pcpr=new_pcpr_estimate)
+		# add new note
+		new_action.append('Dodano nowy kosztorys z datą ' + request.POST['new_pcpr'] + '.')
+    		
+	if request.POST.get('invoice'):
+    	# add new invoice, set invoice reminder, inactivate previous, inactivate previous nfz and pcpr reminders
+		pass
 
-
-		
 	# collection procedure
 	if request.POST.get('collection_confirm'):
 		# current_invoice = Invoice.objects.get(patient=patient, current=True)
@@ -647,254 +671,6 @@ def reminder_collection(request, reminder_id):
             'reminder_id': r.id,
             'url_address': reverse('crm:reminder_collection', args=(r.id,))}
 	return render(request, 'crm/reminder.html', context)
-
-
-# @login_required
-# def pcpr_create(request, patient_id):
-# 	patient = get_object_or_404(Patient, pk=patient_id)
-# 	ha_list = get_devices(Hearing_Aid_Stock)
-# 	other_items = get_devices(Other_Item_Stock)
-# 	json_ha_list = json.dumps(ha_list, cls=DjangoJSONEncoder)
-# 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
-# 	PCPRFormSet = formset_factory(DeviceForm, extra=1)
-# 	if request.method == 'POST':
-# 		form = PCPR_EstimateForm(request.POST)
-# 		formset = PCPRFormSet(request.POST)
-# 		if form.is_valid() and formset.is_valid():
-
-# 			# inactivate prevoius invoices (current=False)
-# 			previous_pcpr = PCPR_Estimate.objects.filter(patient=patient)
-# 			previous_pcpr.update(current=False)
-
-#     		# create pcpr instance
-# 			pcpr = form.save(commit=False)
-# 			pcpr.patient = patient
-# 			pcpr.note = pcpr.note.replace('\r\n', '<br>')
-# 			pcpr.save()
-
-#     		# process devices in a formset
-# 			process_device_formset_pcpr(formset, patient, pcpr, today)
-
-# 			# redirect to detail view with a success message
-# 			messages.success(request, 'Utworzono nowy kosztorys.')
-# 			return redirect('crm:pcpr_detail', pcpr.id)
-# 		else:
-# 		    	# redispaly with message
-# 			messages.warning(request, 'Niepoprawne dane, popraw.')
-# 	else:
-# 		form = PCPR_EstimateForm()
-
-# 	context = {	'patient': patient,
-#              'ha_list': ha_list,
-#              "json_ha_list": json_ha_list,
-#             'json_other_devices': json_other_devices,
-#              'existing_ha': {},
-#              'existing_other': {},
-#              'form': form,
-#              'formset': PCPRFormSet()}
-# 	return render(request, 'crm/create_pcpr.html', context)
-
-
-# @login_required
-# def pcpr_detail(request, pcpr_id):
-# 	pcpr = get_object_or_404(PCPR_Estimate, pk=pcpr_id)
-# 	if request.POST.get('inactivate'):
-# 		pcpr.current=False
-# 		pcpr.save()
-# 		# redirect to edit view with a success message
-# 		messages.success(request, 'Kosztorys został przeniesiony do nieaktywnych.')
-# 		return redirect('crm:edit', pcpr.patient.id)
-# 	context = get_finance_context(pcpr)
-# 	return render(request, 'crm/detail_pcpr.html', context)
-    	
-# @login_required
-# def pcpr_update(request, pcpr_id):
-#     pass
-
-# @login_required
-# def invoice_create(request, patient_id):
-# 	patient = get_object_or_404(Patient, pk=patient_id)
-# 	ha_list = get_devices(Hearing_Aid_Stock)
-# 	other_items = get_devices(Other_Item_Stock)
-# 	json_ha_list = json.dumps(ha_list, cls= DjangoJSONEncoder)
-# 	json_other_devices = json.dumps(other_items, cls=DjangoJSONEncoder)
-# 	InvoiceFormSet = formset_factory(DeviceForm, extra=1)
-# 	if request.method == 'POST':
-# 		form = InvoiceForm(request.POST)
-# 		formset = InvoiceFormSet(request.POST)
-# 		if form.is_valid() and formset.is_valid():
-#     		# create invoice instance
-# 			invoice = form.save(commit=False)
-# 			invoice.patient = patient
-# 			invoice.save()
-
-# 			# create newinfo
-# 			note = 'Dodano fakturę nr: %s' % invoice.id
-# 			NewInfo.objects.create(
-# 				patient=patient,
-# 				note=note,
-# 				audiometrist=request.user)
-
-# 			# create reminder
-# 			Reminder_Invoice.objects.create(invoice=invoice)
-
-#     		# process devices in a formset
-# 			process_device_formset_invoice(formset, patient, invoice, today)
-				
-# 			# redirect to detail view with a success message
-# 			messages.success(request, 'Utworzono nową fakturę.')
-# 			return redirect('crm:invoice_detail', invoice.id)
-# 		else:
-# 	    	# redispaly with message
-# 			messages.warning(request, 'Niepoprawne dane, popraw.')
-    		
-# 	else:
-# 		form = InvoiceForm()
-	
-# 	context = {	'patient': patient,
-# 				'ha_list': ha_list,
-# 				"json_ha_list": json_ha_list,
-#             	'json_other_devices': json_other_devices,
-# 				'existing_ha': {},
-#              	'existing_other': {},
-# 				'form': form,
-# 				'formset': InvoiceFormSet()}
-
-# 	prototype = request.GET.get('prototype')
-# 	if prototype:
-# 		pcpr = PCPR_Estimate.objects.get(id=prototype)
-# 		existing_ha = Hearing_Aid.objects.filter(estimate=pcpr)
-# 		existing_other = Other_Item.objects.filter(estimate=pcpr)
-# 		if existing_ha:
-# 			existing_ha = list(existing_ha.values())
-# 			context['existing_ha'] = json.dumps(existing_ha, cls=DjangoJSONEncoder)
-# 		if existing_other:
-# 			existing_other = list(existing_other.values())
-# 			context['existing_other'] = json.dumps(existing_other, cls=DjangoJSONEncoder)
-# 	return render(request, 'crm/create_invoice.html', context)
-
-# @login_required
-# def invoice_detail(request, invoice_id):
-# 	invoice = get_object_or_404(Invoice, pk=invoice_id)
-
-# 	if request.POST.get('inactivate'):
-# 		invoice.current = False
-# 		invoice.save()
-# 		# redirect to edit view with a success message
-# 		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
-# 		return redirect('crm:edit', invoice.patient.id)
-# 	context = get_finance_context(invoice)
-# 	context['cinvoices'] = invoice.corrective_invoice_set.all()
-# 	return render(request, 'crm/detail_invoice.html', context)
-
-
-# class InvoiceUpdate(UpdateView):
-# 	model = Invoice
-# 	form_class = modelform_factory(Invoice,
-# 		fields=['note', 'current', 'payed', 'type', 'date'],
-# 		widgets={"note": Textarea(attrs={'class': 'w-100', 'rows': '5'})})
-
-# 	template_name = 'crm/update_invoice.html'
-
-# 	def get_context_data(self, **kwargs):
-# 		context = super(InvoiceUpdate, self).get_context_data(**kwargs)
-# 		finance_data = get_finance_context(self.get_object())
-# 		context.update(finance_data)
-# 		return context
-	
-# 	def get_success_url(self):
-# 		return reverse('crm:invoice_detail', kwargs={'invoice_id': self.get_object().id})
-
-# 	@method_decorator(login_required)
-# 	def dispatch(self, *args, **kwargs):
-# 		return super(InvoiceUpdate, self).dispatch(*args, **kwargs)
-
-# class InvoiceList(ListView):
-# 	model = Invoice
-# 	ordering = ['-date']
-
-# 	@method_decorator(login_required)
-# 	def dispatch(self, *args, **kwargs):
-# 		return super(InvoiceList, self).dispatch(*args, **kwargs)
-
-
-# @login_required
-# def corrective_invoice_create(request, invoice_id):
-# 	invoice = get_object_or_404(Invoice, pk=invoice_id)
-# 	ha_list = invoice.hearing_aid_set.all()
-# 	other_items = invoice.other_item_set.all()
-
-# 	if request.method == 'POST':
-# 		selected_ha = request.POST.getlist('ha')
-# 		selected_other = request.POST.getlist('other')
-# 		note = request.POST.get('note')
-# 		cinvoice = Corrective_Invoice.objects.create(
-# 			patient=invoice.patient,
-# 			invoice=invoice,
-# 			note=note)
-# 		if request.POST.get('date'):
-# 			cinvoice.date = request.POST.get('date')
-# 			cinvoice.save()
-# 		# associate hearing aids and other devices with corrective invoice
-# 		for ha in selected_ha:
-# 			device = Hearing_Aid.objects.filter(id=int(ha))
-# 			device.update(corrective_invoice=cinvoice)
-# 		for other in selected_other:
-# 			other = Other_Item.objects.filter(id=int(other))
-# 			other.update(corrective_invoice=cinvoice)
-
-# 		# create newinfo
-# 		note = 'Dodano fakturę korektę nr: %s' % cinvoice.id
-# 		NewInfo.objects.create(
-# 			patient=invoice.patient,
-# 			note=note,
-# 			audiometrist=request.user)
-
-# 		# remove reminder about the invoice
-# 		if Reminder_Invoice.objects.filter(invoice=invoice).exists():
-# 			r = Reminder_Invoice.objects.filter(invoice=invoice).first()
-# 			r.active=False
-# 			r.save()
-
-# 		# redirect to detail view with a success message
-# 		messages.success(request, 'Utworzono nową fakturę korektę.')
-# 		return redirect('crm:corrective_invoice_detail', cinvoice.id)
-
-# 	context = {	'invoice': invoice,
-# 				'ha_list': ha_list,
-# 				'other_items': other_items,
-# 				}
-# 	return render(request, 'crm/create_corrective_invoice.html', context)
-
-
-# @login_required
-# def corrective_invoice_detail(request, cinvoice_id):
-# 	cinvoice = get_object_or_404(Corrective_Invoice, pk=cinvoice_id)
-# 	if request.POST.get('inactivate'):
-# 		cinvoice.current = False
-# 		cinvoice.save()
-# 		# redirect to edit view with a success message
-# 		messages.success(request, 'Faktura została przeniesiona do nieaktywnych.')
-# 		return redirect('crm:edit', cinvoice.patient.id)
-# 	context = get_finance_context(cinvoice)
-# 	original_context = get_finance_context(cinvoice.invoice)
-# 	context['all_items_numbered_original'] = original_context['all_items_numbered']
-# 	context['original_total_value'] = original_context['total_value']
-# 	return render(request, 'crm/detail_corrective_invoice.html', context)
-
-
-# @login_required
-# def corrective_invoice_update(request, cinvoice_id):
-#     	pass
-
-# class CorrectiveInvoiceDelete(DeleteView):
-# 	model = Corrective_Invoice
-# 	success_url = reverse_lazy('crm:index')
-
-# 	@method_decorator(login_required)
-# 	def dispatch(self, *args, **kwargs):
-# 		return super(CorrectiveInvoiceDelete, self).dispatch(*args, **kwargs)
-
 
 
 class HAStockCreate(CreateView):

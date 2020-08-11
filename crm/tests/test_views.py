@@ -16,6 +16,7 @@ import tempfile
 from django.conf import settings
 from django.core.files import File
 from datetime import datetime, timedelta
+from django.utils import timezone as tz
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
@@ -25,8 +26,8 @@ from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                         SZOI_File, SZOI_File_Usage, SZOI_Errors)
 
 pytestmark = pytest.mark.django_db
-today = datetime.today().date()
-now = datetime.now()
+today = tz.now()
+now = tz.now()
 
 
 def create_user(username='john', email='jlennon@beatles.com', password='glassonion'):
@@ -269,19 +270,19 @@ class TestAdvancedSearchView(TestCase):
         pcpr1 = PCPR_Estimate.objects.create(
             patient=patient1,
             current=True,)
-        pcpr1.timestamp = '2000-01-01 00:00:00'
+        pcpr1.timestamp = tz(2000, 1, 1, 00, 0, 00, 000000)
         pcpr1.save()
         
         pcpr2 = PCPR_Estimate.objects.create(
             patient=patient2,
             current=True,)
-        pcpr2.timestamp = '2002-01-01 00:00:00'
+        pcpr2.timestamp = tz(2002, 1, 1, 00, 0, 00, 000000)
         pcpr2.save()
 
         pcpr3 = PCPR_Estimate.objects.create(
             patient=patient3,
             current=True,)
-        pcpr3.timestamp = '2003-01-01 00:00:00'
+        pcpr3.timestamp = tz(2003, 1, 1, 00, 0, 00, 000000)
         pcpr3.save()
 
         lower_band = '2001-01-01'
@@ -302,19 +303,19 @@ class TestAdvancedSearchView(TestCase):
         invoice1 = Invoice.objects.create(
             patient=patient1,
             current=True,)
-        invoice1.timestamp = '2000-01-01 00:00:00'
+        invoice1.timestamp = tz(2000, 1, 1, 00, 0, 00, 000000)
         invoice1.save()
         
         invoice2 = Invoice.objects.create(
             patient=patient2,
             current=True,)
-        invoice2.timestamp = '2002-01-01 00:00:00'
+        invoice2.timestamp = tz(2002, 1, 1, 00, 0, 00, 000000)
         invoice2.save()
 
         invoice3 = Invoice.objects.create(
             patient=patient3,
             current=True,)
-        invoice3.timestamp = '2003-01-01 00:00:00'
+        invoice3.timestamp = tz(2003, 1, 1, 00, 0, 00, 000000)
         invoice3.save()
 
         lower_band = '2000-01-01'
@@ -955,19 +956,45 @@ class TestUpdatingView(TestCase):
         reminders = Reminder_NFZ_Confirmed.objects.all()
         self.assertEqual(reminders.count(), 2)
 
+    def test_adding_another_pcpr_estimates(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        p1 = PCPR_Estimate.objects.create(patient=patient1)
+        p1.timestamp = "2000-01-01T13:20:30+03:00"
+        p1.save()
+        Reminder_PCPR.objects.create(
+            pcpr=p1, activation_date=today)
+        data = self.data.copy()
+        data['new_pcpr'] = '2001-01-01'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
+        pcpr_all = PCPR_Estimate.objects.filter(patient=patient1)
+        self.assertEqual(pcpr_all.count(), 2)
+        self.assertEqual(str(pcpr_all.last().timestamp.date()), '2001-01-01')
+
+        # there should be 2 Reminders in total (1 active and 1 inactive)
+        reminders = Reminder_PCPR.objects.all()
+        self.assertEqual(reminders.count(), 2)
+        self.assertEqual(reminders.filter(active=True).count(), 1)
     def test_remove_pcpr_estimates(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         p1 = PCPR_Estimate.objects.create(
             patient=patient1,
-            current=False)
-        p1.timestamp = '2000-01-01'
+            current=False,
+            )
+        p1.timestamp = "2000-01-01T13:20:30+03:00"
         p1.save()
         p2 = PCPR_Estimate.objects.create(
             patient=patient1,
             current=True)
-        p2.timestamp = '2000-01-02'
+        p2.timestamp = "2000-01-02T13:20:30+03:00"
         p2.save()
         Reminder_PCPR.objects.create(pcpr=p1)
         Reminder_PCPR.objects.create(pcpr=p2)
@@ -1001,7 +1028,28 @@ class TestUpdatingView(TestCase):
         self.assertEqual(reminders.count(), 1)
         self.assertFalse(reminders.last().active)
 
-    
+    def test_adding_another_invoice(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        p1 = Invoice.objects.create(patient=patient1,
+                                          date='2000-01-01')
+        Reminder_Invoice.objects.create(
+            invoice=p1, activation_date=today)
+        data = self.data.copy()
+        data['Invoice'] = '2001-01-01'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        invoice_all = Invoice.objects.filter(patient=patient1)
+        self.assertEqual(invoice_all.count(), 2)
+        self.assertEqual(str(invoice_all.last().date), '2001-01-01')
+        self.assertEqual(response.context['reminders'], 2)
+
     def test_remove_invoice(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
@@ -1009,7 +1057,7 @@ class TestUpdatingView(TestCase):
                                      current=False)
         i2= Invoice.objects.create(patient=patient1,
                                      current=True)
-        i2.timestamp = '2000-01-01'
+        i2.timestamp = timestamp = "2000-01-01T13:20:30+03:00"
         i2.save()
         Reminder_Invoice.objects.create(invoice=i1)
         Reminder_Invoice.objects.create(invoice=i2)

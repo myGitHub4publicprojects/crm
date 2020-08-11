@@ -87,17 +87,7 @@
 			<div class="card card-body">
 				<div class="card-body">
 					{% if PCPR_estimate.current %}
-					<a href="{% url 'crm:pcpr_detail' PCPR_estimate.id %}">
 					{{ PCPR_estimate.timestamp|date:'d-m-Y' }}:
-					</a>
-						<ul class="list-unstyled">
-						{% for h in PCPR_estimate.hearing_aid_set.all %}
-							<li>
-							<small>{{ h }}, {{ h.ear }}</small>
-							</li>
-						</ul>
-						{% endfor %}
-
 					<div class="w-50 p-3 float-right">
 						<div class="btn btn-secondary" data-toggle="collapse" data-target="#pcpr_remove" aria-expanded="false">Anuluj</div>
 						<div class="collapse" id="pcpr_remove">
@@ -106,8 +96,7 @@
 						</div>
 					</div>
 					{% else %}
-						<a href="{% url 'crm:pcpr_create' patient.id %}"
-						class="btn btn-secondary finance">dodaj kosztorys</a>
+						Dodaj kosztorys: <input type="date" name="new_pcpr">
 					{% endif %}
 				</div>
 
@@ -116,9 +105,7 @@
 					<ul class="list-unstyled">
 					{% for i in PCPR_estimate_all %}
 					<li>
-						<a href="{% url 'crm:pcpr_detail' i.id %}">
-							<small>{{ i.timestamp|date:'d-m-Y' }}</small>
-						</a>
+						<small>{{ i.timestamp|date:'d-m-Y' }}</small>
 						<hr>
 					</li>
 					{% endfor %}
@@ -141,17 +128,13 @@
 					<ul class="list-unstyled">
 						{% for i in invoice_active %}
 						<li>
-							<a {% if i.corrective_invoice_set.all %} class='btn-outline-danger' {% endif %}
-								href="{% url 'crm:invoice_detail' i.id %}">
-								{{ i.date|date:'d-m-Y' }} nr: {{ i.id }}
-							</a>
+							{{ i.date|date:'d-m-Y' }}
 							<hr>
 						</li>
 						{% endfor %}
 					</ul>
 					{% endif %}
-					<a href="{% url 'crm:invoice_create' patient.id %}" class="btn btn-secondary finance">dodaj fakturę</a>
-					
+					Dodaj fakturę: <input type="date" name="new_invoice">
 				</div>
 	
 				{% if invoice_all %}
@@ -159,13 +142,7 @@
 				<ul class="list-unstyled">
 					{% for i in invoice_all %}
 					<li>
-						<a 
-						{% if i.corrective_invoice_set.all %}
-						class='btn-outline-danger'
-						{% endif %}
-						href="{% url 'crm:invoice_detail' i.id %}">
-							<small>{{ i.date|date:'d-m-Y' }} nr: {{ i.id }}</small>
-						</a>
+						<small>{{ i.date|date:'d-m-Y' }}</small>
 						<hr>
 					</li>
 					{% endfor %}
