@@ -270,23 +270,23 @@ class TestAdvancedSearchView(TestCase):
         pcpr1 = PCPR_Estimate.objects.create(
             patient=patient1,
             current=True,)
-        pcpr1.timestamp = tz(2000, 1, 1, 00, 0, 00, 000000)
+        pcpr1.timestamp = "2000-01-01T13:20:30+03:00"
         pcpr1.save()
         
         pcpr2 = PCPR_Estimate.objects.create(
             patient=patient2,
             current=True,)
-        pcpr2.timestamp = tz(2002, 1, 1, 00, 0, 00, 000000)
+        pcpr2.timestamp = "2002-01-01T13:20:30+03:00"
         pcpr2.save()
 
         pcpr3 = PCPR_Estimate.objects.create(
             patient=patient3,
             current=True,)
-        pcpr3.timestamp = tz(2003, 1, 1, 00, 0, 00, 000000)
+        pcpr3.timestamp = "2003-01-01T13:20:30+03:00"
         pcpr3.save()
 
         lower_band = '2001-01-01'
-        upper_band = '2003-01-01'
+        upper_band = '2003-01-02'
         data = {'s_pcpr_date': lower_band, 'e_pcpr_date': upper_band}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
@@ -303,19 +303,19 @@ class TestAdvancedSearchView(TestCase):
         invoice1 = Invoice.objects.create(
             patient=patient1,
             current=True,)
-        invoice1.timestamp = tz(2000, 1, 1, 00, 0, 00, 000000)
+        invoice1.timestamp = "2000-01-01T13:20:30+03:00"
         invoice1.save()
         
         invoice2 = Invoice.objects.create(
             patient=patient2,
             current=True,)
-        invoice2.timestamp = tz(2002, 1, 1, 00, 0, 00, 000000)
+        invoice2.timestamp = "2002-01-01T13:20:30+03:00"
         invoice2.save()
 
         invoice3 = Invoice.objects.create(
             patient=patient3,
             current=True,)
-        invoice3.timestamp = tz(2003, 1, 1, 00, 0, 00, 000000)
+        invoice3.timestamp = "2003-01-01T13:20:30+03:00"
         invoice3.save()
 
         lower_band = '2000-01-01'
@@ -1031,12 +1031,11 @@ class TestUpdatingView(TestCase):
     def test_adding_another_invoice(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-        p1 = Invoice.objects.create(patient=patient1,
-                                          date='2000-01-01')
+        p1 = Invoice.objects.create(patient=patient1)
         Reminder_Invoice.objects.create(
             invoice=p1, activation_date=today)
         data = self.data.copy()
-        data['Invoice'] = '2001-01-01'
+        data['new_invoice'] = '2001-01-01'
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1047,8 +1046,12 @@ class TestUpdatingView(TestCase):
 
         invoice_all = Invoice.objects.filter(patient=patient1)
         self.assertEqual(invoice_all.count(), 2)
-        self.assertEqual(str(invoice_all.last().date), '2001-01-01')
-        self.assertEqual(response.context['reminders'], 2)
+        self.assertEqual(str(invoice_all.last().timestamp.date()), '2001-01-01')
+        
+        # there should be 2 Reminders in total (1 active and 1 inactive)
+        reminders = Reminder_Invoice.objects.all()
+        self.assertEqual(reminders.count(), 2)
+        self.assertEqual(reminders.filter(active=True).count(), 1)
 
     def test_remove_invoice(self):
         self.client.login(username='john', password='glassonion')
@@ -1057,7 +1060,7 @@ class TestUpdatingView(TestCase):
                                      current=False)
         i2= Invoice.objects.create(patient=patient1,
                                      current=True)
-        i2.timestamp = timestamp = "2000-01-01T13:20:30+03:00"
+        i2.timestamp = "2000-01-01T13:20:30+03:00"
         i2.save()
         Reminder_Invoice.objects.create(invoice=i1)
         Reminder_Invoice.objects.create(invoice=i2)

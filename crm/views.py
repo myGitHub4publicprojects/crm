@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils import timezone as tz
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
@@ -33,7 +34,7 @@ from .utils import (get_devices, process_device_formset_invoice,
                     process_device_formset_pcpr, get_finance_context)
 from .stock_updater import stock_update
 import json, decimal
-today = datetime.date.today()
+today = tz.now()
 ears = ['left', 'right']
 
 @login_required
@@ -113,9 +114,15 @@ def advancedsearch(request):
 
 	# search by dates of pcpr estimates - only active not prevoius
 	if request.GET.get('s_pcpr_date') or request.GET.get('e_pcpr_date'):
-		pcpr_start = request.GET.get('s_pcpr_date') or '1990-01-01'
-		pcpr_end = request.GET.get(
-			'e_pcpr_date') or str(datetime.datetime.now())
+		if request.GET.get('s_pcpr_date'):
+			pcpr_start = request.GET.get('s_pcpr_date') + "T00:00:00+03:00"
+		else:
+    			pcpr_start = "1990-01-01T00:00:00+03:00"
+		if request.GET.get('e_pcpr_date'):
+			pcpr_end = request.GET.get('e_pcpr_date') + "T21:00:00+03:00"
+		else:
+			pcpr_end = today
+
 		all_such_pcpr = PCPR_Estimate.objects.filter(
 			timestamp__range=[pcpr_start, pcpr_end], current=True)
 		patient_ids = []
@@ -125,12 +132,16 @@ def advancedsearch(request):
 		patients = Patient.objects.filter(id__in=patient_ids)
 		patient_list = patient_list & patients
 
-
 	# search by dates of invoice - only active not prevoius
 	if request.GET.get('s_invoice_date') or request.GET.get('e_invoice_date'):
-		invoice_start = request.GET.get('s_invoice_date') or '1990-01-01'
-		invoice_end = request.GET.get(
-			'e_invoice_date') or str(datetime.datetime.now())
+		if request.GET.get('s_invoice_date'):
+			invoice_start = request.GET.get('s_invoice_date') + "T00:00:30+03:00"
+		else:
+			invoice_start = "1990-01-01T00:00:00+03:00"
+		if request.GET.get('e_invoice_date'):
+			invoice_end = request.GET.get('e_invoice_date') + "T21:00:00+03:00"
+		else:
+			invoice_end = today
 		all_such_invoice = Invoice.objects.filter(
 			timestamp__range=[invoice_start, invoice_end], current=True)
 		patient_ids = []
@@ -434,10 +445,37 @@ def updating(request, patient_id):
 		# add new note
 		new_action.append('Dodano nowy kosztorys z datą ' + request.POST['new_pcpr'] + '.')
     		
-	if request.POST.get('invoice'):
-    	# add new invoice, set invoice reminder, inactivate previous, inactivate previous nfz and pcpr reminders
-		pass
+	if request.POST.get('new_invoice'):
+    	# add new invoice, set invoice reminder, inactivate previous invoice and its reminder,
+		# inactivate previous nfz and pcpr reminders, set new invoice reminder, add new note
 
+		invoice_current = Invoice.objects.filter(patient=patient, current=True)
+		if invoice_current:
+			Invoice.objects.filter(
+				patient=patient, current=True).update(current=False)
+			# inactivate preious reminders
+			for single_invoice_current in invoice_current:
+				Reminder_Invoice.objects.filter(invoice=single_invoice_current).update(active=False)
+		# inactivate both sides Reminder_NFZ_Confirmed and Reminder_PCPR
+		nfz_confirmed = NFZ_Confirmed.objects.filter(
+			patient=patient, in_progress=True)
+		if Reminder_NFZ_Confirmed.objects.filter(nfz_confirmed__in=nfz_confirmed, active=True):
+			Reminder_NFZ_Confirmed.objects.filter(
+				patient=patient, active=True).update(active=False)
+		pcprs = PCPR_Estimate.objects.filter(
+						patient=patient, current=True)
+		if Reminder_PCPR.objects.filter(pcpr__in=pcprs, active=True):
+			Reminder_PCPR.objects.filter(
+				patient=patient, active=True).update(active=False)
+		# create new invoice
+		new_invoice = Invoice.objects.create(patient=patient)
+		new_invoice.timestamp = request.POST['new_invoice'] + "T17:41:28+00:00"
+		new_invoice.save()
+		# create new invoice reminder
+		Reminder_Invoice.objects.create(invoice=new_invoice)
+		# add new note
+		new_action.append('Dodano nową fakturę z datą ' +
+		                  request.POST['new_invoice'] + '.')
 	# collection procedure
 	if request.POST.get('collection_confirm'):
 		# current_invoice = Invoice.objects.get(patient=patient, current=True)
