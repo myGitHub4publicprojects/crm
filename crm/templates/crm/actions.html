@@ -142,7 +142,7 @@
 				<ul class="list-unstyled">
 					{% for i in invoice_all %}
 					<li>
-						<small>{{ i.date|date:'d-m-Y' }}</small>
+						<small>{{ i.timestamp|date:'d-m-Y' }}</small>
 						<hr>
 					</li>
 					{% endfor %}

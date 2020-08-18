@@ -434,8 +434,7 @@ def updating(request, patient_id):
 		# inactivate both sides Reminder_NFZ_Confirmed
 		nfz_confirmed = NFZ_Confirmed.objects.filter(patient=patient, in_progress=True)
 		if Reminder_NFZ_Confirmed.objects.filter(nfz_confirmed__in=nfz_confirmed, active=True):
-			Reminder_NFZ_Confirmed.objects.filter(
-				patient=patient, active=True).update(active=False)
+			Reminder_NFZ_Confirmed.objects.filter(active=True).update(active=False)
 		# create new pcpr estimate
 		new_pcpr_estimate = PCPR_Estimate.objects.create(patient=patient)
 		new_pcpr_estimate.timestamp = request.POST['new_pcpr'] + "T17:41:28+00:00"
