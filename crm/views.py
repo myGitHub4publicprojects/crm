@@ -459,13 +459,11 @@ def updating(request, patient_id):
 		nfz_confirmed = NFZ_Confirmed.objects.filter(
 			patient=patient, in_progress=True)
 		if Reminder_NFZ_Confirmed.objects.filter(nfz_confirmed__in=nfz_confirmed, active=True):
-			Reminder_NFZ_Confirmed.objects.filter(
-				patient=patient, active=True).update(active=False)
+			Reminder_NFZ_Confirmed.objects.filter(active=True).update(active=False)
 		pcprs = PCPR_Estimate.objects.filter(
 						patient=patient, current=True)
 		if Reminder_PCPR.objects.filter(pcpr__in=pcprs, active=True):
-			Reminder_PCPR.objects.filter(
-				patient=patient, active=True).update(active=False)
+			Reminder_PCPR.objects.filter(active=True).update(active=False)
 		# create new invoice
 		new_invoice = Invoice.objects.create(patient=patient)
 		new_invoice.timestamp = request.POST['new_invoice'] + "T17:41:28+00:00"
