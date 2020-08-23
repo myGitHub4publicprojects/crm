@@ -189,7 +189,7 @@ def edit(request, patient_id):
 	nfz_confirmed_right_qs = patient.nfz_confirmed_set.filter(side='right')
 
 	PCPR_estimate_all = PCPR_Estimate.objects.filter(
-		patient=patient).order_by('timestamp')
+		patient=patient).order_by('-timestamp')
 	PCPR_estimate_last_active = PCPR_estimate_all.filter(current=True).last()
 	if PCPR_estimate_last_active != None:
 		PCPR_estimate_all = PCPR_estimate_all.exclude(

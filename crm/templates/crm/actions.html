@@ -96,12 +96,12 @@
 						</div>
 					</div>
 					{% else %}
-						Dodaj kosztorys: <input type="date" name="new_pcpr">
+						Dodaj proformę: <input type="date" name="new_pcpr">
 					{% endif %}
 				</div>
 
 				{% if PCPR_estimate_all %}
-					<p>Poprzednie kosztorysy:</p>
+					<p>Poprzednie proformy:</p>
 					<ul class="list-unstyled">
 					{% for i in PCPR_estimate_all %}
 					<li>
@@ -124,17 +124,18 @@
 			<div class="card card-body">
 				<div class="card-body">
 					{% if invoice_active %}
-					<p>Aktywne faktury:</p>
-					<ul class="list-unstyled">
-						{% for i in invoice_active %}
-						<li>
-							{{ i.date|date:'d-m-Y' }}
-							<hr>
-						</li>
-						{% endfor %}
-					</ul>
-					{% endif %}
+					{{ invoice_active.last.timestamp|date:'d-m-Y' }}:
+					<div class="w-50 p-3 float-right">
+						<div class="btn btn-secondary" data-toggle="collapse" data-target="#invoice_remove" aria-expanded="false">Anuluj</div>
+						<div class="collapse" id="invoice_remove">
+							<input type="radio" name="invoice_inactivate" id="invoice_remove" />
+							<label for="invoice_remove">Anuluj</label>
+						</div>
+					</div>
+					{% else %}
 					Dodaj fakturę: <input type="date" name="new_invoice">
+					{% endif %}
+					
 				</div>
 	
 				{% if invoice_all %}
