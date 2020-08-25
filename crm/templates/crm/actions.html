@@ -162,13 +162,8 @@
 			<div class="card card-body">
 				<div class="left btn btn-outline-info">
 					<h4 class="bg-info text-white">Potwierdź odbiór</h4>
-					{% if invoice_active %}				
 						Data odbioru: <input type="date" name="collection_date" value={{ time_now|date:'Y-m-d' }}><br>
 						POTWIERDZAM ODBIÓR: <input type="checkbox" name="collection_confirm">
-						
-					{% else %}
-						Nie ma wystawionej faktury - najpierw dodaj fakturę
-					{% endif %}
 				</div>
 			
 
