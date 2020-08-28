@@ -475,31 +475,41 @@ def updating(request, patient_id):
 		                  request.POST['new_invoice'] + '.')
 	# collection procedure
 	if request.POST.get('collection_confirm'):
-		# current_invoice = Invoice.objects.get(patient=patient, current=True)
-		current_invoices = Invoice.objects.filter(patient=patient, current=True)
-		
-		invoiced_ha = Hearing_Aid.objects.filter(invoice__in=current_invoices)
-		date = request.POST.get('collection_date') or str(today)
-		for ha in invoiced_ha:
-    		# inactivate previous hearing aids (current=False)
-			old = Hearing_Aid.objects.filter(patient=patient, ear=ha.ear)
-			old.update(current=False)
-			# update hearing aid that are one the invoice
-			ha.purchase_date=date
-			ha.current = True
-			ha.our = True
-			ha.save()
-			
-			# create new info instance to show in history of actions
-			pl_side = 'lewy' if ha.ear == 'left' else 'prawy'
-			new_action.append('Odebrano ' + pl_side + ' aparat ' +
-                    str(ha) + ', z datą ' + str(date) + '.')
+		# create new HAs and add it to Patient as current
+		date = request.POST.get('collection_date') or str(today.date())
+		newly_created_ha = []
+		for ear in ears:
+			if request.POST.get('collection_make_' + ear):
+					print('request for ', ear, 'collection_make_' + ear)
+					# set previous HA current=False
+					old_ha = Hearing_Aid.objects.filter(patient=patient, ear=ear)
+					old_ha.update(current=False)
+					# create new ha
+					make = request.POST.get('collection_make_' + ear)
+					family = request.POST.get('collection_family_' + ear)
+					model = request.POST.get('collection_model_' + ear)
+					ha = Hearing_Aid.objects.create(
+						make=make,
+						family=family,
+						model=model,
+						ear=ear,
+						patient=patient,
+						purchase_date=date
+					)
+					newly_created_ha.append(ha)
+					
+		# create new info instance to show in history of actions
+		ha_plural = 'y' if len(newly_created_ha)==2 else ''
+		new_action.append('Odebrano aparat' + ha_plural + ', z datą ' + date + '.')
 
-			# add reminder
+		# add reminder
+		for ha in newly_created_ha:
 			Reminder_Collection.objects.create(
 			ha=ha, activation_date=today+datetime.timedelta(days=365))
 
+
 		# inactivate Invoice and its reminder
+		current_invoices = Invoice.objects.filter(patient=patient, current=True)
 		for current_invoice in current_invoices:
 			current_invoice.current = False
 			current_invoice.save()
@@ -527,6 +537,7 @@ def updating(request, patient_id):
 				reminder.active = False
 				reminder.save()
 		
+
 		# remove PCPR_Estimate from currently active
 	if request.POST.get('pcpr_inactivate'):
 		last_pcpr = PCPR_Estimate.objects.filter(

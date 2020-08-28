@@ -1091,8 +1091,10 @@ class TestUpdatingView(TestCase):
         self.assertEqual(reminders.count(), 1)
         self.assertFalse(reminders.last().active)
 
-    def test_collection_procedure_with_1_active_invoice(self):
-        # there is one active invoice
+    def test_collection_procedure_with_1_active_invoice_nfz_estimate_two_HA(self):
+        # there is one active invoice, 2 nfz and pcpr estimate, all should be inactivated
+        # invoice, pcpr and nfz reminders should be inactivated, new reminder should be created
+        # 2 HA should be created, old HA should be set to current=False, and new added to Patient
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         n1 = NFZ_Confirmed.objects.create(patient=patient1,
@@ -1107,28 +1109,6 @@ class TestUpdatingView(TestCase):
         i1 = Invoice.objects.create(
             patient=patient1,
             current=True)
-        Hearing_Aid.objects.create(patient=patient1,
-                                    ear='left',
-                                    make='m',
-                                    family='f',
-                                    model='m1',
-                                   pkwiu_code='26.60.14',
-                                   estimate=p1,
-                                   invoice=i1,
-                                    purchase_date='2000-01-02',
-                                    our=False,
-                                    current=False)
-        Hearing_Aid.objects.create(patient=patient1,
-                                    ear='right',
-                                    make='m',
-                                    family='f',
-                                    model='m2',
-                                   pkwiu_code='26.60.14',
-                                   estimate=p1,
-                                    invoice=i1,
-                                    purchase_date='2000-01-02',
-                                    our=False,
-                                    current=False)
         Hearing_Aid.objects.create(patient=patient1,
                                     ear='left',
                                     make='m',
@@ -1155,6 +1135,12 @@ class TestUpdatingView(TestCase):
         data = self.data.copy()
         data['collection_confirm'] = True
         data['collection_date'] = '2000-01-02'
+        data['collection_make_left'] = 'new_make_left'
+        data['collection_family_left'] = 'new_family_left'
+        data['collection_model_left'] = 'new_model_left'
+        data['collection_make_right'] = 'new_make_right'
+        data['collection_family_right'] = 'new_family_right'
+        data['collection_model_right'] = 'new_model_right'
 
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
@@ -1164,24 +1150,32 @@ class TestUpdatingView(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-        # should modify left and right Hearing_Aid instance that were on the invoice
-        left_ha = Hearing_Aid.objects.filter(patient=patient1, ear='left').first()
-        self.assertEqual(left_ha.model, 'm1')
-        self.assertEqual(str(left_ha.purchase_date), '2000-01-02')
-        self.assertTrue(left_ha.our)
-        self.assertTrue(left_ha.current)
-
-        right_ha = Hearing_Aid.objects.filter(patient=patient1, ear='right').first()
-        self.assertEqual(right_ha.model, 'm2')
-        self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
-        self.assertTrue(right_ha.our)
-        self.assertTrue(right_ha.current)
 
         # should inactivate previous hearing aids (current=false)
         previous_left = Hearing_Aid.objects.get(model='m1old')
         self.assertFalse(previous_left.current)
         previous_right = Hearing_Aid.objects.get(model='m2old')
         self.assertFalse(previous_right.current)
+
+        # should create two new hearing aids, should be 4 in total
+        self.assertEqual(Hearing_Aid.objects.all().count(), 4)
+
+        # should set new hearing aids as active in this patient
+        current_active_left = Hearing_Aid.objects.get(
+            patient=patient1,
+            ear='left',
+            make='new_make_left',
+            family='new_family_left',
+            model='new_model_left')
+        self.assertTrue(current_active_left.current)
+
+        current_active_right = Hearing_Aid.objects.get(
+            patient=patient1,
+            ear='right',
+            make='new_make_right',
+            family='new_family_right',
+            model='new_model_right')
+        self.assertTrue(current_active_right.current)
 
         # should set NFZ confirmed to inactive
         left_nfz_all = NFZ_Confirmed.objects.filter(
@@ -1203,8 +1197,7 @@ class TestUpdatingView(TestCase):
 
         # should create a new info to show in history of actions
         new_info = NewInfo.objects.get(id=1)
-        expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-02. ' + \
-                        'Odebrano prawy aparat m f m2, z datą 2000-01-02.'
+        expected_note = 'Odebrano aparaty, z datą 2000-01-02.'
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
         # there should be 2 Reminder_NFZ_Confirmed (one for each side), both inactive
@@ -1246,54 +1239,19 @@ class TestUpdatingView(TestCase):
         self.assertTrue(collection_reminders.first().active)
         self.assertTrue(collection_reminders.last().active)
 
-
-    def test_collection_procedure_with_2_active_invoices(self):
-        # there are 2 active invoices, one with HAs and one with
-        # other item
+    def test_collection_procedure_with_1_HA(self):
+        # 1 HA should be created, old HA should be set to current=False, and new added to Patient
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
-
+        n2 = NFZ_Confirmed.objects.create(patient=patient1,
+                                          side='right',
+                                          date='2000-01-02')
         p1 = PCPR_Estimate.objects.create(
             patient=patient1,
             current=True)
-       
         i1 = Invoice.objects.create(
             patient=patient1,
             current=True)
-        i2 = Invoice.objects.create(
-            patient=patient1,
-            current=True)
-        Hearing_Aid.objects.create(patient=patient1,
-                                   ear='left',
-                                   make='m',
-                                   family='f',
-                                   model='m1',
-                                   pkwiu_code='26.60.14',
-                                   estimate=p1,
-                                   invoice=i1,
-                                   purchase_date='2000-01-02',
-                                   our=False,
-                                   current=False)
-        Hearing_Aid.objects.create(patient=patient1,
-                                   ear='right',
-                                   make='m',
-                                   family='f',
-                                   model='m2',
-                                   pkwiu_code='26.60.14',
-                                   estimate=p1,
-                                   invoice=i1,
-                                   purchase_date='2000-01-02',
-                                   our=False,
-                                   current=False)
-        Hearing_Aid.objects.create(patient=patient1,
-                                   ear='left',
-                                   make='m',
-                                   family='f',
-                                   model='m1old',
-                                   pkwiu_code='26.60.14',
-                                   purchase_date='2000-01-02',
-                                   our=False,
-                                   current=True)
         Hearing_Aid.objects.create(patient=patient1,
                                    ear='right',
                                    make='m',
@@ -1303,61 +1261,71 @@ class TestUpdatingView(TestCase):
                                    purchase_date='2000-01-02',
                                    our=False,
                                    current=True)
-        Other_Item.objects.create(patient=patient1,                        
-                                   make='o',
-                                   family='fo',
-                                   model='mo',
-                                   pkwiu_code='26.60.14',
-                                   invoice=i2)
-        Reminder_Invoice.objects.create(invoice=i1, activation_date=today)
-        Reminder_Invoice.objects.create(invoice=i2, activation_date=today)
+
+        Reminder_NFZ_Confirmed.objects.create(
+            nfz_confirmed=n2, activation_date=today)
         Reminder_PCPR.objects.create(pcpr=p1, activation_date=today)
+        Reminder_Invoice.objects.create(invoice=i1, activation_date=today)
         data = self.data.copy()
         data['collection_confirm'] = True
         data['collection_date'] = '2000-01-02'
+        data['collection_make_right'] = 'new_make_right'
+        data['collection_family_right'] = 'new_family_right'
+        data['collection_model_right'] = 'new_model_right'
 
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
-
-        # should modify left and right Hearing_Aid instance that were on the invoice
-        left_ha = Hearing_Aid.objects.filter(
-            patient=patient1, ear='left').first()
-        self.assertEqual(left_ha.model, 'm1')
-        self.assertEqual(str(left_ha.purchase_date), '2000-01-02')
-        self.assertTrue(left_ha.our)
-        self.assertTrue(left_ha.current)
-
-        right_ha = Hearing_Aid.objects.filter(
-            patient=patient1, ear='right').first()
-        self.assertEqual(right_ha.model, 'm2')
-        self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
-        self.assertTrue(right_ha.our)
-        self.assertTrue(right_ha.current)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
 
         # should inactivate previous hearing aids (current=false)
-        previous_left = Hearing_Aid.objects.get(model='m1old')
-        self.assertFalse(previous_left.current)
         previous_right = Hearing_Aid.objects.get(model='m2old')
         self.assertFalse(previous_right.current)
+
+        # should create 1 new hearing aids, should be 2 in total
+        self.assertEqual(Hearing_Aid.objects.all().count(), 2)
+
+        # should set new hearing aid as active in this patient
+        current_active_right = Hearing_Aid.objects.get(
+            patient=patient1,
+            ear='right',
+            make='new_make_right',
+            family='new_family_right',
+            model='new_model_right')
+        self.assertTrue(current_active_right.current)
+
+        # should set NFZ confirmed to inactive
+        right_nfz_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        self.assertFalse(right_nfz_all.last().in_progress)
 
         # should set last PCPR estimate to inactive
         pcpr_all = PCPR_Estimate.objects.filter(
             patient=patient1)
         self.assertFalse(pcpr_all.last().current)
 
-        # should set all invoices to inactive
+        # should set invoices to inactive
         invoice_all = Invoice.objects.filter(
-            patient=patient1, current=True)
-        self.assertFalse(invoice_all)
+            patient=patient1)
+        self.assertFalse(invoice_all.last().current)
 
         # should create a new info to show in history of actions
         new_info = NewInfo.objects.get(id=1)
-        expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-02. ' + \
-                        'Odebrano prawy aparat m f m2, z datą 2000-01-02.'
+        expected_note = 'Odebrano aparat, z datą 2000-01-02.'
         self.assertEqual(new_info.note, expected_note.decode('utf-8'))
 
-        # reminders
+        # there should be 1 Reminder_NFZ_Confirmed, inactive
+        right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
+            patient=patient1, side='right')
+        right_confirmed_nfz = right_nfz_confirmed_all[0]
+        right_confirmed_reminders = Reminder_NFZ_Confirmed.objects.filter(
+            nfz_confirmed=right_confirmed_nfz)
+        self.assertEqual(right_confirmed_reminders.count(), 1)
+        self.assertFalse(right_confirmed_reminders.last().active)
+
         # there should be one Reminder_PCPR, inactive
         pcpr_all = PCPR_Estimate.objects.filter(
             patient=patient1)
@@ -1366,13 +1334,146 @@ class TestUpdatingView(TestCase):
         self.assertEqual(pcpr_reminders.count(), 1)
         self.assertFalse(pcpr_reminders.last().active)
 
-        # there should be two Reminder_Invoice, inactive
-        self.assertEqual(Reminder_Invoice.objects.all().count(), 2)
-        self.assertFalse(Reminder_Invoice.objects.filter(active=True))
+        # there should be one Reminder_Invoice, inactive
+        invoice_all = Invoice.objects.filter(
+            patient=patient1)
+        invoice_reminders = Reminder_Invoice.objects.filter(
+            invoice=invoice_all.last())
+        self.assertEqual(invoice_reminders.count(), 1)
+        self.assertFalse(invoice_reminders.last().active)
 
-        # there should be 2 Reminder_Collection instances, both active
-        self.assertEqual(Reminder_Collection.objects.all().count(), 2)
-        self.assertTrue(Reminder_Collection.objects.filter(active=True), 2)
+        # there should be 1 Reminder_Collection instances, active
+        collection_reminders = Reminder_Collection.objects.all()
+        self.assertEqual(collection_reminders.count(), 1)
+        self.assertTrue(collection_reminders.first().active)
+
+
+    # def test_collection_procedure_with_2_active_invoices(self):
+    #     # there are 2 active invoices, one with HAs and one with
+    #     # other item
+    #     self.client.login(username='john', password='glassonion')
+    #     patient1 = Patient.objects.get(id=1)
+
+    #     p1 = PCPR_Estimate.objects.create(
+    #         patient=patient1,
+    #         current=True)
+       
+    #     i1 = Invoice.objects.create(
+    #         patient=patient1,
+    #         current=True)
+    #     i2 = Invoice.objects.create(
+    #         patient=patient1,
+    #         current=True)
+    #     Hearing_Aid.objects.create(patient=patient1,
+    #                                ear='left',
+    #                                make='m',
+    #                                family='f',
+    #                                model='m1',
+    #                                pkwiu_code='26.60.14',
+    #                                estimate=p1,
+    #                                invoice=i1,
+    #                                purchase_date='2000-01-02',
+    #                                our=False,
+    #                                current=False)
+    #     Hearing_Aid.objects.create(patient=patient1,
+    #                                ear='right',
+    #                                make='m',
+    #                                family='f',
+    #                                model='m2',
+    #                                pkwiu_code='26.60.14',
+    #                                estimate=p1,
+    #                                invoice=i1,
+    #                                purchase_date='2000-01-02',
+    #                                our=False,
+    #                                current=False)
+    #     Hearing_Aid.objects.create(patient=patient1,
+    #                                ear='left',
+    #                                make='m',
+    #                                family='f',
+    #                                model='m1old',
+    #                                pkwiu_code='26.60.14',
+    #                                purchase_date='2000-01-02',
+    #                                our=False,
+    #                                current=True)
+    #     Hearing_Aid.objects.create(patient=patient1,
+    #                                ear='right',
+    #                                make='m',
+    #                                family='f',
+    #                                model='m2old',
+    #                                pkwiu_code='26.60.14',
+    #                                purchase_date='2000-01-02',
+    #                                our=False,
+    #                                current=True)
+    #     Other_Item.objects.create(patient=patient1,                        
+    #                                make='o',
+    #                                family='fo',
+    #                                model='mo',
+    #                                pkwiu_code='26.60.14',
+    #                                invoice=i2)
+    #     Reminder_Invoice.objects.create(invoice=i1, activation_date=today)
+    #     Reminder_Invoice.objects.create(invoice=i2, activation_date=today)
+    #     Reminder_PCPR.objects.create(pcpr=p1, activation_date=today)
+    #     data = self.data.copy()
+    #     data['collection_confirm'] = True
+    #     data['collection_date'] = '2000-01-02'
+
+    #     url = reverse('crm:updating', args=(patient1.id,))
+    #     expected_url = reverse('crm:edit', args=(1,))
+    #     response = self.client.post(url, data, follow=True)
+
+    #     # should modify left and right Hearing_Aid instance that were on the invoice
+    #     left_ha = Hearing_Aid.objects.filter(
+    #         patient=patient1, ear='left').first()
+    #     self.assertEqual(left_ha.model, 'm1')
+    #     self.assertEqual(str(left_ha.purchase_date), '2000-01-02')
+    #     self.assertTrue(left_ha.our)
+    #     self.assertTrue(left_ha.current)
+
+    #     right_ha = Hearing_Aid.objects.filter(
+    #         patient=patient1, ear='right').first()
+    #     self.assertEqual(right_ha.model, 'm2')
+    #     self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
+    #     self.assertTrue(right_ha.our)
+    #     self.assertTrue(right_ha.current)
+
+    #     # should inactivate previous hearing aids (current=false)
+    #     previous_left = Hearing_Aid.objects.get(model='m1old')
+    #     self.assertFalse(previous_left.current)
+    #     previous_right = Hearing_Aid.objects.get(model='m2old')
+    #     self.assertFalse(previous_right.current)
+
+    #     # should set last PCPR estimate to inactive
+    #     pcpr_all = PCPR_Estimate.objects.filter(
+    #         patient=patient1)
+    #     self.assertFalse(pcpr_all.last().current)
+
+    #     # should set all invoices to inactive
+    #     invoice_all = Invoice.objects.filter(
+    #         patient=patient1, current=True)
+    #     self.assertFalse(invoice_all)
+
+    #     # should create a new info to show in history of actions
+    #     new_info = NewInfo.objects.get(id=1)
+    #     expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-02. ' + \
+    #                     'Odebrano prawy aparat m f m2, z datą 2000-01-02.'
+    #     self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+
+    #     # reminders
+    #     # there should be one Reminder_PCPR, inactive
+    #     pcpr_all = PCPR_Estimate.objects.filter(
+    #         patient=patient1)
+    #     pcpr_reminders = Reminder_PCPR.objects.filter(
+    #         pcpr=pcpr_all.last())
+    #     self.assertEqual(pcpr_reminders.count(), 1)
+    #     self.assertFalse(pcpr_reminders.last().active)
+
+    #     # there should be two Reminder_Invoice, inactive
+    #     self.assertEqual(Reminder_Invoice.objects.all().count(), 2)
+    #     self.assertFalse(Reminder_Invoice.objects.filter(active=True))
+
+    #     # there should be 2 Reminder_Collection instances, both active
+    #     self.assertEqual(Reminder_Collection.objects.all().count(), 2)
+    #     self.assertTrue(Reminder_Collection.objects.filter(active=True), 2)
 
 
 class TestDeleteView(TestCase):
