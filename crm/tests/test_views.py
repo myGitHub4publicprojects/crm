@@ -1812,12 +1812,12 @@ class TestSZOI_UsageCreate(TestCase):
                     make='Audioservice',
                     family='WKŁADKA USZNA',
                     model='TWARDA',
-                    price_gross=1)
+                    )
         mixer.blend('crm.Other_Item_Stock',
                     make='Phonak',
                     family='PHONAK ROGER',
                     model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
-                    price_gross=1)
+                    )
         test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.xls'
         # create SZOI_File instance with the above file
         f = open(test_file)

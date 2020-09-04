@@ -15,8 +15,7 @@ def get_line_from_8th(f):
 
 
 def process_HA(line):
-    '''accepts a list (line of a xls file), returns a dict with make, family, model, price 
-    and pkwiu_code'''
+    '''accepts a list (line of a xls file), returns a dict with make, family, model'''
     res = {}
     # Audibel
     # START 1200  RIC 312T; START WIRELESS 1200I RIC 312; START WIRELESS 1200I RIC 312;
@@ -62,7 +61,7 @@ def process_HA(line):
         else:
             family = family_model[0]
             model = family_model[0]
-        price = line[8]
+
 
     # Bernafon
     # there might be 2 typos in the file: JUNA7 NANO (JUNA 7) and ZERENA5 (ZERENA 5)
@@ -79,7 +78,7 @@ def process_HA(line):
             model = ' '.join(family_model[2:])
         else:
             model = family_model[1]
-        price = line[8]
+
 
     # Phonak
     # in some Phonak/Sonova products name includes a brand
@@ -94,7 +93,6 @@ def process_HA(line):
         else:
             family = family_model[0]
             model = ' '.join(family_model[1:])
-        price = line[8]
 
     # Oticon
     if 'OTICON' in line[1]:
@@ -102,7 +100,6 @@ def process_HA(line):
         family_model = line[2].split()  # HIT PRO BTE POWER
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8]
 
     # Audioservice
     if 'AUDIO SERVICE' in line[1]:
@@ -110,7 +107,6 @@ def process_HA(line):
         family_model = line[2].split()  # SINA HYPE 12 G4
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8]
 
     # Interton
     if 'INTERTON' in line[1]:
@@ -118,7 +114,6 @@ def process_HA(line):
         family_model = line[2].split()
         family = family_model[0]
         model = ' '.join(family_model[1:]) + ' ' + line[5]
-        price = line[8]
 
     # Siemens
     if 'SIEMENS' in line[1]:
@@ -126,7 +121,6 @@ def process_HA(line):
         family_model = line[2].split()
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8]
 
     # BHM
     if 'BHM TECH' in line[1]:
@@ -134,23 +128,15 @@ def process_HA(line):
         family_model = line[2].split()
         family = family_model[0]
         model = ' '.join(family_model[1:])
-        price = line[8]
-        # if not 'WYŁĄCZENIEM APARATÓW' in line[8]:
-        #     price = line[8]
-        # else:
-        #     price = line[9]
-        # price = int(price[0])
     
     res['make'] = make
     res['family'] = family
     res['model'] = model
-    res['price'] = price
-    res['pkwiu_code'] = '26.60.14.0'
+
     return res
 
 def process_Other(line):
-    '''accepts a line of a csv file, returns a dict with make, family, model, price 
-    and pkwiu_code of an Other_Item_Stock device'''
+    '''accepts a line of a csv file, returns a dict with make, family, model of an Other_Item_Stock device'''
     res = {}
         # make
     if 'STARKEY' in line[1]:
@@ -165,28 +151,23 @@ def process_Other(line):
         make = 'Phonak'
     
     model = line[2]
-    price = line[8]
 
     if 'P.087.' in line[6]:
         family = line[5]
-        pkwiu_code = '26.60.14.0'
 
     if 'P.086.' in line[6]:
         family = 'WKŁADKA USZNA'
-        pkwiu_code = '32.50.23.0'
     
     res['make'] = make
     res['family'] = family
     res['model'] = model
-    res['price'] = price
-    res['pkwiu_code'] = pkwiu_code
     return res
 
-def update_or_create(items_class, item):
-    '''accepts a dict with make, family, model, price and pkwiu_code,
-    updates existing instance of create a new one,
-    returns a dict with created and updated instances'''
-    res = {'new': None, 'update': None}
+def create_if_notexists(items_class, item):
+    '''accepts a dict with make, family, model,
+    create a new one,
+    returns a dict with created instance'''
+    res = {'new': None}
     # check for existing instance with same make, family and model
     existing = items_class.objects.filter(
         make=item['make'],
@@ -195,23 +176,11 @@ def update_or_create(items_class, item):
     )
 
     # update price if needed
-    if existing.exists():
-        for i in existing:
-            if i.price_gross != item['price']:
-                i.price_gross = item['price']
-                i.save()
-                # update res
-                res['update'] = i
-
-    else:
-        # create instance
+    if not existing.exists():
         i = items_class.objects.create(
             make=item['make'],
             family=item['family'],
             model=item['model'],
-            price_gross=item['price'],
-            vat_rate=8,
-            pkwiu_code=item['pkwiu_code']
         )
 
         # update res
@@ -223,12 +192,10 @@ def update_or_create(items_class, item):
 def stock_update(szoi_file, szoi_file_usage):
     '''accepts SZOI_File and SZOI_File_Usage instance:
     create new Hearing_Aid_Stock and Other_Item_Stock instances,
-    upadates price for devices that are already in stock,
     if errors occure create SZOI_Error instance,
     returns a dict with created and updated HA and Other:
-    {'ha_new': [<instance1>, <instance2], 'other_new': [<instance1>, <instance2>],
-    'ha_update': [<instance1>, <instance2], 'other_update': [<instance1>, <instance2>]}'''
-    res = {'ha_new': [], 'other_new': [], 'ha_update': [], 'other_update': []}
+    {'ha_new': [<instance1>, <instance2], 'other_new': [<instance1>, <instance2>]}'''
+    res = {'ha_new': [], 'other_new': []}
     file_path = szoi_file.file.path
     counterTotal = 0
     counterHA = 0
@@ -249,12 +216,10 @@ def stock_update(szoi_file, szoi_file_usage):
                 # create a dict from a line
                 HA = process_HA(i)
                 # update exisitng or create new HA instance
-                u = update_or_create(Hearing_Aid_Stock, HA)
+                u = create_if_notexists(Hearing_Aid_Stock, HA)
 
                 if u['new'] != None:
                     res['ha_new'].append(u['new'])
-                if u['update'] != None:
-                    res['ha_update'].append(u['update'])
 
             # Other_Item_Stock
             elif 'P.086.' in i[6] or 'P.087.' in i[6]:
@@ -262,12 +227,10 @@ def stock_update(szoi_file, szoi_file_usage):
                 # create a dict from a line
                 other = process_Other(i)
                 # update existing or create new device instance
-                u = update_or_create(Other_Item_Stock, other)
+                u = create_if_notexists(Other_Item_Stock, other)
 
                 if u['new'] != None:
                     res['other_new'].append(u['new'])
-                if u['update'] != None:
-                    res['other_update'].append(u['update'])
             
             else:
                 SZOI_Errors.objects.create(

@@ -58,6 +58,28 @@ class Test_Stock_Update(TestCase):
         
         f.close()
 
+    def test_stock_update_create_new_10HA(self):
+        '''test file contains 10 lines with HA
+        there is already one HA, it still be there after stock update'''
+        Hearing_Aid_Stock.objects.create(make='oldmake', family='oldfamily', model='oldmodel')
+        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
+        f = open(test_file)
+        # create SZOI_File and SZOI_File_Usage instance with the above file
+        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
+
+        res = stock_update(szoi_file, szoi_file_usage)
+        # should create 10 Hearing_Aid_Stock, should be 11 in total
+        self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 11)
+
+        # should create no Other_Item_Stock
+        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
+
+        # should return 10 Hearing_Aid_Stock instances
+        self.assertEqual(len(res['ha_new']), 10)
+
+        f.close()
+
     def test_stock_update_with_errors_in_file(self):
         '''second and third lines in a file have only 2 items,
         fourth line has none of the expected text'''
@@ -167,9 +189,6 @@ class Test_Stock_Update(TestCase):
         # should return 1131 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 1131)
 
-        # should return 1 updated Hearing_Aid_Stock instance as there is duplicated HA in file
-        self.assertEqual(len(res['ha_update']), 1)
-
         f.close()
 
     def test_stock_update_create_17_OtherDevices(self):
@@ -188,99 +207,7 @@ class Test_Stock_Update(TestCase):
         # should return 17 Other_Item_Stock instances
         self.assertEqual(len(res['other_new']), 17)
 
-        # should return no upadted Other_Item_Stock instances
-        self.assertEqual(len(res['other_update']), 0)
-
         f.close()
-    
-
-    def test_stock_update_update_existing_ha_prices(self):
-        '''update price of 2 HA that are already in stock'''
-        mixer.blend('crm.Hearing_Aid_Stock',
-                    make='Bernafon',
-                    family='ZERENA 9',
-                    model='B 105',
-                    price_gross=1)
-        mixer.blend('crm.Hearing_Aid_Stock',
-                    make='Audibel',
-                    family='A4 IQ GOLD',
-                    model='ITE',
-                    price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
-        f = open(test_file)
-        # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
-        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
-
-        res = stock_update(szoi_file, szoi_file_usage)
-
-        # should return 2 upadted Hearing_Aid_Stock instances
-        self.assertEqual(len(res['ha_update']), 2)
-
-        # should return 8 new Hearing_Aid_Stock instances
-        self.assertEqual(len(res['ha_new']), 8)
-
-        # new price of ZERENA 9 B 105 should be 8100
-        z9 = Hearing_Aid_Stock.objects.get(
-            make='Bernafon',
-            family='ZERENA 9',
-            model='B 105'
-        )
-        self.assertEqual(z9.price_gross, 8100)
-
-        # new price of Audibel A4 IQ GOLD ITE should be 5400
-        a4 = Hearing_Aid_Stock.objects.get(
-            make='Audibel',
-            family='A4 IQ GOLD',
-            model='ITE'
-        )
-        self.assertEqual(a4.price_gross, 5400)
-
-        # self.assertTrue(False)
-
-        f.close()
-
-
-    def test_stock_update_update_existing_other_prices(self):
-        '''update price of 2 Other Devices that are already in stock'''
-        mixer.blend('crm.Other_Item_Stock',
-            make='Audioservice',
-            family='WKŁADKA USZNA',
-            model='TWARDA',
-            price_gross=1)
-        mixer.blend('crm.Other_Item_Stock',
-            make='Phonak',
-            family='PHONAK ROGER',
-            model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
-            price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.xls'
-        f = open(test_file)
-        # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
-        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
-
-        res = stock_update(szoi_file, szoi_file_usage)
-        # should return 2  upadted Other_Item_Stock instances
-        self.assertEqual(len(res['other_update']), 2)
-
-        # new price of Audioservice WKŁADKA USZNA MIĘKKA KOMFORT should be 3
-        a1 = Other_Item_Stock.objects.get(
-            make='Audioservice',
-            family='WKŁADKA USZNA',
-            model='MIĘKKA KOMFORT',
-        )
-        self.assertEqual(a1.price_gross, 3)
-
-        # new price of Phonak ROGER CLIP-ON MIC + 2 X ROGER X (03) should be 4
-        p1 = Other_Item_Stock.objects.get(
-            make='Phonak',
-            family='PHONAK ROGER',
-            model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
-        )
-        self.assertEqual(p1.price_gross, 4)
-
-        f.close()
-
 
     def tearDown(self):
         # Remove the directory after the test
