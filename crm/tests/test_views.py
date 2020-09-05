@@ -708,14 +708,12 @@ class TestUpdatingView(TestCase):
                                     ear='left',
                                     make='m',
                                     family='f',
-                                    model='m1',
-                                   pkwiu_code='26.60.14')
+                                    model='m1')
         Hearing_Aid.objects.create(patient=patient1,
                                     ear='right',
                                     make='m',
                                     family='f',
-                                    model='m2',
-                                   pkwiu_code='26.60.14')
+                                    model='m2')
         data = self.data.copy()
         data['left_ha'] = 'b1_family1_model1'
         data['right_ha'] = 'b2_family2_model2'
@@ -759,14 +757,12 @@ class TestUpdatingView(TestCase):
                                     ear='left',
                                     make='m',
                                     family='f',
-                                    model='m1',
-                                   pkwiu_code='26.60.14')
+                                    model='m1')
         Hearing_Aid.objects.create(patient=patient1,
                                     ear='right',
                                     make='m',
                                     family='f',
-                                    model='m2',
-                                   pkwiu_code='26.60.14')
+                                    model='m2')
         data = self.data.copy()
         data['left_ha'] = 'b1_family1_model1'
         data['right_ha'] = 'b2_family2_model2'
@@ -1114,7 +1110,6 @@ class TestUpdatingView(TestCase):
                                     make='m',
                                     family='f',
                                     model='m1old',
-                                   pkwiu_code='26.60.14',
                                     purchase_date='2000-01-02',
                                     our=False,
                                     current=True)
@@ -1123,7 +1118,6 @@ class TestUpdatingView(TestCase):
                                     make='m',
                                     family='f',
                                     model='m2old',
-                                   pkwiu_code='26.60.14',
                                     purchase_date='2000-01-02',
                                     our=False,
                                     current=True)
@@ -1257,7 +1251,6 @@ class TestUpdatingView(TestCase):
                                    make='m',
                                    family='f',
                                    model='m2old',
-                                   pkwiu_code='26.60.14',
                                    purchase_date='2000-01-02',
                                    our=False,
                                    current=True)
@@ -1346,134 +1339,6 @@ class TestUpdatingView(TestCase):
         collection_reminders = Reminder_Collection.objects.all()
         self.assertEqual(collection_reminders.count(), 1)
         self.assertTrue(collection_reminders.first().active)
-
-
-    # def test_collection_procedure_with_2_active_invoices(self):
-    #     # there are 2 active invoices, one with HAs and one with
-    #     # other item
-    #     self.client.login(username='john', password='glassonion')
-    #     patient1 = Patient.objects.get(id=1)
-
-    #     p1 = PCPR_Estimate.objects.create(
-    #         patient=patient1,
-    #         current=True)
-       
-    #     i1 = Invoice.objects.create(
-    #         patient=patient1,
-    #         current=True)
-    #     i2 = Invoice.objects.create(
-    #         patient=patient1,
-    #         current=True)
-    #     Hearing_Aid.objects.create(patient=patient1,
-    #                                ear='left',
-    #                                make='m',
-    #                                family='f',
-    #                                model='m1',
-    #                                pkwiu_code='26.60.14',
-    #                                estimate=p1,
-    #                                invoice=i1,
-    #                                purchase_date='2000-01-02',
-    #                                our=False,
-    #                                current=False)
-    #     Hearing_Aid.objects.create(patient=patient1,
-    #                                ear='right',
-    #                                make='m',
-    #                                family='f',
-    #                                model='m2',
-    #                                pkwiu_code='26.60.14',
-    #                                estimate=p1,
-    #                                invoice=i1,
-    #                                purchase_date='2000-01-02',
-    #                                our=False,
-    #                                current=False)
-    #     Hearing_Aid.objects.create(patient=patient1,
-    #                                ear='left',
-    #                                make='m',
-    #                                family='f',
-    #                                model='m1old',
-    #                                pkwiu_code='26.60.14',
-    #                                purchase_date='2000-01-02',
-    #                                our=False,
-    #                                current=True)
-    #     Hearing_Aid.objects.create(patient=patient1,
-    #                                ear='right',
-    #                                make='m',
-    #                                family='f',
-    #                                model='m2old',
-    #                                pkwiu_code='26.60.14',
-    #                                purchase_date='2000-01-02',
-    #                                our=False,
-    #                                current=True)
-    #     Other_Item.objects.create(patient=patient1,                        
-    #                                make='o',
-    #                                family='fo',
-    #                                model='mo',
-    #                                pkwiu_code='26.60.14',
-    #                                invoice=i2)
-    #     Reminder_Invoice.objects.create(invoice=i1, activation_date=today)
-    #     Reminder_Invoice.objects.create(invoice=i2, activation_date=today)
-    #     Reminder_PCPR.objects.create(pcpr=p1, activation_date=today)
-    #     data = self.data.copy()
-    #     data['collection_confirm'] = True
-    #     data['collection_date'] = '2000-01-02'
-
-    #     url = reverse('crm:updating', args=(patient1.id,))
-    #     expected_url = reverse('crm:edit', args=(1,))
-    #     response = self.client.post(url, data, follow=True)
-
-    #     # should modify left and right Hearing_Aid instance that were on the invoice
-    #     left_ha = Hearing_Aid.objects.filter(
-    #         patient=patient1, ear='left').first()
-    #     self.assertEqual(left_ha.model, 'm1')
-    #     self.assertEqual(str(left_ha.purchase_date), '2000-01-02')
-    #     self.assertTrue(left_ha.our)
-    #     self.assertTrue(left_ha.current)
-
-    #     right_ha = Hearing_Aid.objects.filter(
-    #         patient=patient1, ear='right').first()
-    #     self.assertEqual(right_ha.model, 'm2')
-    #     self.assertEqual(str(right_ha.purchase_date), '2000-01-02')
-    #     self.assertTrue(right_ha.our)
-    #     self.assertTrue(right_ha.current)
-
-    #     # should inactivate previous hearing aids (current=false)
-    #     previous_left = Hearing_Aid.objects.get(model='m1old')
-    #     self.assertFalse(previous_left.current)
-    #     previous_right = Hearing_Aid.objects.get(model='m2old')
-    #     self.assertFalse(previous_right.current)
-
-    #     # should set last PCPR estimate to inactive
-    #     pcpr_all = PCPR_Estimate.objects.filter(
-    #         patient=patient1)
-    #     self.assertFalse(pcpr_all.last().current)
-
-    #     # should set all invoices to inactive
-    #     invoice_all = Invoice.objects.filter(
-    #         patient=patient1, current=True)
-    #     self.assertFalse(invoice_all)
-
-    #     # should create a new info to show in history of actions
-    #     new_info = NewInfo.objects.get(id=1)
-    #     expected_note = 'Odebrano lewy aparat m f m1, z datą 2000-01-02. ' + \
-    #                     'Odebrano prawy aparat m f m2, z datą 2000-01-02.'
-    #     self.assertEqual(new_info.note, expected_note.decode('utf-8'))
-
-    #     # reminders
-    #     # there should be one Reminder_PCPR, inactive
-    #     pcpr_all = PCPR_Estimate.objects.filter(
-    #         patient=patient1)
-    #     pcpr_reminders = Reminder_PCPR.objects.filter(
-    #         pcpr=pcpr_all.last())
-    #     self.assertEqual(pcpr_reminders.count(), 1)
-    #     self.assertFalse(pcpr_reminders.last().active)
-
-    #     # there should be two Reminder_Invoice, inactive
-    #     self.assertEqual(Reminder_Invoice.objects.all().count(), 2)
-    #     self.assertFalse(Reminder_Invoice.objects.filter(active=True))
-
-    #     # there should be 2 Reminder_Collection instances, both active
-    #     self.assertEqual(Reminder_Collection.objects.all().count(), 2)
-    #     self.assertTrue(Reminder_Collection.objects.filter(active=True), 2)
 
 
 class TestDeleteView(TestCase):
@@ -1642,7 +1507,6 @@ class TestReminderCollectionView(TestCase):
                                     make='m',
                                     family='f',
                                     model='m1',
-                                   pkwiu_code='26.60.14',
                                     purchase_date='2000-01-02',
                                     our=False,
                                     current=False)
@@ -1664,7 +1528,6 @@ class TestReminderCollectionView(TestCase):
                                          make='m',
                                          family='f',
                                          model='m1',
-                                         pkwiu_code='26.60.14',
                                          purchase_date='2000-01-02',
                                          our=False,
                                          current=False)
@@ -1767,22 +1630,6 @@ class TestSZOI_UsageCreate(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-        # new price of ZERENA 9 B 105 should be 8100
-        z9 = Hearing_Aid_Stock.objects.get(
-            make='Bernafon',
-            family='ZERENA 9',
-            model='B 105'
-        )
-        self.assertEqual(z9.price_gross, 8100)
-
-        # new price of Audibel A4 IQ GOLD ITE should be 5400
-        a4 = Hearing_Aid_Stock.objects.get(
-            make='Audibel',
-            family='A4 IQ GOLD',
-            model='ITE'
-        )
-        self.assertEqual(a4.price_gross, 5400)
-
         szoi_all = SZOI_File_Usage.objects.all()
         szoi = szoi_all.first()
         # should be one SZOI_File_Usage instance
@@ -1796,9 +1643,6 @@ class TestSZOI_UsageCreate(TestCase):
 
         # there should be 8 new HA Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.ha_szoi_new.all().count(), 8)
-
-        # there should be 2 updated HA Stock associated with SZOI_File_Usage instance
-        self.assertEqual(szoi.ha_szoi_updated.all().count(), 2)
 
         errors = SZOI_Errors.objects.all()
         # should create 0 SZOI_Errors instances
@@ -1837,22 +1681,6 @@ class TestSZOI_UsageCreate(TestCase):
         self.assertRedirects(response, expected_url,
                              status_code=302, target_status_code=200)
 
-        # new price of Audioservice WKŁADKA USZNA MIĘKKA KOMFORT should be 3
-        a1 = Other_Item_Stock.objects.get(
-            make='Audioservice',
-            family='WKŁADKA USZNA',
-            model='MIĘKKA KOMFORT',
-        )
-        self.assertEqual(a1.price_gross, 3)
-
-        # new price of Phonak ROGER CLIP-ON MIC + 2 X ROGER X (03) should be 4
-        p1 = Other_Item_Stock.objects.get(
-            make='Phonak',
-            family='PHONAK ROGER',
-            model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
-        )
-        self.assertEqual(p1.price_gross, 4)
-
         szoi_all = SZOI_File_Usage.objects.all()
         szoi = szoi_all.first()
 
@@ -1861,9 +1689,6 @@ class TestSZOI_UsageCreate(TestCase):
 
         # there should be 15 new Other associated with SZOI_File_Usage instance
         self.assertEqual(szoi.other_szoi_new.all().count(), 15)
-
-        # there should be 2 updated Other Stock associated with SZOI_File_Usage instance
-        self.assertEqual(szoi.other_szoi_updated.all().count(), 2)
 
         errors = SZOI_Errors.objects.all()
         # should create 0 SZOI_Errors instances

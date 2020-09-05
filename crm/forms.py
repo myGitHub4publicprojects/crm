@@ -40,8 +40,7 @@ class DeviceForm(forms.Form):
 class Hearing_Aid_StockForm(forms.ModelForm):
 	class Meta:
 		model = Hearing_Aid_Stock
-		fields = ['make', 'family', 'model',
-                'pkwiu_code', 'vat_rate', 'price_gross']
+		fields = ['make', 'family', 'model']
 
 	def clean(self):
     	# save only capitalized make, family and model names
@@ -61,8 +60,7 @@ class Hearing_Aid_StockForm(forms.ModelForm):
 class Other_Item_StockForm(forms.ModelForm):
 	class Meta:
 		model = Other_Item_Stock
-		fields = ['make', 'family', 'model',
-					'pkwiu_code', 'vat_rate', 'price_gross']
+		fields = ['make', 'family', 'model']
 
 	def clean(self):
     	# save only capitalized make, family and model names

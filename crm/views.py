@@ -270,8 +270,7 @@ def store(request):
 				make=ha_make,
 				family=ha_family,
 				model=ha_model,
-				ear=ear,
-				pkwiu_code='26.60.14')
+				ear=ear)
 			hearing_aid.save()
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
@@ -289,8 +288,7 @@ def store(request):
 				make=ha_make,
 				family=ha_family,
 				model=ha_model,
-				ear=ear,
-				pkwiu_code='26.60.14')
+				ear=ear)
 			hearing_aid.save()
 			if request.POST.get(ear + '_purchase_date'):
 				hearing_aid.purchase_date = request.POST[ear + '_purchase_date']
@@ -351,8 +349,7 @@ def updating(request, patient_id):
 									make=ha_make,
 									family=ha_family,
 									model=ha_model,
-									ear=ear,
-									pkwiu_code='26.60.14')
+									ear=ear)
 			
 
 			new_action.append('Dodano ' + pl_side + ' aparat ' + 
@@ -381,8 +378,7 @@ def updating(request, patient_id):
 											make=ha_make, 
 											family=ha_family,
 											model=ha_model,
-											ear=ear,
-                                    		pkwiu_code='26.60.14')
+											ear=ear)
 			new_action.append('Dodano ' + pl_side + ' aparat ' +
                             hearing_aid.make + ' ' + hearing_aid.family +
                             ' ' + hearing_aid.model + '.')
@@ -871,15 +867,9 @@ class SZOI_UsageCreate(CreateView):
 			for ha_new in devices['ha_new']:
 				ha_new.szoi_new = s
 				ha_new.save()
-			for ha_update in devices['ha_update']:
-				ha_update.szoi_updated = s
-				ha_update.save()
 			for o_new in devices['other_new']:
 				o_new.szoi_new = s
 				o_new.save()
-			for o_update in devices['other_update']:
-				o_update.szoi_updated = s
-				o_update.save()
 
 			return redirect('crm:szoi_usage_detail', s.id)
 
