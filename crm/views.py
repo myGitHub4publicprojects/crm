@@ -30,8 +30,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
-from .utils import (get_devices, process_device_formset_invoice,
-                    process_device_formset_pcpr, get_finance_context)
+from .utils import get_devices
 from .stock_updater import stock_update
 import json, decimal
 today = tz.now()

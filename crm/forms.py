@@ -22,16 +22,6 @@ class DeviceForm(forms.Form):
 	# eg. systemy wspomagające słyszenie, wkładka uszna, WIN
 	model = forms.CharField(max_length=120)
  	# eg. ROGER CLIP-ON MIC + 2, twarda, 102
-	price_gross = forms.DecimalField(max_digits=8, decimal_places=2)
-	VAT_RATE_CHOICES = (
-                    ('zwolniona', 'zwolniona'),
-                    ('0', '0'),
-                    ('5', '5'),
-                    ('8', '8'),
-                    ('23', '23')
-        )
-	vat_rate = forms.ChoiceField(choices=VAT_RATE_CHOICES)
-	pkwiu_code = forms.CharField(max_length=20)
 	quantity = forms.IntegerField()
 	ear = forms.ChoiceField(choices=(
 		('left', 'left'), ('right', 'right'), ('both', 'both')))
