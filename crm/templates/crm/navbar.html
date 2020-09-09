@@ -27,11 +27,6 @@
                 <button class="btn btn-outline-success my-2 my-sm-0 text-white">WYSZUKIWARKA</button>
             </a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'crm:towary' %}">
-                <button class="btn btn-outline-success my-2 my-sm-0 text-white">TOWARY</button>
-            </a>
-        </li>
         {% if request.user.is_superuser %}
         <li class="nav-item">
             <a class="nav-link" href="{% url 'crm:szoi_list' %}">

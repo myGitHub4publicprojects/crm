@@ -18,11 +18,9 @@ from django.forms.widgets import Textarea
 from django.forms.models import modelform_factory
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import (PatientForm, DeviceForm,
-                    Hearing_Aid_StockForm, Other_Item_StockForm,
-                    SZOI_Usage_Form)
+from .forms import (PatientForm, DeviceForm, Hearing_Aid_StockForm, SZOI_Usage_Form)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
-                    Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
+                    Hearing_Aid, Hearing_Aid_Stock,
                     NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
 					Reminder_PCPR,  Reminder_NFZ_Confirmed,
                     SZOI_File, SZOI_File_Usage)
@@ -556,10 +554,26 @@ def updating(request, patient_id):
 		reminder.active = False
 		reminder.save()
 
+	if request.POST.get('patient_activate'):
+		patient.active = True
+		patient.save()
+		NewInfo.objects.create(	patient=patient,
+                          		note='aktywacja - klient w trakcie zakupu',
+								audiometrist=audiometrist)
+
+	if request.POST.get('patient_deactivate'):
+		patient.active = False
+		patient.save()
+		NewInfo.objects.create(	patient=patient,
+                          		note='deaktywacja - klient poza procesem zakupu',
+								audiometrist=audiometrist)
+
 	if new_action:
 		NewInfo.objects.create(	patient=patient,
                           		note=' '.join(new_action),
 								audiometrist=audiometrist)
+
+
 	messages.success(request, "Zaktualizowano dane")
 
 	return HttpResponseRedirect(reverse('crm:edit', args=(patient_id,)))
@@ -766,56 +780,6 @@ class HAStockDelete(DeleteView):
 	def dispatch(self, *args, **kwargs):
 		return super(HAStockDelete, self).dispatch(*args, **kwargs)
 
-
-class OtherStockCreate(CreateView):
-	model = Other_Item_Stock
-	form_class = Other_Item_StockForm
-
-	@method_decorator(login_required)
-	def dispatch(self, *args, **kwargs):
-		return super(OtherStockCreate, self).dispatch(*args, **kwargs)
-
-
-class OtherStockUpdate(UpdateView):
-	model = Other_Item_Stock
-	form_class = Other_Item_StockForm
-	template_name = 'crm/update_other_stock.html'
-
-	@method_decorator(login_required)
-	def dispatch(self, *args, **kwargs):
-		return super(OtherStockUpdate, self).dispatch(*args, **kwargs)
-
-
-class OtherStockList(ListView):
-	model = Other_Item_Stock
-	def get(self, request, *args, **kwargs):
-		self.results = Other_Item_Stock.objects.all()
-		query = request.GET.get('q', '')
-		if query:
-			qs = Other_Item_Stock.objects.filter(
-				Q(make__icontains=query) |
-				Q(family__icontains=query) |
-				Q(model__icontains=query)
-				).distinct()
-			self.results = qs
-
-		return super(OtherStockList, self).get(request, *args, **kwargs)
-
-	def get_context_data(self, **kwargs):
-		return super(OtherStockList, self).get_context_data(results=self.results, **kwargs)
-
-	@method_decorator(login_required)
-	def dispatch(self, *args, **kwargs):
-		return super(OtherStockList, self).dispatch(*args, **kwargs)
-
-
-class OtherStockDelete(DeleteView):
-	model = Other_Item_Stock
-	success_url = reverse_lazy('crm:towary')
-
-	@method_decorator(login_required)
-	def dispatch(self, *args, **kwargs):
-		return super(OtherStockDelete, self).dispatch(*args, **kwargs)
 
 
 class SZOICreate(CreateView):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item, Other_Item_Stock
+from .models import Hearing_Aid_Stock, Hearing_Aid
 
 def get_devices(model):
     """ returns a dict of devices in the following form:

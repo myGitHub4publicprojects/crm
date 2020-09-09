@@ -11,8 +11,7 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 from django.core.files import File
 from crm.stock_updater import stock_update
-from crm.models import (SZOI_File, Hearing_Aid_Stock, Other_Item_Stock, SZOI_File_Usage,
-    SZOI_Errors)
+from crm.models import (SZOI_File, Hearing_Aid_Stock, SZOI_File_Usage,SZOI_Errors)
 
 
 class Test_Stock_Update(TestCase):
@@ -32,9 +31,6 @@ class Test_Stock_Update(TestCase):
         # should create 0 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 0)
 
-        # should create no Other_Item_Stock
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
-
         f.close()
 
 
@@ -49,9 +45,6 @@ class Test_Stock_Update(TestCase):
         res = stock_update(szoi_file, szoi_file_usage)
         # should create 10 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 10)
-
-        # should create no Other_Item_Stock
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
         # should return 10 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 10)
@@ -72,9 +65,6 @@ class Test_Stock_Update(TestCase):
         # should create 10 Hearing_Aid_Stock, should be 11 in total
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 11)
 
-        # should create no Other_Item_Stock
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
-
         # should return 10 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 10)
 
@@ -94,9 +84,6 @@ class Test_Stock_Update(TestCase):
 
         # should create 7 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 7)
-
-        # should create no Other_Item_Stock
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
         # should return 7 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 7)
@@ -133,8 +120,6 @@ class Test_Stock_Update(TestCase):
         # should create 9 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 9)
 
-        # should create no Other_Item_Stock
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
         # should return 9 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 9)
@@ -188,24 +173,6 @@ class Test_Stock_Update(TestCase):
 
         # should return 1131 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 1131)
-
-        f.close()
-
-    def test_stock_update_create_17_OtherDevices(self):
-        '''should create 17 Other_Item_Stock devices'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoifull.xls'
-        f = open(test_file)
-       # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
-        szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
-
-        res = stock_update(szoi_file, szoi_file_usage)
-
-        # should create 17 Other_Item_Stock
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 17)
-
-        # should return 17 Other_Item_Stock instances
-        self.assertEqual(len(res['other_new']), 17)
 
         f.close()
 

@@ -20,7 +20,7 @@ from django.utils import timezone as tz
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
-                     Hearing_Aid, Hearing_Aid_Stock, Other_Item, Other_Item_Stock,
+                     Hearing_Aid, Hearing_Aid_Stock,
                      NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed,
                         SZOI_File, SZOI_File_Usage, SZOI_Errors)
@@ -668,6 +668,48 @@ class TestUpdatingView(TestCase):
         self.assertEqual(str(patient1.date_of_birth), '2000-01-01')
         self.assertEqual(patient1.notes, 'summary')
         self.assertEqual(new_info.note, 'new note')
+
+    def test_activate_patient(self):
+        # should change active to true and add note
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        patient1.active = False
+        patient1.save()
+        data = self.data.copy()
+        data['patient_activate'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+        
+        new_info = NewInfo.objects.get(id=1)
+        self.assertEqual(
+            new_info.note, 'aktywacja - klient w trakcie zakupu')
+        patient1.refresh_from_db()
+        self.assertTrue(patient1.active)
+
+    def test_deactivate_patient(self):
+        # should change active to false and add note
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['patient_deactivate'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        new_info = NewInfo.objects.get(id=1)
+        self.assertEqual(
+            new_info.note, 'deaktywacja - klient poza procesem zakupu')
+        patient1.refresh_from_db()
+        self.assertFalse(patient1.active)
 
     # test adding note or action by other audiometrist
     # should show who created and who added new note
@@ -1587,9 +1629,6 @@ class TestSZOI_UsageCreate(TestCase):
         # should be 10 HA Stock instances
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 10)
 
-        # should be 0 Other instances
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
-
         # there should be 10 new HA Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.ha_szoi_new.all().count(), 10)
 
@@ -1638,57 +1677,9 @@ class TestSZOI_UsageCreate(TestCase):
         # should be 10 HA Stock instances
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 10)
 
-        # should be 0 Other instances
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
         # there should be 8 new HA Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.ha_szoi_new.all().count(), 8)
-
-        errors = SZOI_Errors.objects.all()
-        # should create 0 SZOI_Errors instances
-        self.assertEqual(errors.count(), 0)
-
-        f.close()
-
-    def test_szoi_usage_update_other(self):
-        '''there are 2 preexisting other devices'''
-        mixer.blend('crm.Other_Item_Stock',
-                    make='Audioservice',
-                    family='WKŁADKA USZNA',
-                    model='TWARDA',
-                    )
-        mixer.blend('crm.Other_Item_Stock',
-                    make='Phonak',
-                    family='PHONAK ROGER',
-                    model='ROGER CLIP-ON MIC + 2 X ROGER X (03)',
-                    )
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi_full2.xls'
-        # create SZOI_File instance with the above file
-        f = open(test_file)
-        s = SZOI_File.objects.create(file=File(open(test_file)))
-
-        self.client.login(username='john', password='glassonion')
-        url = reverse('crm:szoi_usage_create')
-        expected_url = reverse('crm:szoi_usage_detail', args=(1,))
-        data = {
-            # form data
-            'szoi_file': s.id,
-        }
-
-        response = self.client.post(url, data, follow=True)
-        # should give code 200 as follow is set to True
-        assert response.status_code == 200
-        self.assertRedirects(response, expected_url,
-                             status_code=302, target_status_code=200)
-
-        szoi_all = SZOI_File_Usage.objects.all()
-        szoi = szoi_all.first()
-
-        # should be 10 Other instances
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 17)
-
-        # there should be 15 new Other associated with SZOI_File_Usage instance
-        self.assertEqual(szoi.other_szoi_new.all().count(), 15)
 
         errors = SZOI_Errors.objects.all()
         # should create 0 SZOI_Errors instances
@@ -1725,9 +1716,6 @@ class TestSZOI_UsageCreate(TestCase):
 
         # should be 7 HA Stock instances
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 7)
-
-        # should be 0 Other instances
-        self.assertEqual(Other_Item_Stock.objects.all().count(), 0)
 
         # there should be 7 new HA Stock associated with SZOI_File_Usage instance
         self.assertEqual(szoi.ha_szoi_new.all().count(), 7)

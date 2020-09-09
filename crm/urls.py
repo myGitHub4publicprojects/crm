@@ -25,19 +25,6 @@ urlpatterns = [
 	url(r'^(?P<patient_id>[0-9]+)/deleteconfirm/$', views.deleteconfirm, name='deleteconfirm'),
 	url(r'^(?P<patient_id>[0-9]+)/delete/$', views.delete_patient, name='delete'),
 
-    url(r'^towary/$', login_required(TemplateView.as_view(
-        template_name="crm/towary.html")), name='towary'),
-    url(r'^ha_list/$', views.HAStockList.as_view(), name='ha_list'),
-    url(r'^add_ha/$', views.HAStockCreate.as_view(), name='add_ha'),
-    url(r'^(?P<pk>[0-9]+)/edit_ha/$', views.HAStockUpdate.as_view(), name='edit_ha'),
-    url(r'^(?P<pk>[0-9]+)/delete_ha/$',
-        views.HAStockDelete.as_view(), name='delete_ha'),
-    url(r'^other_list/$', views.OtherStockList.as_view(), name='other_list'),
-    url(r'^add_other/$', views.OtherStockCreate.as_view(), name='add_other'),
-    url(r'^(?P<pk>[0-9]+)/edit_other/$',
-        views.OtherStockUpdate.as_view(), name='edit_other'),
-    url(r'^(?P<pk>[0-9]+)/delete_other/$',
-        views.OtherStockDelete.as_view(), name='delete_other'),
     
     url(r'^szoi_create/$',
             views.SZOICreate.as_view(), name='szoi_create'),

@@ -2,7 +2,7 @@
 import traceback
 import xlrd
 
-from .models import Hearing_Aid_Stock, Hearing_Aid, Other_Item, Other_Item_Stock, SZOI_Errors
+from .models import Hearing_Aid_Stock, Hearing_Aid, SZOI_Errors
 
 def get_line_from_8th(f):
     '''accepts a path to an xls file, yields a list (9 elements, 8 strings and 1 float),

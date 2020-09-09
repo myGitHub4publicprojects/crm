@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import datetime, os
 
 from django.db import models
+from django.utils import timezone as tz
 from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,7 +12,7 @@ from django.core.urlresolvers import reverse
 from .validators import xls_only
 
 class SZOI_File(models.Model):
-	'''File uploaded from SZOI and containing all stock approved by NFZ'''
+    	'''File uploaded from SZOI and containing all stock approved by NFZ'''
 	file = models.FileField(upload_to='documents/', validators=[xls_only])
 	uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -59,6 +60,8 @@ class Patient(models.Model):
 	city = models.CharField(max_length=120, null=True, blank=True)
 	zip_code = models.CharField(max_length=6, null=True, blank=True)
 	NIP = models.CharField(max_length=20, null=True, blank=True)
+	active = models.BooleanField(default=True) # in the sale process
+	requires_action = models.BooleanField(default=True)
 
 	def get_address(self):
 		number = self.house_number
@@ -129,7 +132,7 @@ class Our_Device(models.Model):
 
 class Hearing_Aid_Stock(Device):
 	'''Company hearing aids that are offered or were offered'''
-	added = models.DateField(default=datetime.date.today())
+	added = models.DateField(default=tz.now())
 	szoi_new = models.ForeignKey(
             SZOI_File_Usage, related_name="ha_szoi_new", null=True, blank=True)
 	szoi_updated = models.ForeignKey(
@@ -147,22 +150,6 @@ class Hearing_Aid(Device, Our_Device):
 	purchase_date = models.DateField(null=True, blank=True)
 	our = models.BooleanField(default=True)
 	# purchased from our company
-
-
-class Other_Item_Stock(Device):
-	'''Company devices that are offered or were offered'''
-	added = models.DateField(default=datetime.date.today())
-	szoi_new = models.ForeignKey(
-            SZOI_File_Usage, related_name="other_szoi_new", null=True, blank=True)
-	szoi_updated = models.ForeignKey(
-		SZOI_File_Usage, related_name="other_szoi_updated", null=True, blank=True)
-
-	def get_absolute_url(self):
-		return reverse('crm:edit_other', kwargs={'pk': self.pk})
-
-
-class Other_Item(Device, Our_Device):
-    pass
 
 
 class NFZ(models.Model):
@@ -185,14 +172,16 @@ class ReminderManager(models.Manager):
     def active(self):
         return super(ReminderManager, self).filter(
             active=True,
-            activation_date__lte=datetime.date.today())
+            activation_date__lte=tz.now())
 
+
+def in_60_days():
+    return tz.now() + tz.timedelta(days=1)
 
 class Reminder(models.Model):
 	active = models.BooleanField(default=True)
 	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
-	activation_date = models.DateField(
-		default=datetime.date.today() + datetime.timedelta(days=60))
+	activation_date = models.DateField(default=in_60_days)
 	objects = ReminderManager()
 
 	class Meta:
