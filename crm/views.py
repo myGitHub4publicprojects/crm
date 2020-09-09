@@ -79,6 +79,16 @@ def advancedsearch(request):
 		patients_id = [i.patient.id for i in HA_queryset]
 		return Patient.objects.filter(id__in=patients_id)
 
+    # search by patient.active
+	active_patients = request.GET.get('only_active_patients')
+	if active_patients:
+		patient_list = patient_list & Patient.objects.filter(active=True)
+
+    # search by patient.requires_action
+	active_patients = request.GET.get('only_requiring_action')
+	if active_patients:
+		patient_list = patient_list & Patient.objects.filter(requires_action=True)
+
     # search by ha make
 	ha_make = request.GET.get('ha_make')
 	if ha_make:

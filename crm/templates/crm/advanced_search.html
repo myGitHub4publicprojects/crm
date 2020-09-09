@@ -22,6 +22,10 @@
 		</ul>
 	</p>
 	<hr>
+	Tylko aktywni (w trakcie procesu zakupowego): <input type="checkbox" name="only_active_patients">
+	<hr>
+	Tylko wymagający kontaktu: <input type="checkbox" name="only_requiring_action">
+	<hr>
 
 	<p>
 		Marka aparatu:
@@ -143,6 +147,8 @@
 		<th>
 			<a href="?order_by=create_date">Data dodania</a>
 		</th>
+		<th>miejscowość</th>
+		<th>ostatnia notatka i data</th>
 	</tr>
 	{% for patient in patient_list %}
 	<tr>
@@ -154,6 +160,8 @@
 		</td>
 		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
 		<td>{{ patient.create_date|date:'Y m d' }}</td>
+		<td>{{ patient.location }}</td>
+		<td>{{ patient.newinfo_set.last.timestamp|date:'Y m d' }} {{ patient.newinfo_set.last.note }}</td>
 
 	</tr>
 

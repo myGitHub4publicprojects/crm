@@ -164,6 +164,20 @@ class TestAdvancedSearchView(TestCase):
         response_patient_first_name = response.context['patient_list'][0].first_name
         self.assertEqual(response_patient_first_name, 'Adam')
 
+    def test_search_active(self):
+        '''should return 2 patients .active'''
+        for id in [3, 4]:
+            p = Patient.objects.get(id=id)
+            p.active = False
+            p.save()
+        self.client.login(username='john', password='glassonion')
+        data = {'only_active_patients': True}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 2)
+        response_patient_first_name = response.context['patient_list'][0].first_name
+        self.assertEqual(response_patient_first_name, 'Adam')
+
     def test_search_location(self):
         '''should return one patient with location: Mosina'''
         self.client.login(username='john', password='glassonion')
@@ -173,6 +187,66 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
         response_patient_location = response.context['patient_list'][0].location
         self.assertEqual(response_patient_location, 'Mosina')
+
+    def test_search_location_and_active(self):
+        '''should return one active patient with location: Rakoniewice'''
+        for id in [3, 4]:
+            p = Patient.objects.get(id=id)
+            p.active = False
+            p.save()
+        p2 = Patient.objects.get(id=2)
+        p2.location = 'Rakoniewice'
+        p2.save()
+        self.client.login(username='john', password='glassonion')
+        data = {'loc': 'Rakoniewice',
+                'only_active_patients': True}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+        response_patient_location = response.context['patient_list'][0].location
+        self.assertEqual(response_patient_location, 'Rakoniewice')
+
+    def test_search_location_and_requires_action(self):
+        '''should return one patient requires_action=True with location: Mosina'''
+        for id in [2, 3]:
+            p = Patient.objects.get(id=id)
+            p.requires_action = False
+            p.save()
+        self.client.login(username='john', password='glassonion')
+        data = {'loc': 'Mosina',
+                'only_requiring_action': True}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+        response_patient_location = response.context['patient_list'][0].location
+        self.assertEqual(response_patient_location, 'Mosina')
+
+    def test_search_location_and_active_and_requires_action(self):
+        '''should return one patient, active, requires_action with location: Mosina
+        patient who fullfills this criteria is id=1'''
+        for id in [2, 3]:
+            p = Patient.objects.get(id=id)
+            p.requires_action = False
+            p.save()
+        p1 = Patient.objects.get(id=1)
+        p1.location = 'Mosina'
+        p1.save()
+        for id in [3, 4]:
+            p = Patient.objects.get(id=id)
+            p.active = False
+            p.save()
+        self.client.login(username='john', password='glassonion')
+        data = {'loc': 'Mosina',
+                'only_requiring_action': True,
+                'only_active_patients': True
+                }
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+        response_patient_location = response.context['patient_list'][0].location
+        self.assertEqual(response_patient_location, 'Mosina')
+        response_patient_first_name = response.context['patient_list'][0].first_name
+        self.assertEqual(response_patient_first_name, 'Adam')
 
     def test_search_hearing_aid_make(self):
         '''should return patients wearing hearing aids by Bernafon (2)'''
