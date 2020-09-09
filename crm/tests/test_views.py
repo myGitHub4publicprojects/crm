@@ -711,6 +711,48 @@ class TestUpdatingView(TestCase):
         patient1.refresh_from_db()
         self.assertFalse(patient1.active)
 
+    def test_patient_requires_action(self):
+        # should change requires_action to true and add note
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        patient1.requires_action = False
+        patient1.save()
+        data = self.data.copy()
+        data['requires_action'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        new_info = NewInfo.objects.get(id=1)
+        self.assertEqual(
+            new_info.note, 'klient wymaga uwagi')
+        patient1.refresh_from_db()
+        self.assertTrue(patient1.requires_action)
+
+    def test_cancel_requires_action(self):
+        # should change requires_action to false and add note
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        data = self.data.copy()
+        data['cancel_requires_action'] = True
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        new_info = NewInfo.objects.get(id=1)
+        self.assertEqual(
+            new_info.note, 'deaktywacja klient wymaga uwagi')
+        patient1.refresh_from_db()
+        self.assertFalse(patient1.requires_action)
+
     # test adding note or action by other audiometrist
     # should show who created and who added new note
     def test_add_new_note_by_other_audiometrist(self):

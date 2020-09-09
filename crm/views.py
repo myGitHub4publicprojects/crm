@@ -568,6 +568,19 @@ def updating(request, patient_id):
                           		note='deaktywacja - klient poza procesem zakupu',
 								audiometrist=audiometrist)
 
+	if request.POST.get('requires_action'):
+		patient.requires_action = True
+		patient.save()
+		NewInfo.objects.create(	patient=patient,
+                          		note='klient wymaga uwagi',
+								audiometrist=audiometrist)
+
+	if request.POST.get('cancel_requires_action'):
+		patient.requires_action = False
+		patient.save()
+		NewInfo.objects.create(	patient=patient,
+                          		note='deaktywacja klient wymaga uwagi',
+								audiometrist=audiometrist)
 	if new_action:
 		NewInfo.objects.create(	patient=patient,
                           		note=' '.join(new_action),
