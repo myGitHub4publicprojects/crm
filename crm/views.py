@@ -65,14 +65,18 @@ def index(request):
 @login_required
 def advancedsearch(request):
 	patient_list = Patient.objects.all().order_by(Lower('last_name'))
+	results = False
 	lname = request.GET.get('lname')
 	if lname:
+		results = True
 		patient_list = patient_list.filter(last_name__icontains=lname)
 	fname = request.GET.get('fname')
 	if fname:
+		results = True
 		patient_list = patient_list.filter(first_name__icontains=fname)
 	loc = request.GET.get('loc')
 	if loc:
+		results = True
 		patient_list = patient_list.filter(location=loc)
 
 	def patients_from_ha(HA_queryset):
@@ -82,27 +86,32 @@ def advancedsearch(request):
     # search by patient.active
 	active_patients = request.GET.get('only_active_patients')
 	if active_patients:
+		results = True
 		patient_list = patient_list & Patient.objects.filter(active=True)
 
     # search by patient.requires_action
 	active_patients = request.GET.get('only_requiring_action')
 	if active_patients:
+		results = True
 		patient_list = patient_list & Patient.objects.filter(requires_action=True)
 
     # search by ha make
 	ha_make = request.GET.get('ha_make')
 	if ha_make:
+		results = True
 		all_ha_make = Hearing_Aid.objects.filter(make=ha_make, current=True)
 		patient_list = patient_list & patients_from_ha(all_ha_make)
 	# search by ha make family and model
 	ha_make_family_model = request.GET.get('ha_make_family_model')
 	if ha_make_family_model:
+		results = True
 		ha_make, ha_family, ha_model = ha_make_family_model.split('_')
 		all_such_has = Hearing_Aid.objects.filter(make=ha_make, model=ha_model, family=ha_family)
 		patient_list = patient_list & patients_from_ha(all_such_has)
 
 	# search by dates of purchase
 	if request.GET.get('s_purch_date') or request.GET.get('e_purch_date'):
+		results = True
 		ha_purchase_start = request.GET.get('s_purch_date') or '1990-01-01'
 		ha_purchase_end = request.GET.get('e_purch_date') or str(datetime.datetime.today().date())
 		all_such_has = Hearing_Aid.objects.filter(
@@ -112,6 +121,7 @@ def advancedsearch(request):
 
 	# search by dates of NFZ confirmed - only active not prevoius
 	if request.GET.get('s_nfz_date') or request.GET.get('e_nfz_date'):
+		results = True
 		nfz_start = request.GET.get('s_nfz_date') or '1990-01-01'
 		nfz_end = request.GET.get(
 			'e_nfz_date') or str(datetime.datetime.today().date())
@@ -121,6 +131,7 @@ def advancedsearch(request):
 
 	# search by dates of pcpr estimates - only active not prevoius
 	if request.GET.get('s_pcpr_date') or request.GET.get('e_pcpr_date'):
+		results = True
 		if request.GET.get('s_pcpr_date'):
 			pcpr_start = request.GET.get('s_pcpr_date') + "T00:00:00+03:00"
 		else:
@@ -141,6 +152,7 @@ def advancedsearch(request):
 
 	# search by dates of invoice - only active not prevoius
 	if request.GET.get('s_invoice_date') or request.GET.get('e_invoice_date'):
+		results = True
 		if request.GET.get('s_invoice_date'):
 			invoice_start = request.GET.get('s_invoice_date') + "T00:00:30+03:00"
 		else:
@@ -172,7 +184,8 @@ def advancedsearch(request):
 
 	context = {	'patient_list': patient_list,
 				'locations': Patient.locations,
-				'ha_list': get_devices(Hearing_Aid_Stock)}
+				'ha_list': get_devices(Hearing_Aid_Stock),
+				'results': results}
 	return render(request, 'crm/advanced_search.html', context)
 
 

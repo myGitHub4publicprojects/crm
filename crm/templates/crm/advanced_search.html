@@ -1,9 +1,9 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<h1>Wyszukiwanie zaawansowane:</h1>
-
-<form method="GET" action="" class="mb-3">
+<h3>Wyszukiwanie zaawansowane:</h3>
+<button id="hideToggleButton">pokaż kryteria wyszukiwania</button>
+<form method="GET" action="" class="mb-3 {% if results %}d-none{% endif %}" id='searchForm'>
 	<input type="search" name="lname" placeholder="nazwisko"><br>
 	<hr>
 	<input type="search" name="fname" placeholder="imie"><br>
@@ -130,8 +130,6 @@
 
 	<input type="submit" value="Szukaj" class="btn btn-primary btn-lg">
 </form>
-<h2>Wyniki wyszukiwania:</h2>
-
 {% if patient_list %}
 <table class="table">
 	<tr>
@@ -153,10 +151,12 @@
 	{% for patient in patient_list %}
 	<tr>
 		<td>
-			<a href="{% url 'crm:edit' patient.id %}">{{ patient.last_name }}</a>
+			<a href="{% url 'crm:edit' patient.id %}" 
+			class="{% if patient.active %}bg-success{% endif %}{% if patient.requires_action %} border border-danger{% endif %}">{{ patient.last_name }}</a>
 		</td>
 		<td>
-			<a href="{% url 'crm:edit' patient.id %}">{{ patient.first_name }}</a>
+			<a href="{% url 'crm:edit' patient.id %}"
+			class="{% if patient.active %}bg-success{% endif %}{% if patient.requires_action %} border border-danger{% endif %}">{{ patient.first_name }}</a>
 		</td>
 		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
 		<td>{{ patient.create_date|date:'Y m d' }}</td>
@@ -188,15 +188,10 @@
 <p>Nie ma takich pacjentów</p>
 {% endif %}
 
-
-
-
-
-
-
-
-
-
-
-
+<script>
+	var toggleBtn = document.getElementById('hideToggleButton');
+	toggleBtn.addEventListener('click', function(){
+		$("#searchForm").toggleClass("d-none");
+	})
+</script>
 {% endblock content %}
