@@ -28,6 +28,10 @@
 			<small class="text-muted">Nr tel (bez spacji): </small><br>
 			<input id="patient_tel" type="tel" pattern="[0-9]{1,}" name="usrtel" value="{{ patient.phone_no }}" required>
 			</div>
+			<div class="col-xl">
+				<small class="text-muted">Aktywny: </small><br>
+				<input type="checkbox" name="patient_activate" {% if patient.active %} checked {% endif %}>
+			</div>
 		</div>
 
 
@@ -68,12 +72,6 @@
 				<input type="text" name="zip_code"
 					{% if patient.zip_code %} value="{{ patient.zip_code }}" {% endif %}
 				class="font-weight-bold w-75">
-				</div>
-				<div class="col-xl">
-				<small class="text-muted">NIP: </small>
-				<br>
-				<input type="text" name="NIP" {% if patient.NIP %} value="{{ patient.NIP }}" {% endif %}
-				class="font-weight-bold w-100">
 				</div>
 				</div>
 			</div>

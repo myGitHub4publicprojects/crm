@@ -325,7 +325,6 @@ def updating(request, patient_id):
 	patient.apartment_number = request.POST['apartment_number']
 	patient.city = request.POST['city']
 	patient.zip_code = request.POST['zip_code']
-	patient.NIP = request.POST['NIP']
 
 	update_list = ['first_name', 'last_name', 'phone_no', 'location', 'notes',
                 'street', 'house_number', 'apartment_number', 'zip_code', 'city', 'NIP']
@@ -564,28 +563,29 @@ def updating(request, patient_id):
 		reminder.active = False
 		reminder.save()
 
-	if request.POST.get('patient_activate'):
+	if request.POST.get('patient_activate') == 'on' and not patient.active:
 		patient.active = True
 		patient.save()
 		NewInfo.objects.create(	patient=patient,
-                          		note='aktywacja - klient w trakcie zakupu',
-								audiometrist=audiometrist)
+									note='aktywacja - klient w trakcie zakupu',
+									audiometrist=audiometrist)
 
-	if request.POST.get('patient_deactivate'):
+	if request.POST.get('patient_activate') == None and patient.active:
+		print('here')
 		patient.active = False
 		patient.save()
 		NewInfo.objects.create(	patient=patient,
-                          		note='deaktywacja - klient poza procesem zakupu',
-								audiometrist=audiometrist)
+									note='deaktywacja - klient poza procesem zakupu',
+									audiometrist=audiometrist)
 
-	if request.POST.get('requires_action'):
+	if request.POST.get('requires_action') == 'on' and not patient.requires_action:
 		patient.requires_action = True
 		patient.save()
 		NewInfo.objects.create(	patient=patient,
                           		note='klient wymaga uwagi',
 								audiometrist=audiometrist)
 
-	if request.POST.get('cancel_requires_action'):
+	if request.POST.get('requires_action') == None and patient.requires_action:
 		patient.requires_action = False
 		patient.save()
 		NewInfo.objects.create(	patient=patient,

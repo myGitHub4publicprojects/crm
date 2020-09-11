@@ -682,7 +682,9 @@ class TestUpdatingView(TestCase):
             'apartment_number': '2',
             'city': 'some_city',
             'zip_code': 'zip_c',
-            'NIP': '223322332'
+            'NIP': '223322332',
+            'patient_activate': 'on',
+            'requires_action': 'on'
             }
     def setUp(self):
         user_john = create_user()
@@ -750,7 +752,7 @@ class TestUpdatingView(TestCase):
         patient1.active = False
         patient1.save()
         data = self.data.copy()
-        data['patient_activate'] = True
+        data['patient_activate'] = 'on'
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -770,7 +772,8 @@ class TestUpdatingView(TestCase):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
-        data['patient_deactivate'] = True
+        print('patient active: ', patient1.active)
+        data.pop('patient_activate')
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -786,13 +789,12 @@ class TestUpdatingView(TestCase):
         self.assertFalse(patient1.active)
 
     def test_patient_requires_action(self):
-        # should change requires_action to true and add note
+        # should change requires_action from false to true and add note
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         patient1.requires_action = False
         patient1.save()
         data = self.data.copy()
-        data['requires_action'] = True
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -812,7 +814,7 @@ class TestUpdatingView(TestCase):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         data = self.data.copy()
-        data['cancel_requires_action'] = True
+        data.pop('requires_action')
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1068,6 +1070,8 @@ class TestUpdatingView(TestCase):
         data = self.data.copy()
         data['nfz_left_remove'] = True
         data['nfz_right_remove'] = True
+        data['patient_activate'] = 'on'
+        data['requires_action'] = 'on'
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
         response = self.client.post(url, data, follow=True)
@@ -1136,6 +1140,7 @@ class TestUpdatingView(TestCase):
         reminders = Reminder_PCPR.objects.all()
         self.assertEqual(reminders.count(), 2)
         self.assertEqual(reminders.filter(active=True).count(), 1)
+
     def test_remove_pcpr_estimates(self):
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
@@ -1154,6 +1159,8 @@ class TestUpdatingView(TestCase):
         Reminder_PCPR.objects.create(pcpr=p2)
         data = self.data.copy()
         data['pcpr_inactivate'] = True
+        data['patient_activate'] = 'on'
+        data['requires_action'] = 'on'
 
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
@@ -1220,6 +1227,8 @@ class TestUpdatingView(TestCase):
         Reminder_Invoice.objects.create(invoice=i2)
         data = self.data.copy()
         data['invoice_inactivate'] = True
+        data['patient_activate'] = 'on'
+        data['requires_action'] = 'on'
 
         url = reverse('crm:updating', args=(patient1.id,))
         expected_url = reverse('crm:edit', args=(1,))
