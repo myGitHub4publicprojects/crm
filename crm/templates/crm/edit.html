@@ -28,10 +28,7 @@
 			<small class="text-muted">Nr tel (bez spacji): </small><br>
 			<input id="patient_tel" type="tel" pattern="[0-9]{1,}" name="usrtel" value="{{ patient.phone_no }}" required>
 			</div>
-			<div class="col-xl{% if patient.active %} bg-success{% endif %}">
-				<small class="text-muted">Aktywny: </small><br>
-				<input type="checkbox" name="patient_activate" {% if patient.active %} checked {% endif %}>
-			</div>
+
 		</div>
 
 
@@ -75,8 +72,15 @@
 				</div>
 				</div>
 			</div>
+
+		</div>
+		<div class="row">
+			<div class="col-xl{% if patient.active %} bg-success{% endif %}">
+				<small >Aktywny: </small>
+				<input type="checkbox" name="patient_activate" {% if patient.active %} checked {% endif %}>
+			</div>
 			<div class="col-xl{% if patient.requires_action %} bg-danger{% endif %}">
-				<small class="text-muted">Wymagana akcja: </small><br>
+				<small >Wymagana akcja: </small>
 				<input type="checkbox" name="requires_action" {% if patient.requires_action %} checked {% endif %}>
 			</div>
 		</div>

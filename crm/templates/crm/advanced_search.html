@@ -1,7 +1,10 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<h3>Wyszukiwanie zaawansowane:</h3>
+<h3>Wyszukiwanie zaawansowane: 
+	<small class="text-muted">Legenda: 
+		<span class="border border-success">aktywny</span>, <span class="text-danger">!!!</span>- wymagane działanie</small>
+</h3>
 <button id="hideToggleButton">pokaż kryteria wyszukiwania</button>
 <form method="GET" action="" class="mb-3 {% if results %}d-none{% endif %}" id='searchForm'>
 	<input type="search" name="lname" placeholder="nazwisko"><br>
@@ -152,11 +155,12 @@
 	<tr>
 		<td>
 			<a href="{% url 'crm:edit' patient.id %}" 
-			class="{% if patient.active %}bg-success{% endif %}{% if patient.requires_action %} border border-danger{% endif %}">{{ patient.last_name }}</a>
+			class="{% if patient.active %}border border-success{% endif %}">{{ patient.last_name }}
+		</a>{% if patient.requires_action %}<span class="text-danger">!!!</span>{% endif %}
 		</td>
 		<td>
 			<a href="{% url 'crm:edit' patient.id %}"
-			class="{% if patient.active %}bg-success{% endif %}{% if patient.requires_action %} border border-danger{% endif %}">{{ patient.first_name }}</a>
+			class="{% if patient.active %}border border-success{% endif %}">{{ patient.first_name }}</a>
 		</td>
 		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
 		<td>{{ patient.create_date|date:'Y m d' }}</td>
