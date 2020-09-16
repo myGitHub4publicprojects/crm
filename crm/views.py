@@ -345,13 +345,7 @@ def updating(request, patient_id):
 		patient.date_of_birth=request.POST['bday']
 		update_list.append('date_of_birth')
 	patient.save(update_fields=update_list)
-
 	audiometrist = request.user
-	if request.POST.get('new_note'):
-		new_info = NewInfo(	patient=patient,
-							note=request.POST['new_note'],
-                    		audiometrist=audiometrist)
-		new_info.save()
 
 	new_action = []
 	for ear in ears:
@@ -588,7 +582,6 @@ def updating(request, patient_id):
 									audiometrist=audiometrist)
 
 	if request.POST.get('patient_activate') == None and patient.active:
-		print('here')
 		patient.active = False
 		patient.save()
 		NewInfo.objects.create(	patient=patient,
@@ -613,6 +606,10 @@ def updating(request, patient_id):
                           		note=' '.join(new_action),
 								audiometrist=audiometrist)
 
+	if request.POST.get('new_note'):
+		NewInfo.objects.create(	patient=patient,
+							note=request.POST['new_note'],
+                    		audiometrist=audiometrist)
 
 	messages.success(request, "Zaktualizowano dane")
 

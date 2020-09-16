@@ -856,6 +856,27 @@ class TestUpdatingView(TestCase):
         # audiometrist who added new note
         self.assertEqual(new_info.audiometrist, adam)
 
+    def test_add_new_note_and_activate_patient(self):
+        self.client.login(username='john', password='glassonion')
+        patient1 = Patient.objects.get(id=1)
+        patient1.active = False
+        patient1.save()
+        data = self.data.copy()
+        data['new_note'] = 'some new info'
+        url = reverse('crm:updating', args=(patient1.id,))
+        expected_url = reverse('crm:edit', args=(1,))
+        response = self.client.post(url, data, follow=True)
+        # should give code 200 as follow is set to True
+        assert response.status_code == 200
+        self.assertRedirects(response, expected_url,
+                             status_code=302, target_status_code=200)
+
+        patient1.refresh_from_db()
+        new_info1 = NewInfo.objects.get(id=1)
+        self.assertEqual(new_info1.note, 'aktywacja - klient w trakcie zakupu')
+        new_info2 = NewInfo.objects.get(id=2)
+        self.assertEqual(new_info2.note, 'some new info')
+
 
 
     def test_adding_hearing_aids_by_other_audiometrist(self):
