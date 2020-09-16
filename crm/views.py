@@ -551,7 +551,11 @@ def updating(request, patient_id):
 				reminder = Reminder_NFZ_Confirmed.objects.get(nfz_confirmed=n)
 				reminder.active = False
 				reminder.save()
-		
+
+		# inactivate Patient's .active and .requires_action fields
+		patient.active=False
+		patient.requires_action=False
+		patient.save()
 
 		# remove PCPR_Estimate from currently active
 	if request.POST.get('pcpr_inactivate'):
@@ -576,7 +580,7 @@ def updating(request, patient_id):
 		reminder.active = False
 		reminder.save()
 
-	if request.POST.get('patient_activate') == 'on' and not patient.active:
+	if request.POST.get('patient_activate') == 'on' and not patient.active and not request.POST.get('collection_confirm'):
 		patient.active = True
 		patient.save()
 		NewInfo.objects.create(	patient=patient,
@@ -591,7 +595,7 @@ def updating(request, patient_id):
 									note='deaktywacja - klient poza procesem zakupu',
 									audiometrist=audiometrist)
 
-	if request.POST.get('requires_action') == 'on' and not patient.requires_action:
+	if request.POST.get('requires_action') == 'on' and not patient.requires_action and not request.POST.get('collection_confirm'):
 		patient.requires_action = True
 		patient.save()
 		NewInfo.objects.create(	patient=patient,

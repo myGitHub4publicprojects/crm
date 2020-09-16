@@ -1402,6 +1402,7 @@ class TestUpdatingView(TestCase):
 
     def test_collection_procedure_with_1_HA(self):
         # 1 HA should be created, old HA should be set to current=False, and new added to Patient
+        # .active and .requires_action should be set to False
         self.client.login(username='john', password='glassonion')
         patient1 = Patient.objects.get(id=1)
         n2 = NFZ_Confirmed.objects.create(patient=patient1,
@@ -1506,6 +1507,10 @@ class TestUpdatingView(TestCase):
         collection_reminders = Reminder_Collection.objects.all()
         self.assertEqual(collection_reminders.count(), 1)
         self.assertTrue(collection_reminders.first().active)
+
+        patient1.refresh_from_db()
+        self.assertFalse(patient1.active)
+        self.assertFalse(patient1.requires_action)
 
 
 class TestDeleteView(TestCase):
