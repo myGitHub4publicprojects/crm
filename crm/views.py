@@ -102,11 +102,18 @@ def advancedsearch(request):
 		patient_list = patient_list & Patient.objects.filter(phone_no__icontains=phone_number)
 
     # search by patient.notes
-	search_phrase = request.GET.get('search_phrase')
+	search_phrase = request.GET.get('search_phrase_notes')
+	if search_phrase:
+		results = True
+		patients_notes = Patient.objects.filter(notes__icontains=search_phrase)
+		patient_list = patient_list & patients_notes
+
+    # search by NewInfo.note
+	search_phrase = request.GET.get('search_phrase_newinfo')
 	if search_phrase:
 		results = True
 		patient_list = patient_list & Patient.objects.filter(
-			notes__icontains=search_phrase)
+			newinfo__note__icontains=search_phrase)
 
     # search by ha make
 	ha_make = request.GET.get('ha_make')

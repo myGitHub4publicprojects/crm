@@ -280,7 +280,7 @@ class TestAdvancedSearchView(TestCase):
         p.notes = 'This is a test phrase.TĄŚĆ ÓŹŻ'
         p.save()
         self.client.login(username='john', password='glassonion')
-        data = {'search_phrase': 'This is a test phrase.TĄŚĆ ÓŹŻ'}
+        data = {'search_phrase_notes': 'This is a test phrase.TĄŚĆ ÓŹŻ'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 1)
@@ -294,7 +294,7 @@ class TestAdvancedSearchView(TestCase):
         p.notes = 'This is a test phrase.TĄŚĆ ÓŹŻ'
         p.save()
         self.client.login(username='john', password='glassonion')
-        data = {'search_phrase': 'phrase.TĄŚĆ'}
+        data = {'search_phrase_notes': 'phrase.TĄŚĆ'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 1)
@@ -308,7 +308,7 @@ class TestAdvancedSearchView(TestCase):
         p.notes = 'This is a test phrase.TĄŚĆ ÓŹŻ'
         p.save()
         self.client.login(username='john', password='glassonion')
-        data = {'search_phrase': 'PHRASE.TĄŚĆ'}
+        data = {'search_phrase_notes': 'PHRASE.TĄŚĆ'}
         url = reverse('crm:advanced_search')
         response = self.client.get(url, data)
         self.assertEqual(len(response.context['patient_list']), 1)
@@ -323,13 +323,52 @@ class TestAdvancedSearchView(TestCase):
     #     p.notes = 'This is a test phrase.TĄŚĆ ÓŹŻ kęś'
     #     p.save()
     #     self.client.login(username='john', password='glassonion')
-    #     data = {'search_phrase': 'tąść'}
+    #     data = {'search_phrase_notes': 'tąść'}
     #     url = reverse('crm:advanced_search')
     #     response = self.client.get(url, data)
     #     self.assertEqual(len(response.context['patient_list']), 1)
     #     response_patient_notes = response.context['patient_list'][0].notes
     #     expected_note = 'This is a test phrase.TĄŚĆ ÓŹŻ kęś'
     #     self.assertEqual(response_patient_notes, expected_note.decode('utf-8'))
+
+    def test_search_exact_phrase_in_new_info_note(self):
+        '''exact phrase used as in NewInfo.note, should return 1 patient'''
+        p = Patient.objects.get(id=1)
+        NewInfo.objects.create(
+            patient=p,
+            note = 'This is a test phrase.TĄŚĆ ÓŹŻ'
+        )
+        self.client.login(username='john', password='glassonion')
+        data = {'search_phrase_newinfo': 'This is a test phrase.TĄŚĆ ÓŹŻ'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+
+    def test_search_partial_phrase_in_new_info_note(self):
+        '''partial phrase used as in NewInfo.note, should return 1 patient'''
+        p = Patient.objects.get(id=1)
+        NewInfo.objects.create(
+            patient=p,
+            note='This is a test phrase.TĄŚĆ ÓŹŻ'
+        )
+        self.client.login(username='john', password='glassonion')
+        data = {'search_phrase_newinfo': 'phrase.TĄŚĆ'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+
+    def test_search_partial_all_caps_phrase_in__new_info_note(self):
+        '''partial phrase in all capital letters used as in NewInfo.note, should return 1 patient'''
+        p = Patient.objects.get(id=1)
+        NewInfo.objects.create(
+            patient=p,
+            note='This is a test phrase.TĄŚĆ ÓŹŻ'
+        )
+        self.client.login(username='john', password='glassonion')
+        data = {'search_phrase_newinfo': 'PHRASE.TĄŚĆ'}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
 
     def test_search_hearing_aid_make(self):
         '''should return patients wearing hearing aids by Bernafon (2)'''
