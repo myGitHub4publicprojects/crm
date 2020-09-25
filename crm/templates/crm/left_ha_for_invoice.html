@@ -1,0 +1,42 @@
+<div class="collapse" id="add_ha_left">
+    <div class="panel-group" id="ha_left">
+        {% for make, families in ha_list.items %}
+        <div class="panel panel-default">
+            <a data-toggle="collapse" data-parent="#ha_left" href="#{{ make }}_left">
+                <div class="btn btn-primary">{{ make }}</div>
+            </a>
+            <div id="{{ make }}_left" class="panel-collapse collapse in">
+                {% for family, models in families.items %}
+                <div class="panel-group" id="inner_{{ make }}_left">
+                    <div class="panel panel-default">
+                        <a data-toggle="collapse" data-parent="#inner_{{ make }}_left" href="#{{ make }}_{{ family|cut:' ' }}_left">
+                            <div class="btn btn-success">{{ family }}</div>
+                        </a>
+                        <div id="{{ make }}_{{ family|cut:' ' }}_left" class="panel-collapse collapse in clearfix">
+                            {% for model in models %}
+                            <div class="float-left">
+                                <label class="bg-secondary ml-1 p-1">
+                                    <input name="left_ha" class="ha_models" type="radio" value='{{ make }}_{{ family }}_{{ model }}' /> {{ model }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <div class="panel panel-default">
+            <a data-toggle="collapse" data-parent="#ha_left" href="#other_left">
+                <div class="btn btn-primary">Inny</div>
+            </a>
+            <div id="other_left" class="panel-collapse collapse in">
+                <input type="text" name="left_other_ha">
+                <br>
+                <small>np. KIND BTE</small>
+            </div>
+        </div>
+    </div>
+   
+</div>
