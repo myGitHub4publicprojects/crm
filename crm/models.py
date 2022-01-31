@@ -4,10 +4,10 @@ import datetime, os
 
 from django.db import models
 from django.utils import timezone as tz
-from django.utils.encoding import python_2_unicode_compatible
+# from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from .validators import xls_only
 
@@ -52,7 +52,7 @@ class Patient(models.Model):
 	create_date = models.DateTimeField(auto_now=False, auto_now_add=True)
 	notes = models.TextField(null=True, blank=True)
 	# person who added a patient or a new note about patient
-	audiometrist = models.ForeignKey(settings.AUTH_USER_MODEL)
+	audiometrist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 	# address
 	street = models.CharField(max_length=120, null=True, blank=True)
 	house_number = models.CharField(max_length=6, null=True, blank=True)
@@ -81,7 +81,7 @@ class NewInfo(models.Model):
 	timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
 	note = models.TextField()
 	audiometrist = models.ForeignKey(
-		settings.AUTH_USER_MODEL, null=True, blank=True)
+		settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
 
 	def __unicode__(self):
 		return self.timestamp
@@ -134,9 +134,9 @@ class Hearing_Aid_Stock(Device):
 	'''Company hearing aids that are offered or were offered'''
 	added = models.DateField(default=tz.now())
 	szoi_new = models.ForeignKey(
-            SZOI_File_Usage, related_name="ha_szoi_new", null=True, blank=True)
+            SZOI_File_Usage, related_name="ha_szoi_new", null=True, blank=True, on_delete=models.CASCADE)
 	szoi_updated = models.ForeignKey(
-		SZOI_File_Usage, related_name="ha_szoi_updated", null=True, blank=True)
+		SZOI_File_Usage, related_name="ha_szoi_updated", null=True, blank=True, on_delete=models.CASCADE)
 
 
 	def get_absolute_url(self):

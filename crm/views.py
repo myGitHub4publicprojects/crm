@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.utils.encoding import python_2_unicode_compatible
+# from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone as tz
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
@@ -24,7 +24,7 @@ from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                     NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
 					Reminder_PCPR,  Reminder_NFZ_Confirmed,
                     SZOI_File, SZOI_File_Usage)
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
 from .other_devices import other_devices
