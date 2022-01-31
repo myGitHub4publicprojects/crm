@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase, Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from django.contrib import auth
@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core.files import File
 from datetime import datetime, timedelta
 from django.utils import timezone as tz
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.templatetags.static import static
 
 from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      Hearing_Aid, Hearing_Aid_Stock,
