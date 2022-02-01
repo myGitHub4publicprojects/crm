@@ -48,6 +48,6 @@ class Hearing_Aid_StockForm(forms.ModelForm):
 
 
 class SZOI_Usage_Form(forms.ModelForm):
-    class Meta:
-    	model = SZOI_File_Usage
-    	fields = ['szoi_file']
+	class Meta:
+		model = SZOI_File_Usage
+		fields = ['szoi_file']

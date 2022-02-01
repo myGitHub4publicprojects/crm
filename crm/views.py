@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-# from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone as tz
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.forms.formsets import formset_factory
-from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.utils.decorators import method_decorator
-from django.forms.widgets import Textarea
-from django.forms.models import modelform_factory
 
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from .forms import (PatientForm, DeviceForm, Hearing_Aid_StockForm, SZOI_Usage_Form)
+from django.http import HttpResponse, HttpResponseRedirect
+from .forms import (Hearing_Aid_StockForm, SZOI_Usage_Form)
 from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                     Hearing_Aid, Hearing_Aid_Stock,
                     NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
@@ -27,10 +21,8 @@ from .models import (Patient, NewInfo, PCPR_Estimate, Invoice,
 from django.urls import reverse, reverse_lazy
 from django.db.models.functions import Lower
 from django.db.models import Q
-from .other_devices import other_devices
 from .utils import get_devices
 from .stock_updater import stock_update
-import json, decimal
 today = tz.now()
 ears = ['left', 'right']
 
@@ -155,7 +147,7 @@ def advancedsearch(request):
 		if request.GET.get('s_pcpr_date'):
 			pcpr_start = request.GET.get('s_pcpr_date') + "T00:00:00+03:00"
 		else:
-    			pcpr_start = "1990-01-01T00:00:00+03:00"
+			pcpr_start = "1990-01-01T00:00:00+03:00"
 		if request.GET.get('e_pcpr_date'):
 			pcpr_end = request.GET.get('e_pcpr_date') + "T21:00:00+03:00"
 		else:

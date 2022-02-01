@@ -1,7 +1,5 @@
 from django.urls import re_path
 from . import views
-from django.views.generic import TemplateView
-from django.contrib.auth.decorators import login_required
 
 
 app_name = 'crm'
