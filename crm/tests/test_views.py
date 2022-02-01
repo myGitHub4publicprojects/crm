@@ -24,6 +24,7 @@ from crm.models import (Patient, NewInfo, PCPR_Estimate, Invoice,
                      NFZ_Confirmed, Reminder_Collection, Reminder_Invoice,
                      Reminder_PCPR, Reminder_NFZ_Confirmed,
                         SZOI_File, SZOI_File_Usage, SZOI_Errors)
+from crm.tests.utils import create_szoi_file
 
 pytestmark = pytest.mark.django_db
 today = tz.now()
@@ -286,7 +287,7 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
         response_patient_notes = response.context['patient_list'][0].notes
         expected_note = 'This is a test phrase.TĄŚĆ ÓŹŻ'
-        self.assertEqual(response_patient_notes, expected_note.decode('utf-8'))
+        self.assertEqual(response_patient_notes, expected_note)
 
     def test_search_partial_phrase_in_notes(self):
         '''partial phrase used as in Patient.notes, should return 1 patient'''
@@ -300,7 +301,7 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
         response_patient_notes = response.context['patient_list'][0].notes
         expected_note = 'This is a test phrase.TĄŚĆ ÓŹŻ'
-        self.assertEqual(response_patient_notes, expected_note.decode('utf-8'))
+        self.assertEqual(response_patient_notes, expected_note)
 
     def test_search_partial_all_caps_phrase_in_notes(self):
         '''partial phrase in all capital letters used as in Patient.notes, should return 1 patient'''
@@ -314,7 +315,7 @@ class TestAdvancedSearchView(TestCase):
         self.assertEqual(len(response.context['patient_list']), 1)
         response_patient_notes = response.context['patient_list'][0].notes
         expected_note = 'This is a test phrase.TĄŚĆ ÓŹŻ'
-        self.assertEqual(response_patient_notes, expected_note.decode('utf-8'))
+        self.assertEqual(response_patient_notes, expected_note)
 
 # this test does not work in tests but pass when Postgres db is used
     # def test_search_partial_all_lowercase_phrase_in_notes(self):
@@ -1153,7 +1154,7 @@ class TestUpdatingView(TestCase):
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Dodano potwierdzony lewy wniosek z datą 2001-01-01. ' + \
                         'Dodano potwierdzony prawy wniosek z datą 2001-01-02.'
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note)
 
         # should create 2 reminders (Reminder.nfz_confirmed)
         left_nfz = left_nfz_all[0]
@@ -1235,7 +1236,7 @@ class TestUpdatingView(TestCase):
         expected_note = 'Usunięto lewy wniosek z datą 2000-01-01. ' + \
                         'Usunięto prawy wniosek z datą 2000-01-02.'
 
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note)
 
         # should inactivate 2 Reminder.nfz_confirmed
         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
@@ -1320,17 +1321,18 @@ class TestUpdatingView(TestCase):
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Zdezaktywowano kosztorys z datą 2000-01-02.'
 
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note)
 
         # reminders
         # should inactivate Reminder.pcpr
-        pcpr2 = PCPR_Estimate.objects.filter(
+        pcpr2 = PCPR_Estimate.objects.get(
             patient=patient1, id=2)
 
-        reminders = Reminder_PCPR.objects.filter(
+        rem = Reminder_PCPR.objects.all().filter(
             pcpr=pcpr2)
-        self.assertEqual(reminders.count(), 1)
-        self.assertFalse(reminders.last().active)
+
+        self.assertEqual(rem.count(), 1)
+        self.assertFalse(rem.last().active)
 
     def test_adding_another_invoice(self):
         self.client.login(username='john', password='glassonion')
@@ -1387,7 +1389,7 @@ class TestUpdatingView(TestCase):
         self.assertFalse(invoice_all.last().current)
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Zdezaktywowano fakturę z datą 2000-01-01.'
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note)
 
         # reminders
         # should inactivate Reminder.invoice
@@ -1502,7 +1504,7 @@ class TestUpdatingView(TestCase):
         # should create a new info to show in history of actions
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Odebrano aparaty, z datą 2000-01-02.'
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note)
 
         # there should be 2 Reminder_NFZ_Confirmed (one for each side), both inactive
         left_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
@@ -1619,7 +1621,7 @@ class TestUpdatingView(TestCase):
         # should create a new info to show in history of actions
         new_info = NewInfo.objects.get(id=1)
         expected_note = 'Odebrano aparat, z datą 2000-01-02.'
-        self.assertEqual(new_info.note, expected_note.decode('utf-8'))
+        self.assertEqual(new_info.note, expected_note)
 
         # there should be 1 Reminder_NFZ_Confirmed, inactive
         right_nfz_confirmed_all = NFZ_Confirmed.objects.filter(
@@ -1875,10 +1877,7 @@ class TestSZOI_UsageCreate(TestCase):
 
     def test_szoi_usage_10HA(self):
         '''there is 10 HA in a file, no preexisting'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
-        # create SZOI_File instance with the above file
-        f = open(test_file)
-        s = SZOI_File.objects.create(file=File(f))
+        s = create_szoi_file('/crm/tests/test_files/szoi10HA.xls')
 
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:szoi_usage_create')
@@ -1909,7 +1908,6 @@ class TestSZOI_UsageCreate(TestCase):
         # should create 0 SZOI_Errors instances
         self.assertEqual(errors.count(), 0)
 
-        f.close()
 
     def test_szoi_usage_10HA_update(self):
         '''there is 10 HA in a file, 2 preexisting'''
@@ -1923,10 +1921,8 @@ class TestSZOI_UsageCreate(TestCase):
                     family='A4 IQ GOLD',
                     model='ITE',
                     price_gross=1)
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
-        # create SZOI_File instance with the above file
-        f = open(test_file)
-        s = SZOI_File.objects.create(file=File(open(test_file)))
+
+        s = create_szoi_file('/crm/tests/test_files/szoi10HA.xls')
 
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:szoi_usage_create')
@@ -1958,15 +1954,11 @@ class TestSZOI_UsageCreate(TestCase):
         # should create 0 SZOI_Errors instances
         self.assertEqual(errors.count(), 0)
 
-        f.close()
 
     def test_szoi_usage_10HA_errors(self):
         '''second and third lines in a file have only 2 items,
         fourth line has none of the expected text'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.xls'
-        # create SZOI_File instance with the above file
-        f = open(test_file)
-        s = SZOI_File.objects.create(file=File(f))
+        s = create_szoi_file('/crm/tests/test_files/szoi10haError_shortLine.xls')
 
         self.client.login(username='john', password='glassonion')
         url = reverse('crm:szoi_usage_create')
@@ -1996,8 +1988,6 @@ class TestSZOI_UsageCreate(TestCase):
         errors = SZOI_Errors.objects.all()
         # should create 3 SZOI_Errors instances
         self.assertEqual(errors.count(), 3)
-
-        f.close()
 
 
     def test_szoi_usage_1131HA_17Other(self):

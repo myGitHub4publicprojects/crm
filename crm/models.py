@@ -4,7 +4,6 @@ import datetime, os
 
 from django.db import models
 from django.utils import timezone as tz
-# from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -22,7 +21,7 @@ class SZOI_File(models.Model):
 	def get_absolute_url(self):
 		return reverse('crm:szoi_detail', kwargs={'pk': self.pk})
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.filename() + ' ' + str(self.uploaded_at)
 
 
@@ -71,7 +70,7 @@ class Patient(models.Model):
 			return '{city} {number}, {zip_code} {city}'.format(city=self.city, number=number, zip_code=self.zip_code)
 		return '{street} {number}, {zip_code} {city}'.format(street=self.street, city=self.city, number=number, zip_code=self.zip_code)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.first_name + ' ' + self.last_name
 
 
@@ -83,7 +82,7 @@ class NewInfo(models.Model):
 	audiometrist = models.ForeignKey(
 		settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.timestamp
 
 
@@ -116,7 +115,7 @@ class Device(models.Model):
 	class Meta:
 			abstract = True
 
-	def __unicode__(self):
+	def __str__(self):
 		return ' '.join([self.make, self.family, self.model])
 
 class Our_Device(models.Model):

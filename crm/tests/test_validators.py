@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import pytest
 
 from django.test import TestCase
 from django.core.files import File

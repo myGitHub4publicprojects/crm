@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
-import pytest
-
 from django.test import TestCase
-from django.core.files import File
-from django.core.exceptions import ValidationError
 
 from crm.models import Hearing_Aid_Stock
 from crm.utils import get_devices
