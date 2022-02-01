@@ -12,6 +12,7 @@ from mixer.backend.django import mixer
 from django.core.files import File
 from crm.stock_updater import stock_update
 from crm.models import (SZOI_File, Hearing_Aid_Stock, SZOI_File_Usage,SZOI_Errors)
+from crm.tests.utils import create_szoi_file
 
 
 class Test_Stock_Update(TestCase):
@@ -19,27 +20,22 @@ class Test_Stock_Update(TestCase):
         self.test_dir = tempfile.mkdtemp()
         settings.MEDIA_ROOT = self.test_dir
 
+
     def test_stock_update_empty(self):
         '''test file is empty'''
-        test_file = os.getcwd() + '/crm/tests/test_files/empty.xls'
-        f = open(test_file)
        # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file = create_szoi_file('/crm/tests/test_files/empty.xls')
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
         stock_update(szoi_file, szoi_file_usage)
         # should create 0 Hearing_Aid_Stock
         self.assertEqual(Hearing_Aid_Stock.objects.all().count(), 0)
 
-        f.close()
-
 
     def test_stock_update_create_10HA(self):
         '''test file contains 10 lines with HA'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
-        f = open(test_file)
         # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file = create_szoi_file('/crm/tests/test_files/szoi10HA.xls')
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
         res = stock_update(szoi_file, szoi_file_usage)
@@ -48,17 +44,14 @@ class Test_Stock_Update(TestCase):
 
         # should return 10 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 10)
-        
-        f.close()
+
 
     def test_stock_update_create_new_10HA(self):
         '''test file contains 10 lines with HA
-        there is already one HA, it still be there after stock update'''
+        there is already one HA, should be 11 after stock update'''
         Hearing_Aid_Stock.objects.create(make='oldmake', family='oldfamily', model='oldmodel')
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10HA.xls'
-        f = open(test_file)
         # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file = create_szoi_file('/crm/tests/test_files/szoi10HA.xls')
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
         res = stock_update(szoi_file, szoi_file_usage)
@@ -68,16 +61,12 @@ class Test_Stock_Update(TestCase):
         # should return 10 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 10)
 
-        f.close()
 
     def test_stock_update_with_errors_in_file(self):
         '''second and third lines in a file have only 2 items,
         fourth line has none of the expected text'''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10haError_shortLine.xls'
-        f = open(test_file)
-       
         # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file = create_szoi_file('/crm/tests/test_files/szoi10haError_shortLine.xls')
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
         res = stock_update(szoi_file, szoi_file_usage)
@@ -96,23 +85,17 @@ class Test_Stock_Update(TestCase):
         error2 = errors[1]
         error3 = errors[2]
         self.assertEqual(
-            error1.line, u"[u'2', u'BERNAFON AG', u'', u'', u'', u'', u'', u'', u'']")
+            error1.line, u"['2', 'BERNAFON AG', '', '', '', '', '', '', '']")
         self.assertEqual(
-            error2.line, u"[u'3', u'SONOVA AG', u'', u'', u'', u'', u'', u'', u'']")
+            error2.line, u"['3', 'SONOVA AG', '', '', '', '', '', '', '']")
         self.assertEqual(error3.error_log,
                          '"Kod środka" not recognized"')
-        
-        f.close()
-
 
 
     def test_stock_update_with_errors_in_file_ha(self):
         '''HA name format is changed, HA name in line 2 is "test" '''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoi10ha_error_name.xls'
-        f = open(test_file)
-       
         # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file = create_szoi_file('/crm/tests/test_files/szoi10ha_error_name.xls')
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
         res = stock_update(szoi_file, szoi_file_usage)
@@ -127,8 +110,6 @@ class Test_Stock_Update(TestCase):
         errors = SZOI_Errors.objects.all()
         # should create 1 SZOI_Errors instances
         self.assertEqual(errors.count(), 1)
-        
-        f.close()
 
 
     def test_stock_update_ignore_typos(self):
@@ -138,11 +119,8 @@ class Test_Stock_Update(TestCase):
         there are 17 lines with 'P.086.' or 'P.087.' code (Other items),
         there are 1234 lines where code contains '.01'
         '''
-        test_file = os.getcwd() + '/crm/tests/test_files/szoifull.xls'
-        f = open(test_file)
-
         # create SZOI_File and SZOI_File_Usage instance with the above file
-        szoi_file = SZOI_File.objects.create(file=File(f))
+        szoi_file = create_szoi_file('/crm/tests/test_files/szoifull.xls')
         szoi_file_usage = SZOI_File_Usage.objects.create(szoi_file=szoi_file)
 
         res = stock_update(szoi_file, szoi_file_usage)
@@ -174,7 +152,6 @@ class Test_Stock_Update(TestCase):
         # should return 1131 Hearing_Aid_Stock instances
         self.assertEqual(len(res['ha_new']), 1131)
 
-        f.close()
 
     def tearDown(self):
         # Remove the directory after the test
