@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-import os
-import pytest
 import shutil
 import tempfile
 
-
 from django.conf import settings
 from django.test import TestCase
-from mixer.backend.django import mixer
-from django.core.files import File
 from crm.stock_updater import stock_update
 from crm.models import (SZOI_File, Hearing_Aid_Stock, SZOI_File_Usage,SZOI_Errors)
 from crm.tests.utils import create_szoi_file
