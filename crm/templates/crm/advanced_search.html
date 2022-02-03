@@ -1,7 +1,7 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<h3>Wyszukiwanie zaawansowane: 
+\<h3>Wyszukiwanie zaawansowane: 
 	<small class="text-muted">Legenda: 
 		<span class="border border-success">aktywny</span>, <span class="text-danger">!!!</span>- wymagane działanie</small>
 </h3>
@@ -183,7 +183,7 @@
 <div class="pagination">
 	<span class="step-links">
 		{% if patient_list.has_previous %}
-		<a href="?page={{ patient_list.previous_page_number }}">poprzednia</a>
+		<a href="?{{GET_params.urlencode}}&page={{ patient_list.previous_page_number }}">poprzednia</a>
 		{% endif %}
 
 		<span class="current">
@@ -191,7 +191,7 @@
 		</span>
 
 		{% if patient_list.has_next %}
-		<a href="?page={{ patient_list.next_page_number }}">następna</a>
+		<a href="?{{GET_params.urlencode}}&page={{ patient_list.next_page_number }}">następna</a>
 		{% endif %}
 	</span>
 </div>

@@ -182,6 +182,12 @@ def advancedsearch(request):
 		patients = Patient.objects.filter(id__in=patient_ids)
 		patient_list = patient_list & patients
 
+	# prepare copy of url parameters without 'page'
+	# this enables pagination with search filters
+	GET_params = request.GET.copy()
+	if 'page' in GET_params:
+		GET_params.pop('page')
+
 	paginator = Paginator(patient_list, 50)  # Show X patients per page
 
 	page = request.GET.get('page')
@@ -197,7 +203,8 @@ def advancedsearch(request):
 	context = {	'patient_list': patient_list,
 				'locations': Patient.locations,
 				'ha_list': get_devices(Hearing_Aid_Stock),
-				'results': results}
+				'results': results,
+				'GET_params': GET_params}
 	return render(request, 'crm/advanced_search.html', context)
 
 
