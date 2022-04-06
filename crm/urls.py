@@ -4,7 +4,8 @@ from . import views
 
 app_name = 'crm'
 urlpatterns = [
-	re_path(r'^$', views.index, name='index'),
+    re_path(r'^$',
+            views.Index.as_view(), name='index'),
 	re_path(r'^advanced_search/$', views.advancedsearch, name='advanced_search'),
 	re_path(r'^create/$', views.create, name='create'),
 	re_path(r'^store/$', views.store, name='store'),

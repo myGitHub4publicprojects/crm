@@ -4,6 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone as tz
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -26,32 +27,25 @@ from .stock_updater import stock_update
 today = tz.now()
 ears = ['left', 'right']
 
-@login_required
-def index(request):
-	order_by = request.GET.get('order_by','last_name')
-	if order_by == 'last_name' or order_by == 'first_name':
-		patient_list = Patient.objects.all().order_by(Lower(order_by))
-	else:
-		patient_list = Patient.objects.all().order_by(order_by)
-	# Lower - makes ordering case insensitive
-	query = request.GET.get('q')
-	if query:
-		patient_list = patient_list.filter(last_name__icontains=query)
 
-	paginator = Paginator(patient_list, 50) # Show X patients per page
+class Index(LoginRequiredMixin, ListView):
+	model = Patient
+	paginate_by = 50
+	template_name = 'crm/patient_list.html'
 
-	page = request.GET.get('page')
-	try:
-		patients = paginator.page(page)
-	except PageNotAnInteger:
-		# If page is not an integer, deliver first page.
-		patients = paginator.page(1)
-	except EmptyPage:
-		# If page is out of range (e.g. 9999), deliver last page of results.
-		patients = paginator.page(paginator.num_pages)
+	def get_context_data(self, **kwargs):
+		# prepare copy of url parameters without 'page'
+		# this enables pagination with search filters
+		GET_params = self.request.GET.copy()
+		if 'page' in GET_params:
+			GET_params.pop('page')
+		context = {'GET_params': GET_params}
+		kwargs.update(context)
+		return super().get_context_data(**kwargs)
 
-	context = {'patients': patients}
-	return render(request, 'crm/patient_list.html', context)
+	def get_ordering(self):
+		ordering = self.request.GET.get('order_by', 'create_date')
+		return ordering
 
 
 @login_required

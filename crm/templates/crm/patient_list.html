@@ -1,19 +1,39 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
+<!-- <div class="input-group input-group-sm mb-3">
+    <div class="input-group-prepend">
+      <label class="input-group-text" for="inputGroupSelect01">Sortowanie:</label>
+    </div>
+    <select class="custom-select" id="inputGroupSelect01">
+      <option selected>wybierz...</option>
+      <option value="1">nazwisko A-Z</option>
+      <option value="2">nazwisko Z-A</option>
+      <option value="3">imię A-Z</option>
+      <option value="4">imię Z-A</option>
+      <option value="5">data ur od najstarszego</option>
+      <option value="6">data ur od najmłodszego</option>
+      <option value="5">data dodania od najstarszego</option>
+      <option value="6">data dodania od najmłodszego</option>
+      <option value="7">miejscowość A-Z</option>
+      <option value="8">miejscowość Z-A</option>
+    </select>
+  </div> -->
 
-{% if patients %}
+{% if patient_list %}
 <table class="table">
 	<tr>
 		<th><a href="?order_by=last_name">Nazwisko</a></th>
 		<th><a href="?order_by=first_name">Imię</a></th>
+        <th>Miejscowość</th>
 		<th><a href="?order_by=date_of_birth">Data urodzenia</a></th>
 		<th><a href="?order_by=create_date">Data dodania</a></th>
 	</tr>
-	{% for patient in patients %}
+	{% for patient in patient_list %}
 	<tr>
 		<td><a href="{% url 'crm:edit' patient.id %}">{{ patient.last_name }}</a></td>
 		<td><a href="{% url 'crm:edit' patient.id %}">{{ patient.first_name }}</a></td>
+        <td>{{ patient.location }}</td>
 		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
 		<td>{{ patient.create_date|date:'Y m d' }}</td>
 	
@@ -22,21 +42,23 @@
 	{% endfor %}
 </table>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if patients.has_previous %}
-            <a href="?page={{ patients.previous_page_number }}">poprzednia</a>
-        {% endif %}
-
-        <span class="current">
-            Strona {{ patients.number }} z {{ patients.paginator.num_pages }}.
-        </span>
-
-        {% if patients.has_next %}
-            <a href="?page={{ patients.next_page_number }}">następna</a>
-        {% endif %}
-    </span>
-</div>
+{% block pagination %}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="{{ request.path }}?{{GET_params.urlencode}}&page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="{{ request.path }}?{{GET_params.urlencode}}&page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+{% endblock %}
 
 {% else %}
 	<p>Nie ma takich pacjentów</p>

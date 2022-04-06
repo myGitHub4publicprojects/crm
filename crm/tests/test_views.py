@@ -69,7 +69,7 @@ class TestIndexView(TestCase):
         response = self.client.get(url)
         all_patients = Patient.objects.all()
         assert response.status_code == 200, 'Should be callable by logged in user'
-        self.assertEqual(len(response.context['patients']), 4)
+        self.assertEqual(len(response.context['patient_list']), 4)
 
     def test_order_by_date_of_birth(self):
         '''should sort patients based on date of birth, starting from those without
@@ -79,10 +79,10 @@ class TestIndexView(TestCase):
         url = reverse('crm:index')
         response = self.client.get(url, data)
         first_object = Patient.objects.all().first()
-        first_in_context = response.context['patients'][0]
+        first_in_context = response.context['patient_list'][0]
         self.assertEqual(first_object, first_in_context)
         youngest_patient = Patient.objects.get(date_of_birth=today-timedelta(days=1))
-        last_in_context = response.context['patients'][-1]
+        last_in_context = list(response.context['patient_list'])[-1]
         self.assertEqual(youngest_patient, last_in_context)
 
     def test_order_by_create_date(self):
@@ -92,10 +92,10 @@ class TestIndexView(TestCase):
         url = reverse('crm:index')
         response = self.client.get(url, data)
         object_oldest_create_date = Patient.objects.get(id=4)
-        first_in_context = response.context['patients'][0]
+        first_in_context = response.context['patient_list'][0]
         self.assertEqual(object_oldest_create_date, first_in_context)
         object_latest_create_date = Patient.objects.get(id=3)
-        last_in_context = response.context['patients'][-1]
+        last_in_context = list(response.context['patient_list'])[-1]
         self.assertEqual(object_latest_create_date, last_in_context)
 
     def test_query(self):
@@ -104,15 +104,8 @@ class TestIndexView(TestCase):
         data={'q': 'Smith'}
         url = reverse('crm:index')
         response = self.client.get(url, data)
-        self.assertEqual(len(response.context['patients']), 4)
+        self.assertEqual(len(response.context['patient_list']), 4)
 
-    def test_pagination_page_over_9999(self):
-        self.client.login(username='john', password='glassonion')
-        data = {'page': '99999'}
-        url = reverse('crm:index')
-        response = self.client.get(url, data)
-        # should show last page (1)
-        self.assertEqual(response.context['patients'].paginator.num_pages, 1)
 
 class TestAdvancedSearchView(TestCase):
     def setUp(self):
