@@ -1,33 +1,33 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-<!-- <div class="input-group input-group-sm mb-3">
+<div class="input-group input-group-sm mb-3">
     <div class="input-group-prepend">
       <label class="input-group-text" for="inputGroupSelect01">Sortowanie:</label>
     </div>
     <select class="custom-select" id="inputGroupSelect01">
       <option selected>wybierz...</option>
-      <option value="1">nazwisko A-Z</option>
-      <option value="2">nazwisko Z-A</option>
-      <option value="3">imię A-Z</option>
-      <option value="4">imię Z-A</option>
-      <option value="5">data ur od najstarszego</option>
-      <option value="6">data ur od najmłodszego</option>
-      <option value="5">data dodania od najstarszego</option>
-      <option value="6">data dodania od najmłodszego</option>
-      <option value="7">miejscowość A-Z</option>
-      <option value="8">miejscowość Z-A</option>
+      <option value="last_name">nazwisko A-Z</option>
+      <option value="-last_name">nazwisko Z-A</option>
+      <option value="first_name">imię A-Z</option>
+      <option value="-first_name">imię Z-A</option>
+      <option value="date_of_birth">data ur od najstarszego</option>
+      <option value="-date_of_birth">data ur od najmłodszego</option>
+      <option value="create_date">data dodania od najstarszego</option>
+      <option value="-create_date">data dodania od najmłodszego</option>
+      <option value="location">miejscowość A-Z</option>
+      <option value="-location">miejscowość Z-A</option>
     </select>
-  </div> -->
+  </div>
 
 {% if patient_list %}
 <table class="table">
 	<tr>
-		<th><a href="?order_by=last_name">Nazwisko</a></th>
-		<th><a href="?order_by=first_name">Imię</a></th>
+		<th>Nazwisko</th>
+		<th>Imię</th>
         <th>Miejscowość</th>
-		<th><a href="?order_by=date_of_birth">Data urodzenia</a></th>
-		<th><a href="?order_by=create_date">Data dodania</a></th>
+		<th>Data urodzenia</th>
+		<th>Data dodania</th>
 	</tr>
 	{% for patient in patient_list %}
 	<tr>
@@ -64,4 +64,9 @@
 	<p>Nie ma takich pacjentów</p>
 {% endif %}
 </div>
+<script>
+    document.getElementById('inputGroupSelect01').addEventListener('change', function() {
+    window.location.href = "{% url 'crm:index' %}?order_by=" + this.value;
+    });
+</script>
 {% endblock content %}
