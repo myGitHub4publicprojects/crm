@@ -13,8 +13,8 @@
       <option value="-first_name">imię Z-A</option>
       <option value="date_of_birth">data ur od najstarszego</option>
       <option value="-date_of_birth">data ur od najmłodszego</option>
-      <option value="create_date">data dodania od najstarszego</option>
-      <option value="-create_date">data dodania od najmłodszego</option>
+      <option value="create_date">data dodania od najdawniejszej</option>
+      <option value="-create_date">data dodania od najnowszej</option>
       <option value="location">miejscowość A-Z</option>
       <option value="-location">miejscowość Z-A</option>
     </select>
@@ -28,6 +28,7 @@
         <th>Miejscowość</th>
 		<th>Data urodzenia</th>
 		<th>Data dodania</th>
+        <th>Ostatnia Nota</th>
 	</tr>
 	{% for patient in patient_list %}
 	<tr>
@@ -36,9 +37,8 @@
         <td>{{ patient.location }}</td>
 		<td>{{ patient.date_of_birth|date:'Y m d' }}</td>
 		<td>{{ patient.create_date|date:'Y m d' }}</td>
-	
+        <td>{{ patient.newinfo_set.last.timestamp }}</td>
 	</tr>
-
 	{% endfor %}
 </table>
 
