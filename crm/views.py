@@ -34,8 +34,8 @@ class Index(LoginRequiredMixin, ListView):
 	template_name = 'crm/patient_list.html'
 
 	def get_context_data(self, **kwargs):
+		# to enable pagination with ordering parameteres
 		# prepare copy of url parameters without 'page'
-		# this enables pagination with search filters
 		GET_params = self.request.GET.copy()
 		if 'page' in GET_params:
 			GET_params.pop('page')
@@ -46,6 +46,14 @@ class Index(LoginRequiredMixin, ListView):
 	def get_ordering(self):
 		ordering = self.request.GET.get('order_by', 'create_date')
 		return ordering
+
+	def get_queryset(self):
+		# to enable serach (in navbar)
+		patient_list = Patient.objects.all()
+		query = self.request.GET.get('q')
+		if query:
+			patient_list = Patient.objects.filter(last_name__icontains=query)
+		return patient_list
 
 
 @login_required
