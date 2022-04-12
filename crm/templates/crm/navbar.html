@@ -43,8 +43,8 @@
         </a>
         
         
-        <form id="search_form" method="GET" action="/" class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" name="q" placeholder="nazwisko" aria-label="Search">
+        <form id="search_form" method="GET" action="{% url 'crm:advanced_search' %}" class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="search" name="lname" placeholder="nazwisko" aria-label="Search">
         <button class="btn btn-secondary my-2 my-sm-0" type="submit">Szukaj</button>
         </form>
         

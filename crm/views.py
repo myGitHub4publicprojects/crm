@@ -47,14 +47,6 @@ class Index(LoginRequiredMixin, ListView):
 		ordering = self.request.GET.get('order_by', 'create_date')
 		return ordering
 
-	def get_queryset(self):
-		# to enable serach (in navbar)
-		patient_list = Patient.objects.all()
-		query = self.request.GET.get('q')
-		if query:
-			patient_list = Patient.objects.filter(last_name__icontains=query)
-		return patient_list
-
 
 @login_required
 def advancedsearch(request):
