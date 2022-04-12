@@ -69,7 +69,14 @@ def advancedsearch(request):
 		patients_id = [i.patient.id for i in HA_queryset]
 		return Patient.objects.filter(id__in=patients_id)
 
-    # search by patient.active
+    # search by patient create date
+	if request.GET.get('start_create_date') or request.GET.get('stop_create_date'):
+		results = True
+		start_create_date = request.GET.get('start_create_date') or "1990-01-01T13:20:30+03:00"
+		stop_create_date = request.GET.get('stop_create_date') or str(datetime.datetime.now())
+		patient_list = patient_list.filter(create_date__range=[start_create_date, stop_create_date])
+	
+	# search by patient.active
 	active_patients = request.GET.get('only_active_patients')
 	if active_patients:
 		results = True

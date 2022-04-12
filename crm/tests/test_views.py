@@ -158,6 +158,51 @@ class TestAdvancedSearchView(TestCase):
         response_patient_first_name = response.context['patient_list'][0].first_name
         self.assertEqual(response_patient_first_name, 'Adam')
 
+
+
+
+
+    def test_search_patient_create_date_only_lower_band(self):
+        '''only lower band of dates is given - upper band should default to today
+        should return only patients created after the lower band date'''
+        self.client.login(username='john', password='glassonion')
+        p1 = Patient.objects.get(id=1)
+        p1.create_date = "2000-01-01T13:20:30+03:00"
+        p1.save()
+        lower_band = '2000-01-02'
+        data={'start_create_date': lower_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 3)
+
+    def test_search_patient_create_date_only_upper_band(self):
+        '''only upper band of dates is given - lower band should default to '1990-01-01'
+        should return only patients created before the upper band date'''
+        self.client.login(username='john', password='glassonion')
+        p1 = Patient.objects.get(id=1)
+        p1.create_date = "2000-01-01T13:20:30+03:00"
+        p1.save()
+        upper_band = '2000-01-02'
+        data={'stop_create_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+
+    def test_search_patient_create_date_both_lower_and_upper_band(self):
+        '''both lower and upper band of dates is given, should return only patients
+        created after the lower band and before the upper band date'''
+        self.client.login(username='john', password='glassonion')
+        p1 = Patient.objects.get(id=1)
+        p1.create_date = "2000-01-02T13:20:30+03:00"
+        p1.save()
+        lower_band = '2000-01-01'
+        upper_band = '2000-01-03'
+        data={'start_create_date': lower_band, 'stop_create_date': upper_band}
+        url = reverse('crm:advanced_search')
+        response = self.client.get(url, data)
+        self.assertEqual(len(response.context['patient_list']), 1)
+
+
     def test_search_active(self):
         '''should return 2 patients .active'''
         for id in [3, 4]:
